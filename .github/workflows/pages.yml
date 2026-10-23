@@ -1,0 +1,55 @@
+name: pages
+
+# Deploy the specification to GitHub Pages:
+#
+#   https://rdf-array.github.io/json-ld-array/   (redirects to json-ld-array.html)
+#
+# The tracked tree is the site: json-ld-array.html is generated from
+# json-ld-array.md by md-to-respec.py and committed, so nothing is built here.
+# Modelled on shex.js-array's pages.yml.
+#
+# One-time setup: Settings -> Pages -> Source: "GitHub Actions" (configure-pages
+# with `enablement: true` does it on the first run when the token may).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: check that the HTML is current
+        run: |
+          python3 md-to-respec.py json-ld-array.md /tmp/regenerated.html
+          if ! diff -q /tmp/regenerated.html json-ld-array.html >/dev/null; then
+            echo 'json-ld-array.html is out of date: run python3 md-to-respec.py json-ld-array.md json-ld-array.html' >&2
+            exit 1
+          fi
+      - uses: actions/configure-pages@v6
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: .
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

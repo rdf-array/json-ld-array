@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>JSON-LD-array: mapping conventional JSON to rdf-array</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus: "unofficial",
+      shortName: "json-ld-array",
+      editors: [{ name: "Eric Prud'hommeaux" }],
+      edDraftURI: "https://rdf-array.github.io/json-ld-array/",
+      latestVersion: null,
+      overrideCopyright: "<p class='copyright'>Copyright &copy; 2026 the rdf-array project. This document is licensed under a <a href='https://creativecommons.org/licenses/by/4.0/'>Creative Commons Attribution 4.0 License</a>.</p>",
+      lint: { "no-unused-dfns": false },
+      localBiblio: {
+        "RML-CORE": { title: "RML-Core: Generic Mapping Language for RDF", href: "https://w3id.org/rml/core/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-CC": { title: "RML-CC: RML Collections and Containers", href: "https://w3id.org/rml/cc/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-LV": { title: "RML-LV: RML Logical Views", href: "https://w3id.org/rml/lv/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-FNML": { title: "RML-FNML: RML Functions", href: "https://w3id.org/rml/fnml/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "YARRRML": { title: "YARRRML", href: "https://rml.io/yarrrml/spec/", publisher: "IDLab, Ghent University" }
+      }
+    };
+  </script>
+  <style>
+    table.simple { font-size: 0.9em; }
+    table.simple td, table.simple th { vertical-align: top; }
+    pre.example { font-size: 0.9em; line-height: 1.35; }
+    .hljs-iri { color: #0b5394; }
+    .hljs-pname { color: #38761d; }
+    .hljs-lit { color: #a61c00; }
+    .hljs-kw { color: #741b47; font-weight: bold; }
+    .hljs-var { color: #b45f06; }
+    .hljs-cmt { color: #777; font-style: italic; }
+    .hljs-bnode { color: #666; }
+    .hljs-num, .hljs-number { color: #a61c00; }
+    .hljs-attr { color: #0b5394; }
+    .hljs-string { color: #38761d; }
+    .hljs-literal { color: #741b47; }
+  </style>
+</head>
+<body>
+  <section id="abstract">
+    <p>JSON-LD-array is a mapping language that turns <strong>conventional JSON</strong> — the JSON an API already produces — into <strong>rdf-array</strong>. It keeps the one idea of JSON-LD that conventional JSON needs, <em>a map from JSON keys to RDF properties</em>, and drops the rest:</p>
+  </section>
+  <section id="sotd">
+    <p>This is a design sketch for the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/json-ld-array">json-ld-array.md</a> by <code>md-to-respec.py</code>. It is implemented in <a href="https://github.com/rdf-array/jsonld.js-array">jsonld.js-array</a>, which has a <a href="https://rdf-array.github.io/jsonld.js-array/">playground</a>. It is not a W3C document and has no standing anywhere.</p>
+  </section>
+  <section class="introductory" id="introduction">
+    <h2>Introduction</h2>
+    <p><em>Design sketch, 2026-10-23 (begun as a tutorial on 2026-10-21). Implemented in <a href="https://github.com/rdf-array/jsonld.js-array">jsonld.js-array</a> (<code>jsonld.arrayToRDF</code>, with a <a href="https://rdf-array.github.io/jsonld.js-array/">playground</a>), whose doc/rdf-array.md lists the decisions the implementation added. This document is <a href="https://github.com/rdf-array/json-ld-array">json-ld-array.md</a> there, rendered at &lt;https://rdf-array.github.io/json-ld-array/&gt;. The names follow the rdf-array organisation: rdf-array is RDF whose data model has sequences as terms, and Turtle-array, SPARQL-array, ShEx-array and JSON-LD-array are its syntaxes.</em></p>
+    <ol><li><strong>No legacy simplifications.</strong> A JSON-LD <code>@context</code> is one flat map in which prefixes, property terms, class terms, keyword aliases (<code>"id": "@id"</code>) and processing directives (<code>@vocab</code>, <code>@base</code>, <code>@language</code>, <code>@version</code>, <code>@protected</code>, …) share a namespace. JSON-LD-array gives each its own place: <code>prefixes</code>, <code>propertyMap</code>, <code>typeMap</code>, named maps and a few named directives.</li><li><strong>Only a transformation of conventional JSON.</strong> The part of a document that produces RDF carries no directives: no <code>@id</code>, <code>@type</code> or blank node identifiers on nodes, no <code>@value</code> literal objects, no <code>@graph</code>, <code>@index</code> or framing. The mapping is kept apart from the data, in a document of its own or in reserved members (§4.3). Nodes are identified by an ordinary field that the mapping designates, or they are blank nodes. A graph that is not a tree still needs JSON-LD proper.</li><li><strong>No <code>@container: @list</code> or <code>@set</code>.</strong> rdf-array has sequences, so a JSON array <em>is</em> a sequence term, nested arrays included, and <code>[]</code> is the empty sequence <code>()</code>. Turning a sequence into repeated properties (or back) is an rdf-array operation on any data, not a mapping concern (§2.1).</li><li><strong>One construct for property mappings</strong>, <code>propertyMap</code>, written inline or referring by name to a map declared once at the root. At the root of the mapping it plays the role of the property definitions "sprinkled" through a conventional <code>@context</code>; inside a property definition or a type definition it says which keys may appear below, as a production in a grammar does (§4).</li></ol>
+    <p>JSON-LD-array is to JSON-LD roughly what RML is to R2RML for JSON sources, but shaped like a context rather than like a set of triples maps, and without JSONPath iterators: the tree structure of the JSON <em>is</em> the iterator (§10, §11).</p>
+    <p><strong>Terminology.</strong> A JSON object is a set of members, each a name/value pair ([[RFC8259]] §4). As in JSON-LD 1.1 §1.4, an object is treated as an Infra map whose entries each have a key, the member's name, and a value ([[INFRA]]). In this document "key" always means a member name in the data, and the members of the mapping document are called attributes. A key is a plain string, compared code unit by code unit ([[RFC8259]] §8.3) and never expanded as a compact IRI. "The identifier key", "the type key" and the like name a key by the role its definition gives it; what names the node or gives its classes is always that member's <em>value</em>.</p>
+  </section>
+  <section id="one-example-end-to-end">
+  <h2>One example end to end</h2>
+  <p>The mapping, a document of its own, with the property maps written inline:</p>
+  <pre class="example json nohighlight">{
+    "prefixes": {
+      "schema": "http://schema.org/",
+      "ex":     "https://example.org/ns#",
+      "xsd":    "http://www.w3.org/2001/XMLSchema#",
+      "rdf":    "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+      "rdfs":   "http://www.w3.org/2000/01/rdf-schema#"
+    },
+    "base": "https://example.org/people/",
+    "unmappedKeys": "error",
+    "typeMap": { "Person": "schema:Person", "Organization": "schema:Organization" },
+    "propertyMap": {
+      "id":       { "role": "identifier", "baseTemplate": "{}/" },
+      "type":     { "role": "type" },
+      "name":     "schema:name",
+      "age":      { "iri": "schema:age", "datatype": "xsd:integer" },
+      "born":     { "iri": "schema:birthDate", "datatype": "xsd:date" },
+      "homepage": { "iri": "schema:url", "valueType": "identifier" },
+      "tags":     "ex:tags",
+      "knows":    { "iri": "schema:knows", "valueType": "identifier",
+                    "baseTemplate": "friends.ttl", "template": "#{}" },
+      "address":  { "iri": "schema:address",
+                    "propertyMap": { "city": "schema:addressLocality",
+                                     "zip":  "schema:postalCode" } }
+    }
+  }</pre>
+  <p>The same mapping with the property maps declared once and referred to by name, as the productions of a grammar are:</p>
+  <pre class="example json nohighlight">{
+    "prefixes": { "schema": "http://schema.org/", "ex": "https://example.org/ns#",
+                  "xsd": "http://www.w3.org/2001/XMLSchema#" },
+    "base": "https://example.org/people/",
+    "unmappedKeys": "error",
+    "typeMap": { "Person": "schema:Person", "Organization": "schema:Organization" },
+    "propertyMap": "rootMap",
+    "namedPropertyMaps": {
+      "rootMap": {
+        "id":       { "role": "identifier", "baseTemplate": "{}/" },
+        "type":     { "role": "type" },
+        "name":     "schema:name",
+        "age":      { "iri": "schema:age", "datatype": "xsd:integer" },
+        "born":     { "iri": "schema:birthDate", "datatype": "xsd:date" },
+        "homepage": { "iri": "schema:url", "valueType": "identifier" },
+        "tags":     "ex:tags",
+        "knows":    { "iri": "schema:knows", "valueType": "identifier",
+                      "baseTemplate": "friends.ttl", "template": "#{}" },
+        "address":  { "iri": "schema:address", "propertyMap": "addressMap" }
+      },
+      "addressMap": {
+        "city": "schema:addressLocality",
+        "zip":  "schema:postalCode"
+      }
+    }
+  }</pre>
+  <p>The data, untouched API output:</p>
+  <pre class="example json nohighlight">{ "id": "alice", "type": "Person", "name": "Alice", "age": 42,
+    "born": "1984-02-29", "homepage": "https://alice.example/",
+    "tags": ["rdf", "json"], "knows": ["Bob", "Eve"],
+    "address": { "city": "Paris", "zip": "75001" } }</pre>
+  <p>The result, in Turtle-array:</p>
+  <pre class="example turtle nohighlight">&lt;https://example.org/people/alice&gt; a schema:Person ;
+      schema:name "Alice" ; schema:age 42 ; schema:birthDate "1984-02-29"^^xsd:date ;
+      schema:url &lt;https://alice.example/&gt; ;
+      ex:tags ( "rdf" "json" ) ;
+      schema:knows ( &lt;https://example.org/people/alice/friends.ttl#Bob&gt;
+                     &lt;https://example.org/people/alice/friends.ttl#Eve&gt; ) ;
+      schema:address [ schema:addressLocality "Paris" ; schema:postalCode "75001" ] .</pre>
+  <p>Two things to notice. The <code>id</code> member does two jobs: its value <code>alice</code>, resolved against the base in force, <code>https://example.org/people/</code>, names the node, and through <code>"baseTemplate": "{}/"</code> it makes <code>https://example.org/people/alice/</code> the base for the object's other members. The <code>knows</code> definition then sets <code>friends.ttl</code>, resolved against that base, as the base for its values, and the template <code>#{}</code> makes each value a fragment of it. And <code>knows</code> is an array, so it is one sequence term; an application that wants two <code>schema:knows</code> triples instead spreads it afterwards (§2.1).</p>
+  </section>
+  <section id="the-data-model-that-keeps-it-simple">
+  <h2>The data model that keeps it simple</h2>
+  <p>Every JSON value kind has one rdf-array reading; the mapping only refines it.</p>
+  <table class="simple">
+  <thead><tr><th>JSON value</th><th>rdf-array term or triples</th><th>Refined by</th></tr></thead>
+  <tbody>
+  <tr><td>object</td><td>a <strong>node</strong>: a fresh blank node, or the node that its identifier key's value names</td><td><code>role</code>, <code>template</code>, <code>termType</code>, <code>flatten</code>, <code>keyedBy</code></td></tr>
+  <tr><td>array</td><td>one <strong>sequence term</strong> holding the converted elements, in order; <code>[]</code> is <code>()</code></td><td>the element conversion is the property's own</td></tr>
+  <tr><td>object declared <code>keyedBy</code></td><td>a <strong>dictionary</strong>: one value of the property per entry, unordered</td><td><code>keyedBy</code></td></tr>
+  <tr><td>string</td><td>a plain literal; or an identifier of a node (an IRI, or a blank node); or a datatyped or language-tagged literal</td><td><code>datatype</code>, <code>language</code>, <code>direction</code>, <code>valueType</code>, <code>template</code>, <code>termType</code>, <code>role</code></td></tr>
+  <tr><td>number</td><td><code>xsd:integer</code> when it has no fraction or exponent, otherwise <code>xsd:decimal</code></td><td><code>datatype</code> (for instance <code>xsd:double</code>)</td></tr>
+  <tr><td><code>true</code> / <code>false</code></td><td><code>xsd:boolean</code></td><td>—</td></tr>
+  <tr><td><code>null</code></td><td>nothing: no triple, and no element in a sequence</td><td>—</td></tr>
+  </tbody></table>
+  <p>The one principle behind arrays and dictionaries: <strong>JSON arrays are ordered, so they become sequences; JSON objects are unordered (RFC 8259), so an object used as a dictionary becomes repeated properties.</strong> Nothing in the mapping chooses between list and set; the JSON already did.</p>
+    <section id="spreading-is-orthogonal">
+    <h3>Spreading is orthogonal</h3>
+    <p>Whether <code>schema:knows ( &lt;…#Bob&gt; &lt;…#Eve&gt; )</code> or <code>schema:knows &lt;…#Bob&gt;, &lt;…#Eve&gt;</code> is wanted is a question about the RDF, not about the JSON, so JSON-LD-array does not answer it. In SPARQL-array a sequence is spread with a position pattern, over any data however it was produced:</p>
+    <pre class="example sparql nohighlight">DELETE { ?s schema:knows ?seq }
+    INSERT { ?s schema:knows ?friend }
+    WHERE  { ?s schema:knows ?seq . ?s schema:knows ((?friend))[*] }</pre>
+    <p>and gathered back with an aggregate into a sequence. JSON-LD needed <code>@container: @list</code> and <code>@container: @set</code> because RDF 1.1 had no sequence term to leave the choice to.</p>
+    </section>
+  </section>
+  <section id="the-mapping-document">
+  <h2>The mapping document</h2>
+    <section id="top-level">
+    <h3>Top level</h3>
+    <table class="simple">
+    <thead><tr><th>Attribute</th><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+    <tr><td><code>prefixes</code></td><td><code>{ "schema": "http://schema.org/", … }</code></td><td>Prefixes usable <strong>in the mapping only</strong>, in every <code>iri</code>, <code>datatype</code>, <code>class</code> and <code>typeMap</code> value. Root only. Data keys are never compact IRIs.</td></tr>
+    <tr><td><code>base</code></td><td>an IRI</td><td>The base in force at the root. Below the root the base is lexically scoped: a key with role <code>base</code> or with a <code>baseTemplate</code> establishes a new one for its object (§3.5).</td></tr>
+    <tr><td><code>vocab</code></td><td>an IRI</td><td>The prefix for unmapped keys under <code>"otherwise": "vocab"</code>.</td></tr>
+    <tr><td><code>unmappedKeys</code></td><td><code>"error"</code>, <code>"ignore"</code>, <code>"vocab"</code>, or <code>{ "scope": "none" / "root" / "enclosing", "otherwise": "error" / "ignore" / "vocab" }</code></td><td>How far a key is looked up beyond the maps that govern its object, and what happens to a key that is still unmapped (§3.4, rule 3). A string means <code>{ "scope": "none", "otherwise": that }</code>; the default is <code>{ "scope": "none", "otherwise": "error" }</code>.</td></tr>
+    <tr><td><code>unmappedTypes</code></td><td>the same shape</td><td>The same for a value of a <code>role: "type"</code> key that has no entry in the governing type maps. Defaults to the <code>unmappedKeys</code> settings.</td></tr>
+    <tr><td><code>typeMap</code></td><td>a map <code>{ "Person": "schema:Person", "Circle": { "iri": "ex:Circle", "propertyMap": … } }</code>, or the name of an entry of <code>namedTypeMaps</code></td><td>Classes for the values of <code>role: "type"</code> keys.</td></tr>
+    <tr><td><code>propertyMap</code></td><td>a map <code>{ key: definition, … }</code>, or the name of an entry of <code>namedPropertyMaps</code></td><td>The property definitions governing the root object.</td></tr>
+    <tr><td><code>namedPropertyMaps</code>, <code>namedTypeMaps</code></td><td><code>{ name: map, … }</code></td><td>Maps declared once and referred to by name from any <code>propertyMap</code> or <code>typeMap</code> attribute, from one another and from themselves. Root only (§4.1).</td></tr>
+    <tr><td><code>groups</code></td><td>proposed, §11</td><td>Virtual properties built from several sibling keys.</td></tr>
+    </tbody></table>
+    </section>
+    <section id="a-property-definition">
+    <h3>A property definition</h3>
+    <p>The value of a key in a <code>propertyMap</code> is either a string, the property IRI, or an object:</p>
+    <table class="simple">
+    <thead><tr><th>Attribute</th><th>Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+    <tr><td><code>iri</code></td><td>an IRI or prefixed name</td><td>The predicate. Required unless the role is <code>identifier</code>, <code>type</code> or <code>base</code>, or <code>flatten</code> is set.</td></tr>
+    <tr><td><code>role</code></td><td><code>"identifier"</code>, <code>"type"</code>, <code>"base"</code></td><td><code>identifier</code>: the member's value, resolved against the enclosing base or expanded through <code>template</code>, names the node. <code>type</code>: the member's value, through the in-scope type maps, gives the node its classes. <code>base</code>: the member's value, resolved against the enclosing base, is the base for the object's other members. A role key that also has an <code>iri</code> maps its value as a literal as well.</td></tr>
+    <tr><td><code>template</code></td><td>a template (§3.5), such as <code>"https://example.org/people/{}"</code></td><td>For an identifier, whether a <code>role: "identifier"</code> key or a <code>valueType: "identifier"</code> value: the expansion, resolved against the base in force, is the IRI, or under <code>termType: "blankNode"</code> the blank node's label. <code>{}</code> is the member's own value.</td></tr>
+    <tr><td><code>baseTemplate</code></td><td>a template</td><td>On a key with role <code>identifier</code> or <code>base</code>: the expansion, resolved against the enclosing base, is the base for the object's other members; <code>{}</code> is this member's value. On a property, a definition with an <code>iri</code>: the base for that property's values, expanded over the members of the object the property belongs to.</td></tr>
+    <tr><td><code>termType</code></td><td><code>"iri"</code> (default), <code>"blankNode"</code></td><td>What kind of identifier a <code>role: "identifier"</code> key or a <code>valueType: "identifier"</code> value produces. A blank node labelled by a template expansion is the same node wherever that label recurs in the document.</td></tr>
+    <tr><td><code>datatype</code></td><td>a datatype IRI</td><td>For strings and numbers: the literal's datatype, and for numbers the lexical form (<code>xsd:decimal</code> keeps <code>1.50</code>, <code>xsd:double</code> gives <code>1.5E0</code>). <code>rdf:JSON</code> keeps the whole value as a JSON literal.</td></tr>
+    <tr><td><code>language</code>, <code>direction</code></td><td>a BCP 47 tag, <code>"ltr"</code> / <code>"rtl"</code></td><td>For strings: a language-tagged literal.</td></tr>
+    <tr><td><code>valueType</code></td><td><code>"identifier"</code></td><td>String values identify nodes instead of being literals: IRIs resolved against the base in force (JSON-LD's <code>@type: @id</code>) or expanded through <code>template</code>, blank nodes under <code>termType: "blankNode"</code>.</td></tr>
+    <tr><td><code>inverse</code></td><td><code>true</code></td><td>The value is the subject and the current node the object (JSON-LD's <code>@reverse</code>); an array is spread, one triple per element.</td></tr>
+    <tr><td><code>flatten</code></td><td><code>true</code></td><td>An object value is not a node: its keys are mapped as keys of the current node (JSON-LD's <code>@nest</code>). An array value is an envelope: its elements are root nodes.</td></tr>
+    <tr><td><code>keyedBy</code></td><td><code>"identifier"</code>, <code>"language"</code>, <code>"type"</code>, <code>{ "property": iri, "valueProperty": iri }</code></td><td>The value object is a dictionary (§5.4).</td></tr>
+    <tr><td><code>typeMap</code></td><td>a map or a name</td><td>Classes for <code>role: "type"</code> keys within this property's values.</td></tr>
+    <tr><td><code>propertyMap</code></td><td>a map or a name</td><td>Definitions for the keys of this property's values (§4).</td></tr>
+    </tbody></table>
+    </section>
+    <section id="a-type-definition">
+    <h3>A type definition</h3>
+    <p>A <code>typeMap</code> entry is a string, the class IRI, or <code>{ "iri": …, "propertyMap": … }</code>: a map, inline or by name, for the keys of a node declared with that type.</p>
+    </section>
+    <section id="processing-in-five-rules">
+    <h3>Processing, in five rules</h3>
+    <ol><li><strong>A JSON object is a node, and two maps govern it.</strong> Its <em>position map</em> is the <code>propertyMap</code> of the definition under which the object appears, or the root <code>propertyMap</code> for the root object; its <em>type map</em> is the <code>propertyMap</code> of the type definition its type key's value selects, if there is one. A map referred to by name is in scope exactly as if written inline.</li><li><strong>Identifier, base and type come first.</strong> If a key with role <code>identifier</code> is in scope and present, its value, resolved against the enclosing base or expanded through its <code>template</code>, names the node; otherwise the node is a fresh blank node (or, with <code>termType: "blankNode"</code> and a <code>template</code>, a stable one). If a key with role <code>base</code>, or an identifier key with a <code>baseTemplate</code>, is in scope and present, its value or the template's expansion, resolved against the enclosing base, is the base for the object's other members; the identifier itself resolves against the enclosing base. If a key with role <code>type</code> is in scope and present, its values, through the governing type maps, are the node's classes. More than one identifier key, or more than one base-setting key, present in one object is an error; one key may be both, as <code>id</code> is in §1. These keys are read before the others, so member order never matters (JSON-LD has the same look-ahead for <code>@type</code>).</li><li><strong>Every other key is looked up</strong> in the governing maps, type map first, then position map. Under <code>"scope": "none"</code> nothing else is in scope. Under <code>"scope": "root"</code> a key not found there is looked up in the root <code>propertyMap</code>, so the root maps serve as a global dictionary. Under <code>"scope": "enclosing"</code> it is looked up in each enclosing property map, nearest first, and then in the root map: lexical scoping with shadowing. A key still unmapped follows <code>otherwise</code>: an error, nothing, or the property <code>vocab</code> + key. The values of a type key are looked up the same way in the type maps, under <code>unmappedTypes</code>. Not looked up, and never unmapped, are the entry keys of a <code>keyedBy</code> dictionary, which are data; the keys inside a value whose datatype is <code>rdf:JSON</code>; the reserved <code>propertyMap</code> and <code>mapping</code> members of the embedded form (§4.3); and the keys whose values a template, a <code>from</code> reference or a group consumes (§3.5, §11).</li><li><strong>The value is converted</strong> by its JSON kind (§2) under the definition found. Arrays convert element by element into one sequence; dictionaries convert entry by entry into repeated values; <code>flatten</code> attaches an object's keys to the current node or makes an array's elements root nodes; <code>inverse</code> swaps subject and object. Arrays under <code>inverse</code> and under the type role spread into one triple per element instead of forming a sequence.</li><li><strong>The root value</strong> is a node if it is an object, one node per element if it is an array (there is no subject for a root sequence to hang from), and nothing if it is a scalar.</li></ol>
+    </section>
+    <section id="bases-and-templates">
+    <h3>Bases and templates</h3>
+    <p>The <strong>base in force</strong> starts as the root <code>base</code>. Each object inherits the base of the position it appears in, unless one of its keys sets a new one, by <code>role: "base"</code> or by a <code>baseTemplate</code>; that base applies to the object's other members and to everything below them. A property definition's own <code>baseTemplate</code> sets the base for that property's values, so a key such as <code>knows</code> in §1 can place its values in a document of their own. An object's identifier always resolves against the enclosing base, and the base the object sets applies to its contents, as a web page's URL and the base its links resolve against are two different things.</p>
+    <p>A <strong>template</strong> is a string with references in braces, after RFC 6570's simple string expansion:</p>
+    <table class="simple">
+    <thead><tr><th>Reference</th><th>Value</th></tr></thead>
+    <tbody>
+    <tr><td><code>{}</code></td><td>the own value of the member whose definition carries the template</td></tr>
+    <tr><td><code>{key}</code></td><td>the value of the member named <code>key</code> in the object the template describes (the object itself for <code>identifier</code> and <code>baseTemplate</code> on a property definition; the member's siblings for a template on a key)</td></tr>
+    <tr><td><code>{../key}</code></td><td>the value of the member named <code>key</code> in the enclosing object; an array is transparent to <code>..</code></td></tr>
+    <tr><td><code>{#}</code></td><td>the 1-based position of the element in the array that holds it, as SPARQL-array's position patterns count</td></tr>
+    </tbody></table>
+    <p>A substituted value is percent-encoded as an IRI component, R2RML's IRI-safe rule, so a value holding <code>/</code> cannot step out of its path segment; a value substituted into a blank node label is taken as it is. A relative expansion is resolved against the base in force (RFC 3986). A template whose reference has no value produces no term, and so no triple. A member whose value is only consumed by a template needs no definition of its own.</p>
+    </section>
+  </section>
+  <section id="scopes-where-a-propertymap-can-appear-and-what-it-reaches">
+  <h2>Scopes: where a <code>propertyMap</code> can appear and what it reaches</h2>
+  <table class="simple">
+  <thead><tr><th>Where</th><th>What its definitions apply to</th><th>JSON-LD 1.1 counterpart</th></tr></thead>
+  <tbody>
+  <tr><td>the mapping root</td><td>the root object's keys, and under <code>"scope": "root"</code> or <code>"enclosing"</code> every key not mapped deeper</td><td>the term definitions of the root <code>@context</code></td></tr>
+  <tr><td>inside a property definition (<strong>property-scoped</strong>), inline or by name</td><td>the keys of that property's value objects; under <code>"scope": "enclosing"</code> also everything nested below, until shadowed</td><td>a property-scoped context, which propagates</td></tr>
+  <tr><td>inside a <code>typeMap</code> entry (<strong>type-scoped</strong>), inline or by name</td><td>the keys of a node declared with that type, this node only</td><td>a type-scoped context, which does not propagate</td></tr>
+  <tr><td>embedded in a data object as its <code>propertyMap</code> member (§4.3)</td><td>that object's keys, as its position map</td><td>an embedded <code>@context</code> in a node object; at the document root, the conventional root <code>@context</code></td></tr>
+  </tbody></table>
+    <section id="grammar-first-scoping-on-request">
+    <h3>Grammar first, scoping on request</h3>
+    <p>A map defines the keys allowed at the position it governs, as a production in a yacc grammar defines what may appear at that point. A map referred to by name is in scope exactly as if its definitions were written inline at the reference: <code>"propertyMap": "addressMap"</code> and the inline object are the same mapping, and <code>namedPropertyMaps</code> is the grammar's table of productions. Maps may refer to one another and to themselves, so a recursive JSON shape (comments within comments) is a recursive map; the expansion is bounded because the data is finite: recursion could only be unbounded if a document implied a reference to another document, and eventually to itself, which JSON-LD-array does not do. Named maps are declared at the root only, as grammar rules are: a name then means one thing wherever it is used, and no second scoping question arises about where a name is visible. Nothing prevents relaxing this later; nothing seems to call for it.</p>
+    <p>By default (<code>"scope": "none"</code>) a key must be in one of the two maps that govern its object, which is the strict, grammar-like reading. Two relaxations widen the lookup for mappings meant as dictionaries rather than grammars: <code>"scope": "root"</code> makes the root <code>propertyMap</code> and <code>typeMap</code> global, so a key unknown to the local map falls back to them; <code>"scope": "enclosing"</code> makes every enclosing property map visible, nearest first, with an inner definition <strong>shadowing</strong> an outer one for the same key — ordinary lexical scoping, as XML namespaces behave, where an <code>xmlns</code> declaration on any element is in scope for its descendants and one on the root for the document. JSON-LD 1.1's property-scoped contexts behave like <code>"enclosing"</code>, its type-scoped contexts like a type map under <code>"none"</code>; its <code>@propagate</code> flag and "previous context" bookkeeping are what the two fixed rules replace.</p>
+    </section>
+    <section id="which-constructs-may-appear-where">
+    <h3>Which constructs may appear where</h3>
+    <table class="simple">
+    <thead><tr><th>Construct</th><th>mapping root</th><th>property-scoped</th><th>type-scoped</th><th>embedded in data</th></tr></thead>
+    <tbody>
+    <tr><td><code>prefixes</code>, <code>vocab</code>, <code>unmappedKeys</code>, <code>unmappedTypes</code>, <code>namedPropertyMaps</code>, <code>namedTypeMaps</code></td><td>yes</td><td>no</td><td>no</td><td>in <code>mapping</code> at the data root</td></tr>
+    <tr><td><code>base</code></td><td>yes</td><td>through <code>role: "base"</code> and <code>baseTemplate</code></td><td>through <code>role: "base"</code> and <code>baseTemplate</code></td><td>in <code>mapping</code> at the data root</td></tr>
+    <tr><td><code>typeMap</code></td><td>yes</td><td>yes</td><td>no</td><td>in <code>mapping</code> at the data root</td></tr>
+    <tr><td><code>propertyMap</code></td><td>yes</td><td>yes</td><td>yes</td><td>yes, any object</td></tr>
+    <tr><td><code>role: identifier</code> / <code>type</code> / <code>base</code> keys</td><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+    <tr><td><code>template</code>, <code>baseTemplate</code>, <code>termType</code>, <code>datatype</code>, <code>language</code>, <code>direction</code>, <code>valueType</code>, <code>inverse</code>, <code>flatten</code>, <code>keyedBy</code></td><td>in any property definition</td><td>in any property definition</td><td>in any property definition</td><td>in any property definition</td></tr>
+    </tbody></table>
+    </section>
+    <section id="the-embedded-form">
+    <h3>The embedded form</h3>
+    <p>Goal 2 is about the part of a document that produces RDF: it carries no directives. The mapping itself may travel with the data, as a conventional JSON-LD document carries its <code>@context</code>, through two reserved members. Any data object may contain a <code>propertyMap</code> member, a map or a name, which is the position map of that object (and under <code>"scope": "enclosing"</code> is in scope below it). The root data object may instead contain a <code>mapping</code> member holding a complete mapping document, with its <code>prefixes</code>, <code>base</code>, directives, named maps and root <code>propertyMap</code>; that is the conventional root <code>@context</code>, separated into its parts. An external mapping and embedded members may be combined, the embedded one being the nearer. The price of not using <code>@</code> is that a data member named <code>propertyMap</code> (anywhere) or <code>mapping</code> (at the root) cannot be data; JSON-LD paid the same price with a different coin, every key beginning with <code>@</code>.</p>
+    </section>
+  </section>
+  <section id="json-to-turtle-array-by-example">
+  <h2>JSON to Turtle-array, by example</h2>
+  <p>All rows assume the prefixes of §1 and <code>"base": "https://example.org/people/"</code>. The subject <code>[]</code> stands for the blank node of the enclosing object.</p>
+    <section id="literals">
+    <h3>Literals</h3>
+    <table class="simple">
+    <thead><tr><th>JSON</th><th>property definition</th><th>Turtle-array</th></tr></thead>
+    <tbody>
+    <tr><td><code>{ "name": "Alice" }</code></td><td><code>"name": "schema:name"</code></td><td><code>[] schema:name "Alice" .</code></td></tr>
+    <tr><td><code>{ "age": 42 }</code></td><td><code>"age": "schema:age"</code></td><td><code>[] schema:age 42 .</code> (<code>xsd:integer</code>)</td></tr>
+    <tr><td><code>{ "height": 1.70 }</code></td><td><code>"height": "schema:height"</code></td><td><code>[] schema:height 1.70 .</code> (<code>xsd:decimal</code>; JSON-LD gives <code>"1.7E0"^^xsd:double</code>)</td></tr>
+    <tr><td><code>{ "score": 0.5 }</code></td><td><code>"score": { "iri": "ex:score", "datatype": "xsd:double" }</code></td><td><code>[] ex:score 0.5e0 .</code></td></tr>
+    <tr><td><code>{ "active": true }</code></td><td><code>"active": "ex:active"</code></td><td><code>[] ex:active true .</code></td></tr>
+    <tr><td><code>{ "born": "1984-02-29" }</code></td><td><code>"born": { "iri": "schema:birthDate", "datatype": "xsd:date" }</code></td><td><code>[] schema:birthDate "1984-02-29"^^xsd:date .</code></td></tr>
+    <tr><td><code>{ "title": "Bonjour" }</code></td><td><code>"title": { "iri": "schema:name", "language": "fr" }</code></td><td><code>[] schema:name "Bonjour"@fr .</code></td></tr>
+    <tr><td><code>{ "nickname": null }</code></td><td><code>"nickname": "ex:nickname"</code></td><td>nothing</td></tr>
+    <tr><td><code>{ "raw": { "a": [1, 2] } }</code></td><td><code>"raw": { "iri": "ex:raw", "datatype": "rdf:JSON" }</code></td><td><code>[] ex:raw """{"a":[1,2]}"""^^rdf:JSON .</code></td></tr>
+    </tbody></table>
+    </section>
+    <section id="nodes-identifiers-and-bases">
+    <h3>Nodes, identifiers and bases</h3>
+    <table class="simple">
+    <thead><tr><th>JSON</th><th>property definition</th><th>Turtle-array</th></tr></thead>
+    <tbody>
+    <tr><td><code>{ "address": { "city": "Paris" } }</code></td><td><code>"address": { "iri": "schema:address", "propertyMap": { "city": "schema:addressLocality" } }</code></td><td><code>[] schema:address [ schema:addressLocality "Paris" ] .</code></td></tr>
+    <tr><td><code>{ "id": "alice", "name": "Alice" }</code></td><td><code>"id": { "role": "identifier" }</code></td><td><code>&lt;https://example.org/people/alice&gt; schema:name "Alice" .</code></td></tr>
+    <tr><td><code>{ "id": 42, "name": "Bob" }</code></td><td><code>"id": { "role": "identifier", "template": "https://example.org/people/{}" }</code></td><td><code>&lt;https://example.org/people/42&gt; schema:name "Bob" .</code></td></tr>
+    <tr><td><code>{ "homepage": "https://alice.example/" }</code></td><td><code>"homepage": { "iri": "schema:url", "valueType": "identifier" }</code></td><td><code>[] schema:url &lt;https://alice.example/&gt; .</code></td></tr>
+    <tr><td><code>{ "editorId": 5 }</code></td><td><code>"editorId": { "iri": "schema:editor", "valueType": "identifier", "template": "https://example.org/people/{}" }</code></td><td><code>[] schema:editor &lt;https://example.org/people/5&gt; .</code></td></tr>
+    <tr><td><code>{ "id": "alice", "knows": ["Bob", "Eve"] }</code></td><td><code>"id": { "role": "identifier", "baseTemplate": "{}/" }</code>, <code>"knows": { "iri": "schema:knows", "valueType": "identifier", "baseTemplate": "friends.ttl", "template": "#{}" }</code></td><td><code>&lt;…/people/alice&gt; schema:knows ( &lt;…/people/alice/friends.ttl#Bob&gt; &lt;…/people/alice/friends.ttl#Eve&gt; ) .</code></td></tr>
+    <tr><td><code>{ "id": "alice", "docs": { "base": "https://docs.example/alice/", "main": "cv.html" } }</code></td><td><code>"docs": { "iri": "ex:docs", "propertyMap": { "base": { "role": "base" }, "main": { "iri": "ex:main", "valueType": "identifier" } } }</code></td><td><code>&lt;…/people/alice&gt; ex:docs [ ex:main &lt;https://docs.example/alice/cv.html&gt; ] .</code></td></tr>
+    <tr><td><code>{ "id": "alice", "alt": "x", "ref": "y" }</code></td><td><code>"alt": { "role": "identifier" }</code> as well</td><td>error: two identifier keys in one object</td></tr>
+    <tr><td><code>{ "type": "Person" }</code></td><td><code>"type": { "role": "type" }</code> with <code>"typeMap": { "Person": "schema:Person" }</code></td><td><code>[] a schema:Person .</code></td></tr>
+    <tr><td><code>{ "type": ["Person", "Organization"] }</code></td><td>same</td><td><code>[] a schema:Person, schema:Organization .</code> (like <code>inverse</code>, the type role spreads an array: a node has classes, not a sequence of them)</td></tr>
+    <tr><td><code>{ "attributes": { "name": "Alice" } }</code></td><td><code>"attributes": { "flatten": true }</code></td><td><code>[] schema:name "Alice" .</code></td></tr>
+    <tr><td><code>{ "data": [ { "name": "A" }, { "name": "B" } ], "meta": { "page": 1 } }</code></td><td><code>"data": { "flatten": true }</code>, <code>"meta"</code> unmapped under <code>"otherwise": "ignore"</code></td><td><code>[] schema:name "A" . [] schema:name "B" .</code> as two root nodes</td></tr>
+    <tr><td><code>{ "children": [ { "name": "C1" }, { "name": "C2" } ] }</code></td><td><code>"children": { "iri": "ex:parent", "inverse": true, "propertyMap": { "name": "schema:name" } }</code></td><td><code>_:c1 ex:parent [] . _:c2 ex:parent [] .</code> with <code>_:c1 schema:name "C1"</code> etc.</td></tr>
+    </tbody></table>
+    </section>
+    <section id="arrays-are-sequences">
+    <h3>Arrays are sequences</h3>
+    <table class="simple">
+    <thead><tr><th>JSON</th><th>property definition</th><th>Turtle-array</th></tr></thead>
+    <tbody>
+    <tr><td><code>{ "tags": ["rdf", "json"] }</code></td><td><code>"tags": "ex:tags"</code></td><td><code>[] ex:tags ( "rdf" "json" ) .</code></td></tr>
+    <tr><td><code>{ "tags": [] }</code></td><td>same</td><td><code>[] ex:tags () .</code> (JSON-LD: no triple at all, or <code>rdf:nil</code> under <code>@list</code>)</td></tr>
+    <tr><td><code>{ "tags": ["rdf"] }</code></td><td>same</td><td><code>[] ex:tags ( "rdf" ) .</code> (a one-element sequence is not the element)</td></tr>
+    <tr><td><code>{ "matrix": [[1, 2], [3, 4]] }</code></td><td><code>"matrix": "ex:matrix"</code></td><td><code>[] ex:matrix ( (1 2) (3 4) ) .</code> (JSON-LD 1.0: "list of lists" error)</td></tr>
+    <tr><td><code>{ "members": [ { "name": "A" }, { "name": "B" } ] }</code></td><td><code>"members": { "iri": "ex:members", "propertyMap": { "name": "schema:name" } }</code></td><td><code>[] ex:members ( [ schema:name "A" ] [ schema:name "B" ] ) .</code></td></tr>
+    <tr><td><code>{ "codes": ["A1", "B2"] }</code></td><td><code>"codes": { "iri": "ex:code", "valueType": "identifier" }</code></td><td><code>[] ex:code ( &lt;https://example.org/people/A1&gt; &lt;https://example.org/people/B2&gt; ) .</code></td></tr>
+    <tr><td><code>{ "names": ["Dog", "Hund"] }</code></td><td><code>"names": { "iri": "rdfs:label", "language": "en" }</code></td><td><code>[] rdfs:label ( "Dog"@en "Hund"@en ) .</code> (one language per property; a dictionary gives one per value, §5.4)</td></tr>
+    <tr><td><code>{ "mixed": ["a", 1, null, { "x": 1 }] }</code></td><td><code>"mixed": { "iri": "ex:mixed", "propertyMap": { "x": "ex:x" } }</code></td><td><code>[] ex:mixed ( "a" 1 [ ex:x 1 ] ) .</code> (the <code>null</code> leaves no element; see §8)</td></tr>
+    </tbody></table>
+    </section>
+    <section id="dictionaries-are-repeated-properties">
+    <h3>Dictionaries are repeated properties</h3>
+    <table class="simple">
+    <thead><tr><th>JSON</th><th>property definition</th><th>Turtle-array</th></tr></thead>
+    <tbody>
+    <tr><td><code>{ "people": { "alice": { "name": "Alice" }, "bob": { "name": "Bob" } } }</code></td><td><code>"people": { "iri": "ex:people", "keyedBy": "identifier", "propertyMap": { "name": "schema:name" } }</code></td><td><code>[] ex:people &lt;…/alice&gt;, &lt;…/bob&gt; . &lt;…/alice&gt; schema:name "Alice" . &lt;…/bob&gt; schema:name "Bob" .</code></td></tr>
+    <tr><td><code>{ "label": { "en": "Dog", "de": "Hund" } }</code></td><td><code>"label": { "iri": "rdfs:label", "keyedBy": "language" }</code></td><td><code>[] rdfs:label "Dog"@en, "Hund"@de .</code></td></tr>
+    <tr><td><code>{ "prices": { "EUR": 10, "USD": 11 } }</code></td><td><code>"prices": { "iri": "ex:price", "keyedBy": { "property": "ex:currency", "valueProperty": "rdf:value" } }</code></td><td><code>[] ex:price [ ex:currency "EUR" ; rdf:value 10 ], [ ex:currency "USD" ; rdf:value 11 ] .</code></td></tr>
+    <tr><td><code>{ "parts": { "Wheel": { "n": 4 }, "Seat": { "n": 2 } } }</code></td><td><code>"parts": { "iri": "ex:part", "keyedBy": "type", "typeMap": { "Wheel": "ex:Wheel", "Seat": "ex:Seat" }, "propertyMap": { "n": "ex:n" } }</code></td><td><code>[] ex:part [ a ex:Wheel ; ex:n 4 ], [ a ex:Seat ; ex:n 2 ] .</code></td></tr>
+    </tbody></table>
+    <p>Entry order is not preserved, by design: JSON objects are unordered. Data whose dictionary order matters belongs in an array of objects with the key as a field.</p>
+    </section>
+    <section id="scopes">
+    <h3>Scopes</h3>
+    <table class="simple">
+    <thead><tr><th>JSON</th><th>mapping</th><th>Turtle-array</th></tr></thead>
+    <tbody>
+    <tr><td><code>{ "geo": { "lat": 48.8, "long": 2.3 } }</code></td><td><code>"geo": { "iri": "schema:geo", "propertyMap": { "lat": "schema:latitude", "long": "schema:longitude" } }</code></td><td><code>[] schema:geo [ schema:latitude 48.8 ; schema:longitude 2.3 ] .</code></td></tr>
+    <tr><td><code>{ "lat": 48.8 }</code></td><td>same mapping, <code>lat</code> at the root</td><td>error: <code>lat</code> is not in the root map, whatever the scope setting</td></tr>
+    <tr><td><code>{ "org": { "name": "ACME", "city": "Lyon" } }</code></td><td>root <code>"name": "schema:name"</code>, <code>"city": "schema:addressLocality"</code>; <code>"org": { "iri": "schema:worksFor", "propertyMap": { "name": "schema:legalName" } }</code>, default scope</td><td>error on <code>city</code>: under <code>"scope": "none"</code> only <code>org</code>'s map governs its value</td></tr>
+    <tr><td>same</td><td>same with <code>"unmappedKeys": { "scope": "root" }</code> or <code>"enclosing"</code></td><td><code>[] schema:worksFor [ schema:legalName "ACME" ; schema:addressLocality "Lyon" ] .</code> (<code>name</code> shadowed by <code>org</code>'s map, <code>city</code> found at the root)</td></tr>
+    <tr><td><code>{ "address": { "city": "Paris" } }</code></td><td><code>"address": { "iri": "schema:address", "propertyMap": "addressMap" }</code> with <code>"namedPropertyMaps": { "addressMap": { "city": "schema:addressLocality" } }</code></td><td><code>[] schema:address [ schema:addressLocality "Paris" ] .</code> (the same as the inline map)</td></tr>
+    <tr><td><code>{ "text": "root", "replies": [ { "text": "child", "replies": [ { "text": "grandchild", "replies": [] } ] } ] }</code></td><td><code>"propertyMap": "comment"</code>, <code>"namedPropertyMaps": { "comment": { "text": "ex:text", "replies": { "iri": "ex:replies", "propertyMap": "comment" } } }</code></td><td><code>[] ex:text "root" ; ex:replies ( [ ex:text "child" ; ex:replies ( [ ex:text "grandchild" ; ex:replies () ] ) ] ) .</code> (a recursive map, bounded by the data)</td></tr>
+    <tr><td><code>{ "shapes": [ { "type": "Circle", "r": 1 }, { "type": "Square", "s": 2 } ] }</code></td><td><code>"shapes": { "iri": "ex:shapes", "propertyMap": { "type": { "role": "type" } }, "typeMap": { "Circle": { "iri": "ex:Circle", "propertyMap": { "r": "ex:radius" } }, "Square": { "iri": "ex:Square", "propertyMap": { "s": "ex:side" } } } }</code></td><td><code>[] ex:shapes ( [ a ex:Circle ; ex:radius 1 ] [ a ex:Square ; ex:side 2 ] ) .</code></td></tr>
+    <tr><td><code>{ "type": "Circle", "inner": { "r": 1 } }</code></td><td>the same type definitions in the root <code>typeMap</code>, <code>"type": { "role": "type" }</code> and <code>"inner": "ex:inner"</code> at the root</td><td>error on <code>r</code>: a type map covers its node only, not <code>inner</code></td></tr>
+    <tr><td><code>{ "propertyMap": { "n": "https://example.org/ns#n" }, "n": 1 }</code></td><td>embedded form, no mapping document</td><td><code>[] ex:n 1 .</code></td></tr>
+    <tr><td><code>{ "mapping": { "prefixes": { "ex": "https://example.org/ns#" }, "propertyMap": { "n": "ex:n" } }, "n": 1 }</code></td><td>embedded form with a complete mapping at the root</td><td><code>[] ex:n 1 .</code></td></tr>
+    </tbody></table>
+    </section>
+  </section>
+  <section id="what-json-ld-s-keywords-become">
+  <h2>What JSON-LD's keywords become</h2>
+  <table class="simple">
+  <thead><tr><th>JSON-LD 1.1</th><th>JSON-LD-array</th></tr></thead>
+  <tbody>
+  <tr><td><code>@context</code> (inline, remote, <code>@import</code>ed, <code>@version</code>ed, <code>@protected</code>)</td><td>one local mapping document; or the embedded <code>mapping</code> and <code>propertyMap</code> members</td></tr>
+  <tr><td>prefix terms (<code>"schema": "http://schema.org/"</code>)</td><td><code>prefixes</code>, usable in the mapping only</td></tr>
+  <tr><td>property terms</td><td><code>propertyMap</code> entries, inline or in <code>namedPropertyMaps</code></td></tr>
+  <tr><td>class terms</td><td><code>typeMap</code>, inline or in <code>namedTypeMaps</code></td></tr>
+  <tr><td>keyword aliases (<code>"id": "@id"</code>, <code>"type": "@type"</code>)</td><td><code>role: "identifier"</code>, <code>role: "type"</code></td></tr>
+  <tr><td><code>@vocab</code></td><td><code>"otherwise": "vocab"</code> with <code>vocab</code></td></tr>
+  <tr><td><code>@base</code></td><td><code>base</code> at the root; <code>role: "base"</code> and <code>baseTemplate</code> below it</td></tr>
+  <tr><td><code>@type: @id</code>, <code>@type: @vocab</code> on a term</td><td><code>valueType: "identifier"</code>, with <code>template</code> and <code>termType</code></td></tr>
+  <tr><td><code>@type: xsd:…</code> on a term</td><td><code>datatype</code></td></tr>
+  <tr><td><code>@language</code>, <code>@direction</code> on a term</td><td><code>language</code>, <code>direction</code></td></tr>
+  <tr><td>default <code>@language</code> in a context</td><td>none: language is declared per property</td></tr>
+  <tr><td><code>@container: @list</code></td><td>nothing: arrays are sequences</td></tr>
+  <tr><td><code>@container: @set</code></td><td>nothing: dictionaries are repeated properties; spreading is an rdf-array operation</td></tr>
+  <tr><td><code>@container: @index</code> + <code>@index</code> property, <code>@id</code>, <code>@language</code>, <code>@type</code></td><td><code>keyedBy</code></td></tr>
+  <tr><td><code>@nest</code></td><td><code>flatten: true</code></td></tr>
+  <tr><td><code>@reverse</code></td><td><code>inverse: true</code></td></tr>
+  <tr><td>property-scoped <code>@context</code></td><td><code>propertyMap</code> in a property definition</td></tr>
+  <tr><td>type-scoped <code>@context</code></td><td><code>propertyMap</code> in a <code>typeMap</code> entry</td></tr>
+  <tr><td><code>@propagate</code></td><td><code>unmappedKeys.scope</code> (§4.1)</td></tr>
+  <tr><td><code>@id</code> templates (never standardized)</td><td><code>template</code></td></tr>
+  <tr><td><code>@json</code></td><td><code>datatype: rdf:JSON</code></td></tr>
+  <tr><td><code>@graph</code>, <code>@included</code>, <code>@value</code> objects, <code>@index</code> values, blank node identifiers, <code>@embed</code> / framing</td><td>out of scope: not conventional JSON</td></tr>
+  </tbody></table>
+  </section>
+  <section id="the-corners-json-ld-painted-itself-into-and-how-json-ld-array-stays-out-of-them">
+  <h2>The corners JSON-LD painted itself into, and how JSON-LD-array stays out of them</h2>
+  <table class="simple">
+  <thead><tr><th>JSON-LD corner</th><th>What went wrong</th><th>JSON-LD-array</th></tr></thead>
+  <tbody>
+  <tr><td>One flat <code>@context</code> for prefixes, properties, classes, aliases and directives</td><td>Any term could also act as a prefix in 1.0, so <code>"name": "x"</code> made <code>"name:foo"</code> a compact IRI; 1.1 had to restrict prefixes to terms whose IRI ends in a gen-delim character or that say <code>"@prefix": true</code>.</td><td>Separate maps. Prefixes are a mapping-side convenience; data keys are plain strings looked up whole.</td></tr>
+  <tr><td><code>@type</code> does double duty</td><td>The node's class (<code>"@type": "Person"</code>) and a value's coercion (<code>"@type": "@id"</code>, a datatype) share a keyword; <code>@type: @id</code> resolved against <code>@base</code> when people wanted <code>@vocab</code>, so 1.1 added <code>@type: @vocab</code>.</td><td><code>role: "type"</code> for the class, <code>datatype</code> and <code>valueType</code> for the value.</td></tr>
+  <tr><td>Arrays are unordered unless declared</td><td>A JSON array is a set unless its term says <code>@container: @list</code>; <code>[]</code> yields no triple (<code>rdf:nil</code> only under <code>@list</code>); 1.0 forbade lists of lists outright.</td><td>Arrays are sequences, <code>[]</code> is <code>()</code>, nesting is free, nothing is declared.</td></tr>
+  <tr><td>Native numbers</td><td>A non-integer becomes <code>xsd:double</code> in the canonical form <code>1.5E0</code>; a term typed <code>xsd:decimal</code> still gets that form, an invalid decimal; JavaScript processors lose integers beyond 2⁵³.</td><td>The datatype decides the lexical form; fractions default to <code>xsd:decimal</code>, and a parser that keeps the JSON lexical form keeps <code>1.70</code>.</td></tr>
+  <tr><td>Three meanings of <code>null</code></td><td>A <code>null</code> value is dropped, <code>"term": null</code> undefines a term, <code>"@context": null</code> resets the active context.</td><td><code>null</code> drops a value; there is nothing to undefine or reset.</td></tr>
+  <tr><td>Unmapped keys</td><td>Silently dropped without <code>@vocab</code>; with <code>@vocab</code> every key, typos included, becomes a property.</td><td><code>unmappedKeys</code>, default <code>"error"</code>, and a scope setting that says how far a key may be looked up.</td></tr>
+  <tr><td>Identifying nodes from conventional JSON</td><td>Only through the <code>"id": "@id"</code> alias, and only when the field is already an IRI or a relative reference: a numeric id or a composed IRI cannot be expressed (IRI templates were requested and declined), and <code>@base</code> can only be changed by a new context.</td><td><code>role: "identifier"</code>, <code>template</code>, and a base that any object can set with <code>role: "base"</code> or <code>baseTemplate</code>.</td></tr>
+  <tr><td><code>@reverse</code></td><td>Values must be nodes, lists are forbidden, and reverse terms cannot carry most other mappings.</td><td><code>inverse: true</code> spreads arrays into one triple per element; a literal value is an error, as it must be.</td></tr>
+  <tr><td>Scoped contexts (1.1)</td><td>Property-scoped contexts propagate, type-scoped ones do not, <code>@propagate</code> overrides either, and processors keep a "previous context" to revert to; it is the hardest part of the 1.1 algorithms.</td><td>Maps govern positions; <code>unmappedKeys.scope</code> chooses none, root or enclosing fallback, once for the whole mapping.</td></tr>
+  <tr><td>Remote contexts</td><td>Fetched over HTTP at processing time, hence caching, outages, link headers, <code>@import</code>, <code>@protected</code> against redefinition by a later context, <code>@version</code> negotiation.</td><td>One local document, nothing fetched or merged; named maps replace the reuse that <code>@import</code> gave.</td></tr>
+  <tr><td>Default <code>@language</code></td><td>Applies to every untyped string, identifiers and codes included, unless each term opts out with <code>"@language": null</code>.</td><td>Language is declared where it belongs, on the property.</td></tr>
+  <tr><td>Compaction and framing</td><td>Going from RDF back to the JSON shape an application expects needed framing, which 1.0 left unstandardized.</td><td>JSON-LD-array maps trees; the inverse mapping is well defined for a tree-shaped graph (a sequence is an array, repeated values of a <code>keyedBy</code> property are a dictionary) and out of scope for anything else.</td></tr>
+  <tr><td>Blank node predicates, <code>@index</code>, <code>@included</code>, generalized RDF</td><td>Added to round-trip arbitrary RDF through JSON.</td><td>Not expressible: JSON-LD-array is for conventional JSON only.</td></tr>
+  </tbody></table>
+  </section>
+  <section id="decisions-to-confirm">
+  <h2>Decisions to confirm</h2>
+  <ul><li><strong><code>null</code> inside an array</strong> leaves no element, which shifts the positions after it. The</li></ul>
+  <p>alternative is an explicit placeholder term; rdf-array has none today.</p>
+  <ul><li><strong>Fractional numbers default to <code>xsd:decimal</code></strong>, not JSON-LD's <code>xsd:double</code>; <code>datatype</code> gives</li></ul>
+  <p>the double back.</p>
+  <ul><li><strong>An inverse property and the type role spread an array</strong> instead of making a sequence the</li></ul>
+  <p>subject or the class. Every other array is a sequence, <code>knows</code> in §1 included: a mapping that wants repeated <code>schema:knows</code> triples spreads them afterwards (§2.1).</p>
+  <ul><li><strong><code>valueType: "identifier"</code>, not <code>"iri"</code>.</strong> A value that identifies a node may name a blank node</li></ul>
+  <p>as well as an IRI once <code>termType: "blankNode"</code> exists, so "iri" would be a misnomer; "identifier" also mirrors <code>role: "identifier"</code>: the role says the value identifies <em>this</em> node, the value type says it identifies <em>another</em>.</p>
+  <ul><li><strong>Strict by default.</strong> <code>unmappedKeys</code> defaults to <code>{ "scope": "none", "otherwise": "error" }</code>,</li></ul>
+  <p>the grammar reading; §11 argues for <code>"otherwise": "ignore"</code> as the friendlier default for data from APIs that grow.</p>
+  <ul><li><strong>Named maps are root-only</strong>, like the rules of a grammar (§4.1).</li><li><strong><code>prefixes</code> are root-only</strong>, so a prefixed name means the same thing everywhere in the mapping;</li></ul>
+  <p><code>base</code> is lexically scoped (§3.5).</p>
+  <ul><li><strong>The embedded form</strong> reserves two member names in the data, <code>propertyMap</code> and <code>mapping</code>.</li><li><strong>Templates</strong> take any member of the object they describe, the enclosing object's members and the</li></ul>
+  <p>position; composing an identifier from the values of a <em>different</em> object still needs the structure of the JSON to put them in reach.</p>
+  </section>
+  <section id="names-for-these-things">
+  <h2>Names for these things</h2>
+  <p><strong>A context inside a property definition.</strong> JSON-LD 1.1 calls it a <em>scoped context</em>: a <em>property-scoped context</em> when it sits in a term definition and applies to that property's values, a <em>type-scoped context</em> when it sits in a class term and applies to nodes of that type. The JSON-LD API stores it in the term definition as the term's <em>local context</em>, and a <code>@context</code> written inside a node object in the data is an <em>embedded context</em>. In programming-language terms the behaviour under <code>"scope": "enclosing"</code> is <em>lexical (static) scoping</em> with <em>shadowing</em>: definitions are attached to a position in the syntax tree and visible in its subtree, as opposed to the <em>dynamic scoping</em> of, say, ANTLR 3's rule and global <code>scope</code> attributes, which follow the call chain. The default <code>"scope": "none"</code> is the reading of a grammar, where a production names the symbols that may follow and nothing else. Compilers call the data structure a chain of <em>environments</em> or nested <em>symbol tables</em>; attribute grammars call what is passed down an <em>inherited attribute</em>; XML Namespaces call the same arrangement <em>in-scope namespaces</em>.</p>
+  <p><strong>A property map.</strong> JSON-LD calls the whole map a <em>context</em>, each entry a <em>term definition</em> (an <em>expanded term definition</em> when it is an object), and the part that names the property the term's <em>IRI mapping</em>; the set held by a processor is the <em>active context</em>'s term definitions, which some implementations call the <em>term map</em>. RDFa Core calls the same entries <em>term mappings</em>. In R2RML and RML, where mappings are triples rather than JSON, the counterpart of one property definition is a <em>predicate-object map</em>, assembled from <em>term maps</em> (constant-, reference- or template-valued), and the counterpart of this whole document is a <em>triples map</em>. JSON-LD-array calls it a <em>property map</em> (<code>propertyMap</code>), its entries <em>property definitions</em>, and a map declared at the root and referred to by name a <em>named map</em>, the counterpart of a grammar's production.</p>
+  </section>
+  <section id="json-ld-json-ld-array-and-rml-side-by-side">
+  <h2>JSON-LD, JSON-LD-array and RML side by side</h2>
+  <p>RML, the RDF Mapping Language, generalizes W3C's R2RML from relational tables to CSV, XML and JSON sources. It is maintained by the W3C Knowledge Graph Construction Community Group as a family of modules (RML-Core, RML-IO, RML-CC for collections and containers, RML-FNML for functions, RML-star, RML-LV for logical views), with YARRRML as a YAML shorthand. Where JSON-LD annotates the keys of the data and JSON-LD-array maps them, RML describes the <em>output</em>: each <strong>triples map</strong> names a logical source and an iterator that selects records, a <strong>subject map</strong> that mints each record's subject, and <strong>predicate-object maps</strong> that emit the triples, every part of which is a <strong>term map</strong> that is constant-valued, reference-valued (a field of the record) or template-valued.</p>
+  <table class="simple">
+  <thead><tr><th>Aspect</th><th>JSON-LD 1.1</th><th>JSON-LD-array</th><th>RML (R2RML vocabulary plus the RML modules)</th></tr></thead>
+  <tbody>
+  <tr><td>Shape of the mapping</td><td>a <code>@context</code>: annotations on the data's own keys, inline or fetched</td><td>a mapping document shaped like a context, given beside the data or embedded as <code>mapping</code> / <code>propertyMap</code> members</td><td>an RDF document of triples maps, usually Turtle, or YARRRML in YAML; nothing in the data</td></tr>
+  <tr><td>Unit of work</td><td>a node object</td><td>a JSON object: every object is a node, governed by the maps of its position and type</td><td>an iteration of a logical source: <code>rml:iterator</code> (a JSONPath such as <code>$.people[*]</code>) selects the records, one subject each</td></tr>
+  <tr><td>Nested objects</td><td>nested node objects, linked by their position</td><td>nested nodes, linked by their position; <code>flatten</code> for wrapper objects and envelopes</td><td>a nested reference (<code>address.city</code>) on the same subject, or a second triples map with its own iterator joined back to the parent; a nested record sees its parent's fields only through RML-LV logical views</td></tr>
+  <tr><td>Subject identity</td><td><code>@id</code>, an IRI or a relative reference, reached from conventional JSON by aliasing (<code>"id": "@id"</code>)</td><td><code>role: "identifier"</code>, resolved against a lexically scoped base or expanded from a template over the object's members; a fresh or a stable blank node otherwise</td><td>a subject map: constant, reference or template over any fields, with <code>rr:termType</code> IRI or blank node; a blank node minted from a template is the same node for the same value</td></tr>
+  <tr><td>Classes</td><td><code>@type</code> with class terms</td><td><code>role: "type"</code> through <code>typeMap</code>: the class comes from a data field</td><td><code>rr:class</code> on the subject map: the class comes from the mapping's structure; or an <code>rdf:type</code> predicate-object map</td></tr>
+  <tr><td>Predicates</td><td>terms, or any key under <code>@vocab</code></td><td>keys resolved through the governing property maps, inline or named</td><td>predicate maps, usually constant but reference- or template-valued predicates can be built from the data</td></tr>
+  <tr><td>Literals</td><td>native types become <code>xsd:integer</code>, <code>xsd:double</code>, <code>xsd:boolean</code>; <code>@type</code> and <code>@language</code> per term; a default <code>@language</code></td><td>native types become <code>xsd:integer</code>, <code>xsd:decimal</code>, <code>xsd:boolean</code>; <code>datatype</code>, <code>language</code>, <code>direction</code> per key; <code>rdf:JSON</code> for opaque subtrees</td><td>R2RML's natural datatype mapping; <code>rr:datatype</code> and <code>rr:language</code> constants, and in RML <code>rml:datatypeMap</code> and <code>rml:languageMap</code> taken from the data</td></tr>
+  <tr><td>IRIs from values</td><td><code>@type: @id</code>, resolved against <code>@base</code></td><td><code>valueType: "identifier"</code>, resolved against the base in force or expanded from a template</td><td>an object map with <code>rr:termType rr:IRI</code>: reference or template, percent-encoded to an IRI-safe string</td></tr>
+  <tr><td>Several values</td><td>arrays are sets; <code>@list</code> for order; 1.0 forbade lists of lists</td><td>arrays are sequences, ordered; <code>keyedBy</code> dictionaries are repeated properties</td><td>a reference that yields several values emits several triples; RML-CC gather maps build <code>rdf:List</code>, <code>rdf:Seq</code>, <code>rdf:Bag</code> or <code>rdf:Alt</code>, with <code>rml:append</code> or <code>rml:cartesianProduct</code> strategies and <code>rml:allowEmptyListAndContainer</code></td></tr>
+  <tr><td>Dictionaries</td><td><code>@container: @index</code>, <code>@id</code>, <code>@language</code>, <code>@type</code></td><td><code>keyedBy</code></td><td>awkward: JSONPath selects values, not member names, so processors need extensions to reach the keys</td></tr>
+  <tr><td>Links within a document</td><td>a node object carrying the target's <code>@id</code></td><td>the same IRI minted twice: <code>identifier</code> on one side, <code>valueType: "identifier"</code> on the other</td><td>a referencing object map with <code>rr:joinCondition</code>, or the idiom of using the same template in both maps</td></tr>
+  <tr><td>Reverse relations</td><td><code>@reverse</code>: no literals, no lists</td><td><code>inverse</code>, spreading arrays</td><td>another triples map with the roles swapped; no construct needed</td></tr>
+  <tr><td>Scoping and reuse of definitions</td><td>embedded and scoped contexts, remote contexts, <code>@import</code>, <code>@protected</code></td><td><code>propertyMap</code> at root, property and type level, inline or named; <code>unmappedKeys.scope</code> for none, root or enclosing fallback</td><td>none: each triples map stands alone; prefixes come from Turtle; YARRRML adds <code>$(…)</code> references and templates for brevity</td></tr>
+  <tr><td>Named graphs</td><td><code>@graph</code></td><td>none</td><td><code>rr:graphMap</code> on subject and predicate-object maps</td></tr>
+  <tr><td>Transforming values</td><td>none</td><td>none</td><td>RML-FNML: functions described with the Function Ontology, and conditions through functions in implementations</td></tr>
+  <tr><td>Quoted triples</td><td>JSON-LD-star, not standardized</td><td>none</td><td>RML-star <code>rml:StarMap</code></td></tr>
+  <tr><td>Unmapped data</td><td>dropped, or everything becomes a property under <code>@vocab</code></td><td><code>unmappedKeys</code> and <code>unmappedTypes</code>: a scope and an <code>otherwise</code></td><td>only referenced data is read: positive selection, so there is nothing to drop</td></tr>
+  <tr><td>Missing values and <code>null</code></td><td>dropped; <code>null</code> also undefines terms and resets contexts</td><td>dropped</td><td>a reference with no value produces no triple</td></tr>
+  <tr><td>Direction</td><td>both ways: expansion, compaction, framing</td><td>JSON to RDF; the inverse is defined for tree-shaped graphs</td><td>one way, source to RDF; <code>rr:inverseExpression</code> only hints at the reverse for tables</td></tr>
+  <tr><td>Status</td><td>W3C Recommendation (2020)</td><td>this sketch</td><td>R2RML a W3C Recommendation (2012); the RML modules W3C Community Group reports (2023–2025); processors such as RMLMapper, Morph-KGC and SDM-RDFizer</td></tr>
+  </tbody></table>
+  </section>
+  <section id="conventions-worth-borrowing-from-rml">
+  <h2>Conventions worth borrowing from RML</h2>
+  <p>RML's one organizing idea is the <strong>term map</strong>: whatever part of an output triple is being produced, subject, predicate, object or graph, and in RML also the datatype and the language of a literal, it comes from a map of one of three kinds, <strong>constant</strong>, <strong>reference</strong> (a field of the current record) or <strong>template</strong> (a string with <code>{field}</code> references, percent-encoded when it makes an IRI). JSON-LD has only constants in the context and positions in the data. JSON-LD-array has adopted templates (§3.5); the rest of the triad, and the conventions that follow from it, are proposed here.</p>
+  <table class="simple">
+  <thead><tr><th>RML convention</th><th>What it gives conventional JSON</th><th>In JSON-LD-array</th></tr></thead>
+  <tbody>
+  <tr><td>Template-valued subject maps over several fields, IRI-safe</td><td>identifiers composed from several fields, numeric ids, no relative-IRI tricks</td><td><strong>adopted</strong>: <code>template</code> on identifier keys and values, <code>baseTemplate</code>, and an <code>identifier</code> attribute on the mapping root or on a property definition, <code>"identifier": { "template": "https://example.org/people/{id}" }</code>, describing the object itself; <code>role: "identifier"</code> on a key is then the shorthand for <code>"identifier": { "from": "key" }</code></td></tr>
+  <tr><td>Constant, reference or template, everywhere</td><td>one rule for every attribute that names a term, learned once</td><td>proposed: every term-naming attribute (<code>iri</code>, <code>identifier</code>, <code>class</code>, <code>datatype</code>, <code>language</code>, the predicate of a <code>keyedBy</code>) takes a string constant, <code>{ "from": "key" }</code> (the value of a sibling member; <code>"."</code> the own value, <code>"../id"</code> the enclosing object's) or <code>{ "template": "…{key}…" }</code></td></tr>
+  <tr><td><code>rr:termType rr:BlankNode</code> with a template: stable blank nodes</td><td>anonymous nodes that several places refer to consistently, without minting IRIs</td><td><strong>adopted</strong>: <code>"identifier": { "template": "address-of-{id}", "termType": "blankNode" }</code></td></tr>
+  <tr><td><code>rr:class</code> on the subject map: class by structure</td><td>nodes typed by where they sit, when the data has no type field</td><td>proposed: <code>class</code> on a property definition whose values are objects, and on the mapping root for the root object; <code>typeMap</code> stays for data-driven types</td></tr>
+  <tr><td>The same template as the join</td><td>foreign keys in flat JSON become links without a join</td><td><strong>adopted</strong>: <code>valueType: "identifier"</code> with a <code>template</code> on the referring key; both sides mint the same IRI</td></tr>
+  <tr><td>One record, several subjects</td><td>a flat record split into a thing and its address, its measurement, its contact point</td><td>proposed: a <code>groups</code> attribute beside <code>propertyMap</code>, declaring <em>virtual properties</em> that do not mirror a data key: each is built from named sibling keys, which it consumes</td></tr>
+  <tr><td>Reference- or template-valued predicate maps</td><td>dictionaries whose keys are property names</td><td>proposed: <code>keyedBy: { "predicate": { "template": "…{}" } }</code></td></tr>
+  <tr><td><code>rml:languageMap</code>, <code>rml:datatypeMap</code></td><td>the language or datatype sits in a sibling field</td><td>proposed: <code>"language": { "from": "lang" }</code>, <code>"datatype": { "from": "unit" }</code>; a member read this way is consumed and needs no definition of its own</td></tr>
+  <tr><td>Positive selection: only referenced data is read</td><td>tolerance of the fields an API adds next month</td><td>proposed: <code>"otherwise": "ignore"</code> as the default, <code>"error"</code> staying as a lint mode</td></tr>
+  <tr><td><code>rml:iterator</code>: say where the records are</td><td>API envelopes such as <code>{ "data": [ … ], "meta": { … } }</code></td><td><strong>adopted</strong>: <code>flatten: true</code> on an array-valued key makes its elements root nodes</td></tr>
+  <tr><td>RML-LV logical views: a nested record sees its parent</td><td>identifiers and links that need the parent's id</td><td><strong>adopted</strong>: <code>{../key}</code> and <code>{#}</code> in templates (§3.5), which RML cannot see without a view and a sequence keeps anyway</td></tr>
+  <tr><td>RML-CC gather maps</td><td>—</td><td>nothing: a sequence does what a gather map does, <code>rml:allowEmptyListAndContainer</code> is always on (<code>[]</code> is <code>()</code>), and <code>rml:cartesianProduct</code> has no analogue because elements are never multiplied</td></tr>
+  </tbody></table>
+  <p>Not worth borrowing: logical sources and iterators (the tree is the iterator), join conditions (nesting and shared templates replace them), the RDF syntax of the mapping (JSON stays), graph maps, and FNML functions, which are a separate concern that a later <code>transform</code> hook could take up.</p>
+    <section id="the-borrowed-conventions-at-work">
+    <h3>The borrowed conventions at work</h3>
+    <p>A flat record, the most conventional JSON there is:</p>
+    <pre class="example json nohighlight">{ "id": 7, "first": "Ada", "last": "Lovelace",
+      "street": "12 St James's Square", "city": "London",
+      "bio": "Mathematician", "lang": "en",
+      "editorId": 5, "works": [101, 102],
+      "prices": { "GBP": 10, "EUR": 12 },
+      "phones": [ { "number": "+44 20 7946 0000" },
+                  { "number": "+1 212 555 0100" } ] }</pre>
+    <table class="simple">
+    <thead><tr><th>Mapping (adopted and proposed syntax)</th><th>Turtle-array</th></tr></thead>
+    <tbody>
+    <tr><td>root: <code>"identifier": { "template": "https://example.org/people/{id}" }</code>, <code>"class": "schema:Person"</code>, <code>"propertyMap": { "first": "schema:givenName", "last": "schema:familyName", … }</code></td><td><code>&lt;…/people/7&gt; a schema:Person ; schema:givenName "Ada" ; schema:familyName "Lovelace" .</code></td></tr>
+    <tr><td><code>"groups": { "home": { "iri": "schema:address", "members": ["street", "city"], "class": "schema:PostalAddress", "identifier": { "template": "address-of-{id}", "termType": "blankNode" }, "propertyMap": { "street": "schema:streetAddress", "city": "schema:addressLocality" } } }</code></td><td><code>&lt;…/people/7&gt; schema:address _:address-of-7 .</code><br><code>_:address-of-7 a schema:PostalAddress ; schema:streetAddress "12 St James's Square" ; schema:addressLocality "London" .</code></td></tr>
+    <tr><td><code>"bio": { "iri": "schema:description", "language": { "from": "lang" } }</code></td><td><code>&lt;…/people/7&gt; schema:description "Mathematician"@en .</code> (<code>lang</code> is consumed)</td></tr>
+    <tr><td><code>"editorId": { "iri": "schema:editor", "valueType": "identifier", "template": "https://example.org/people/{}" }</code></td><td><code>&lt;…/people/7&gt; schema:editor &lt;…/people/5&gt; .</code></td></tr>
+    <tr><td><code>"works": { "iri": "schema:author", "inverse": true, "valueType": "identifier", "template": "https://example.org/works/{}" }</code></td><td><code>&lt;…/works/101&gt; schema:author &lt;…/people/7&gt; .</code><br><code>&lt;…/works/102&gt; schema:author &lt;…/people/7&gt; .</code></td></tr>
+    <tr><td><code>"prices": { "keyedBy": { "predicate": { "template": "https://example.org/ns#price-{}" } } }</code></td><td><code>&lt;…/people/7&gt; ex:price-GBP 10 ; ex:price-EUR 12 .</code></td></tr>
+    <tr><td><code>"phones": { "iri": "schema:contactPoint", "class": "schema:ContactPoint", "identifier": { "template": "https://example.org/people/{../id}/phone/{#}" }, "propertyMap": { "number": "schema:telephone" } }</code></td><td><code>&lt;…/people/7&gt; schema:contactPoint ( &lt;…/people/7/phone/1&gt; &lt;…/people/7/phone/2&gt; ) .</code><br><code>&lt;…/people/7/phone/1&gt; a schema:ContactPoint ; schema:telephone "+44 20 7946 0000" .</code><br><code>&lt;…/people/7/phone/2&gt; a schema:ContactPoint ; schema:telephone "+1 212 555 0100" .</code></td></tr>
+    <tr><td>envelope <code>{ "data": [ …, … ], "meta": { "page": 1 } }</code> with <code>"data": { "flatten": true }</code> and <code>"otherwise": "ignore"</code></td><td>one root node per element of <code>data</code>; nothing from <code>meta</code></td></tr>
+    </tbody></table>
+    <p>If the proposals are adopted, they fold into §3 as follows: <code>identifier</code>, <code>class</code> and <code>groups</code> join the attribute tables; <code>iri</code>, <code>datatype</code>, <code>language</code> and the <code>keyedBy</code> predicate accept the three forms, constant, <code>from</code> and <code>template</code>; and <code>unmappedKeys</code> changes its <code>otherwise</code> default to <code>"ignore"</code>.</p>
+    </section>
+  </section>
+  <script>
+  // Turtle-array and SPARQL-array highlighting: a few token classes are enough for these examples.
+  (function () {
+    var token = /(<[^>\s]*>)|("""[\s\S]*?"""|"(?:[^"\\]|\\.)*")(@[A-Za-z0-9-]+|\^\^[^\s;,.()\]]+)?|(#[^\n]*)|(\?[A-Za-z_][\w]*)|(_:[A-Za-z0-9_-]+)|(\b(?:PREFIX|BASE|SELECT|CONSTRUCT|ASK|DESCRIBE|WHERE|DELETE|INSERT|DATA|FILTER|OPTIONAL|UNION|ORDER|BY|GROUP|LIMIT|OFFSET|BIND|VALUES|GRAPH|a)\b)|(\b-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|([A-Za-z][\w-]*:[\w#./-]*|[A-Za-z][\w-]*:)/g;
+    function paint(pre) {
+      var src = pre.textContent, out = '', last = 0, m;
+      token.lastIndex = 0;
+      while ((m = token.exec(src))) {
+        out += esc(src.slice(last, m.index));
+        var cls = m[1] ? 'hljs-iri' : m[2] ? 'hljs-lit' : m[4] ? 'hljs-cmt' : m[5] ? 'hljs-var' : m[6] ? 'hljs-bnode' : m[7] ? 'hljs-kw' : m[8] ? 'hljs-num' : 'hljs-pname';
+        out += '<span class="' + cls + '">' + esc(m[0]) + '</span>';
+        last = token.lastIndex;
+      }
+      out += esc(src.slice(last));
+      pre.innerHTML = out;
+    }
+    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    var jsonToken = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(true|false|null)\b/g;
+    function paintJson(pre) {
+      var src = pre.textContent, out = '', last = 0, m;
+      jsonToken.lastIndex = 0;
+      while ((m = jsonToken.exec(src))) {
+        out += esc(src.slice(last, m.index));
+        if (m[1]) { out += '<span class="' + (m[2] ? 'hljs-attr' : 'hljs-string') + '">' + esc(m[1]) + '</span>' + esc(m[2] || ''); }
+        else if (m[3]) { out += '<span class="hljs-number">' + esc(m[3]) + '</span>'; }
+        else { out += '<span class="hljs-literal">' + esc(m[4]) + '</span>'; }
+        last = jsonToken.lastIndex;
+      }
+      out += esc(src.slice(last));
+      pre.innerHTML = out;
+    }
+    function tidyHeader() {
+      // An unofficial draft has no published version; ReSpec prints the line anyway.
+      document.querySelectorAll('.head dt').forEach(function (dt) {
+        if (/^Latest published version/.test(dt.textContent)) { var dd = dt.nextElementSibling; dt.remove(); if (dd && dd.tagName === 'DD') dd.remove(); }
+      });
+    }
+    function run() { tidyHeader(); document.querySelectorAll('pre.turtle, pre.sparql').forEach(paint); document.querySelectorAll('pre.json').forEach(paintJson); }
+    if (document.respec && document.respec.ready) { document.respec.ready.then(run); } else { document.addEventListener('DOMContentLoaded', run); }
+  })();
+  </script>
+</body>
+</html>
