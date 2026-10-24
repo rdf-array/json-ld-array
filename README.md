@@ -14,8 +14,9 @@ meta-repository: the documents below and the list of the forks.
 | [json-ld-array.md](json-ld-array.md) | [json-ld-array.html](https://rdf-array.github.io/rdf-array/json-ld-array.html) | the JSON-LD-array specification: conventional JSON to rdf-array through a mapping document |
 | [json-ld-array-brief.md](json-ld-array-brief.md) | — | the summary of JSON-LD-array written for implementers |
 
-`python3 md-to-respec.py <doc>.md <doc>.html` regenerates a rendering (ReSpec, unofficial draft);
-the Pages workflow refuses a push whose HTML is older than its Markdown.
+The rendered documents are listed at <https://rdf-array.github.io/rdf-array/html-index.html>, the
+repository's homepage. `python3 md-to-respec.py <doc>.md <doc>.html` regenerates a rendering
+(ReSpec, unofficial draft); the Pages workflow refuses a push whose HTML is older than its Markdown.
 
 ## Repositories
 
