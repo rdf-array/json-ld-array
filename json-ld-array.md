@@ -270,6 +270,53 @@ is. A relative expansion is resolved against the base in force (RFC 3986). A tem
 has no value produces no term, and so no triple. A member whose value is only consumed by a template
 needs no definition of its own.
 
+### 3.6 Output
+
+Processing yields rdf-array triples, all in the default graph. Their terms are IRIs, blank nodes,
+literals and sequences; a sequence holds the converted elements of one JSON array, in order.
+
+- **In an API**, a sequence is the term of the host's rdf-array data model. In the RDF/JS data model
+  of the rdf-array forks (types-array, rdf-data-factory-array) it is
+  `{ termType: "Sequence", elements: [ …terms… ], value }`, where `value` is the N-Triples-style
+  spelling `(e1 e2 …)` and `DataFactory.sequence(elements)` makes one; jena-array's is `Node_Seq`,
+  rdflib-array's `rdflib.term.Sequence`.
+- **As text**, the output is N-Quads-array or Turtle-array: a sequence is written `( e1 e2 … )`,
+  nested freely, `()` when empty.
+- **Blank node labels.** A fresh blank node's label is the processor's choice. A stable one,
+  from `termType: "blankNode"` and a template, is labelled with the expansion; a mapping whose
+  expansions use characters outside those N-Triples allows in a blank node label produces output
+  that a writer must relabel.
+- **Numbers.** The lexical form of a literal from a JSON number is the number as written in the
+  JSON text (`1.70` stays `1.70` in an `xsd:decimal`) when the processor's JSON parser exposes it,
+  and otherwise the shortest spelling of the parsed number; an exponent is expanded for
+  `xsd:decimal`, and `xsd:double` takes JSON-LD's canonical form (`1.5E0`).
+- **IRIs** are resolved against the base in force by RFC 3986 §5.2, after template values have been
+  percent-encoded (§3.5).
+
+### 3.7 Errors
+
+A processor stops at the first error and reports it with its *path*, the keys and array indices
+from the data root to the offending value (`/address/street`, `/phones/1/number`). Errors in the
+mapping document are reported before any data is read, except a reference to an undeclared named
+map, which is reported where it is first used. The codes are those of the reference
+implementation (§12).
+
+| Condition | Code |
+|---|---|
+| the mapping is not an object; an attribute has the wrong type; a definition has an unknown attribute, a `role` other than `identifier`, `type` or `base`, a `valueType` other than `identifier`, a `termType` other than `iri` or `blankNode`, an unknown `keyedBy`, a `template` on a non-identifier role, or neither `iri`, `role`, `flatten` nor a `keyedBy` predicate; `unmappedKeys` or `unmappedTypes` has an unknown `scope` or `otherwise` | `invalid mapping` |
+| a `propertyMap` or `typeMap` names a map that `namedPropertyMaps` or `namedTypeMaps` does not declare | `unknown named map` |
+| a key is unmapped and `otherwise` is `error` | `unmapped key` |
+| a type value has no entry in the governing type maps and `unmappedTypes` says `error` | `unmapped type` |
+| `otherwise` is `vocab` but the mapping has no `vocab` | `no vocab` |
+| more than one identifier key present in one object | `two identifiers` |
+| more than one base-setting key present in one object | `two bases` |
+| an identifier value that is an object or an array; a type value that is not a string | `invalid identifier`, `invalid type value` |
+| a literal value under `inverse` (a literal cannot be a subject) | `literal subject` |
+| a value that its datatype cannot hold (a fraction as `xsd:integer`); a language tag on a non-string | `invalid literal` |
+| `flatten` on a value that is neither an object nor an array | `invalid flatten` |
+| `keyedBy` on a value that is not an object, or a dictionary entry of the wrong kind (a non-object under `identifier` or `type`, a non-string under `language`) | `invalid dictionary` |
+| a `from` reference to a member whose value is not a string, where a string is needed (an `iri`, a `datatype`, a `language`) | `invalid from`, `invalid predicate` |
+
 ## 4. Scopes: where a `propertyMap` can appear and what it reaches
 
 | Where | What its definitions apply to | JSON-LD 1.1 counterpart |
@@ -588,3 +635,27 @@ If the proposals are adopted, they fold into §3 as follows: `identifier`, `clas
 the attribute tables; `iri`, `datatype`, `language` and the `keyedBy` predicate accept the three
 forms, constant, `from` and `template`; and `unmappedKeys` changes its `otherwise` default to
 `"ignore"`.
+
+## 12. Implementations and tests
+
+**jsonld.js-array** ([rdf-array/jsonld.js-array](https://github.com/rdf-array/jsonld.js-array)) is the
+reference implementation, added to jsonld.js beside its unchanged JSON-LD processor:
+`jsonld.arrayToRDF(data, mapping, {format})` returns RDF/JS quads, or N-Quads-array
+(`application/n-quads`) or Turtle-array (`text/turtle`) text; `jsonld.array.parseJSON` keeps the
+lexical form of numbers; `jsonld.array.compileMapping` validates a mapping once for reuse; errors carry
+the codes of §3.7 in `details.code` and the path in `details.path`. It implements §2 to §5 and, as
+extensions, every proposal of §11. Its `doc/rdf-array.md` records the decisions the implementation
+took, which this document has since adopted. A [playground](https://rdf-array.github.io/jsonld.js-array/)
+runs it in the browser over the examples of this document.
+
+**Tests.** Every row of the tables in §5 and §11.1 is a test case: JSON data and a mapping in, the
+Turtle-array out, or one of the errors of §3.7. jsonld.js-array's `tests/array.js` holds them as
+mocha tests, with the error cases and malformed mappings besides. They are to move into a shared
+manifest of the rdf-array conformance suite (`jla:ToRdfTest`: `mf:action` the data, `jla:mapping`
+the mapping, `mf:result` the N-Quads-array), so that a second implementation starts from the same
+expectations.
+
+**A second implementation** needs an rdf-array data model with the sequence term, an RFC 3986
+resolver, a JSON parser that can report the source text of numbers (or the acceptance that `1.70`
+becomes `1.7`), and a writer for N-Quads-array or Turtle-array. It walks the JSON once, by the rules
+of §3.4 and §3.5; nothing in the mapping language needs the JSON-LD expansion algorithm.

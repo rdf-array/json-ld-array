@@ -209,6 +209,41 @@
     </tbody></table>
     <p>A substituted value is percent-encoded as an IRI component, R2RML's IRI-safe rule, so a value holding <code>/</code> cannot step out of its path segment; a value substituted into a blank node label is taken as it is. A relative expansion is resolved against the base in force (RFC 3986). A template whose reference has no value produces no term, and so no triple. A member whose value is only consumed by a template needs no definition of its own.</p>
     </section>
+    <section id="output">
+    <h3>Output</h3>
+    <p>Processing yields rdf-array triples, all in the default graph. Their terms are IRIs, blank nodes, literals and sequences; a sequence holds the converted elements of one JSON array, in order.</p>
+    <ul><li><strong>In an API</strong>, a sequence is the term of the host's rdf-array data model. In the RDF/JS data model</li></ul>
+    <p>of the rdf-array forks (types-array, rdf-data-factory-array) it is <code>{ termType: "Sequence", elements: [ …terms… ], value }</code>, where <code>value</code> is the N-Triples-style spelling <code>(e1 e2 …)</code> and <code>DataFactory.sequence(elements)</code> makes one; jena-array's is <code>Node_Seq</code>, rdflib-array's <code>rdflib.term.Sequence</code>.</p>
+    <ul><li><strong>As text</strong>, the output is N-Quads-array or Turtle-array: a sequence is written <code>( e1 e2 … )</code>,</li></ul>
+    <p>nested freely, <code>()</code> when empty.</p>
+    <ul><li><strong>Blank node labels.</strong> A fresh blank node's label is the processor's choice. A stable one,</li></ul>
+    <p>from <code>termType: "blankNode"</code> and a template, is labelled with the expansion; a mapping whose expansions use characters outside those N-Triples allows in a blank node label produces output that a writer must relabel.</p>
+    <ul><li><strong>Numbers.</strong> The lexical form of a literal from a JSON number is the number as written in the</li></ul>
+    <p>JSON text (<code>1.70</code> stays <code>1.70</code> in an <code>xsd:decimal</code>) when the processor's JSON parser exposes it, and otherwise the shortest spelling of the parsed number; an exponent is expanded for <code>xsd:decimal</code>, and <code>xsd:double</code> takes JSON-LD's canonical form (<code>1.5E0</code>).</p>
+    <ul><li><strong>IRIs</strong> are resolved against the base in force by RFC 3986 §5.2, after template values have been</li></ul>
+    <p>percent-encoded (§3.5).</p>
+    </section>
+    <section id="errors">
+    <h3>Errors</h3>
+    <p>A processor stops at the first error and reports it with its <em>path</em>, the keys and array indices from the data root to the offending value (<code>/address/street</code>, <code>/phones/1/number</code>). Errors in the mapping document are reported before any data is read, except a reference to an undeclared named map, which is reported where it is first used. The codes are those of the reference implementation (§12).</p>
+    <table class="simple">
+    <thead><tr><th>Condition</th><th>Code</th></tr></thead>
+    <tbody>
+    <tr><td>the mapping is not an object; an attribute has the wrong type; a definition has an unknown attribute, a <code>role</code> other than <code>identifier</code>, <code>type</code> or <code>base</code>, a <code>valueType</code> other than <code>identifier</code>, a <code>termType</code> other than <code>iri</code> or <code>blankNode</code>, an unknown <code>keyedBy</code>, a <code>template</code> on a non-identifier role, or neither <code>iri</code>, <code>role</code>, <code>flatten</code> nor a <code>keyedBy</code> predicate; <code>unmappedKeys</code> or <code>unmappedTypes</code> has an unknown <code>scope</code> or <code>otherwise</code></td><td><code>invalid mapping</code></td></tr>
+    <tr><td>a <code>propertyMap</code> or <code>typeMap</code> names a map that <code>namedPropertyMaps</code> or <code>namedTypeMaps</code> does not declare</td><td><code>unknown named map</code></td></tr>
+    <tr><td>a key is unmapped and <code>otherwise</code> is <code>error</code></td><td><code>unmapped key</code></td></tr>
+    <tr><td>a type value has no entry in the governing type maps and <code>unmappedTypes</code> says <code>error</code></td><td><code>unmapped type</code></td></tr>
+    <tr><td><code>otherwise</code> is <code>vocab</code> but the mapping has no <code>vocab</code></td><td><code>no vocab</code></td></tr>
+    <tr><td>more than one identifier key present in one object</td><td><code>two identifiers</code></td></tr>
+    <tr><td>more than one base-setting key present in one object</td><td><code>two bases</code></td></tr>
+    <tr><td>an identifier value that is an object or an array; a type value that is not a string</td><td><code>invalid identifier</code>, <code>invalid type value</code></td></tr>
+    <tr><td>a literal value under <code>inverse</code> (a literal cannot be a subject)</td><td><code>literal subject</code></td></tr>
+    <tr><td>a value that its datatype cannot hold (a fraction as <code>xsd:integer</code>); a language tag on a non-string</td><td><code>invalid literal</code></td></tr>
+    <tr><td><code>flatten</code> on a value that is neither an object nor an array</td><td><code>invalid flatten</code></td></tr>
+    <tr><td><code>keyedBy</code> on a value that is not an object, or a dictionary entry of the wrong kind (a non-object under <code>identifier</code> or <code>type</code>, a non-string under <code>language</code>)</td><td><code>invalid dictionary</code></td></tr>
+    <tr><td>a <code>from</code> reference to a member whose value is not a string, where a string is needed (an <code>iri</code>, a <code>datatype</code>, a <code>language</code>)</td><td><code>invalid from</code>, <code>invalid predicate</code></td></tr>
+    </tbody></table>
+    </section>
   </section>
   <section id="scopes-where-a-propertymap-can-appear-and-what-it-reaches">
   <h2>Scopes: where a <code>propertyMap</code> can appear and what it reaches</h2>
@@ -470,6 +505,12 @@
     </tbody></table>
     <p>If the proposals are adopted, they fold into §3 as follows: <code>identifier</code>, <code>class</code> and <code>groups</code> join the attribute tables; <code>iri</code>, <code>datatype</code>, <code>language</code> and the <code>keyedBy</code> predicate accept the three forms, constant, <code>from</code> and <code>template</code>; and <code>unmappedKeys</code> changes its <code>otherwise</code> default to <code>"ignore"</code>.</p>
     </section>
+  </section>
+  <section id="implementations-and-tests">
+  <h2>Implementations and tests</h2>
+  <p><strong>jsonld.js-array</strong> (<a href="https://github.com/rdf-array/jsonld.js-array">rdf-array/jsonld.js-array</a>) is the reference implementation, added to jsonld.js beside its unchanged JSON-LD processor: <code>jsonld.arrayToRDF(data, mapping, {format})</code> returns RDF/JS quads, or N-Quads-array (<code>application/n-quads</code>) or Turtle-array (<code>text/turtle</code>) text; <code>jsonld.array.parseJSON</code> keeps the lexical form of numbers; <code>jsonld.array.compileMapping</code> validates a mapping once for reuse; errors carry the codes of §3.7 in <code>details.code</code> and the path in <code>details.path</code>. It implements §2 to §5 and, as extensions, every proposal of §11. Its <code>doc/rdf-array.md</code> records the decisions the implementation took, which this document has since adopted. A <a href="https://rdf-array.github.io/jsonld.js-array/">playground</a> runs it in the browser over the examples of this document.</p>
+  <p><strong>Tests.</strong> Every row of the tables in §5 and §11.1 is a test case: JSON data and a mapping in, the Turtle-array out, or one of the errors of §3.7. jsonld.js-array's <code>tests/array.js</code> holds them as mocha tests, with the error cases and malformed mappings besides. They are to move into a shared manifest of the rdf-array conformance suite (<code>jla:ToRdfTest</code>: <code>mf:action</code> the data, <code>jla:mapping</code> the mapping, <code>mf:result</code> the N-Quads-array), so that a second implementation starts from the same expectations.</p>
+  <p><strong>A second implementation</strong> needs an rdf-array data model with the sequence term, an RFC 3986 resolver, a JSON parser that can report the source text of numbers (or the acceptance that <code>1.70</code> becomes <code>1.7</code>), and a writer for N-Quads-array or Turtle-array. It walks the JSON once, by the rules of §3.4 and §3.5; nothing in the mapping language needs the JSON-LD expansion algorithm.</p>
   </section>
   <script>
   // Turtle-array and SPARQL-array highlighting: a few token classes are enough for these examples.

@@ -11,8 +11,7 @@ meta-repository: the documents below and the list of the forks.
 | Document | Rendered | What it is |
 |---|---|---|
 | [rdf-array.md](rdf-array.md) | [rdf-array.html](https://rdf-array.github.io/rdf-array/rdf-array.html) | the change from RDF to rdf-array: the data model, the syntaxes, the implementations, the conventions, the open questions |
-| [json-ld-array.md](json-ld-array.md) | [json-ld-array.html](https://rdf-array.github.io/rdf-array/json-ld-array.html) | the JSON-LD-array specification: conventional JSON to rdf-array through a mapping document |
-| [json-ld-array-brief.md](json-ld-array-brief.md) | — | the summary of JSON-LD-array written for implementers |
+| [json-ld-array.md](json-ld-array.md) | [json-ld-array.html](https://rdf-array.github.io/rdf-array/json-ld-array.html) | the JSON-LD-array specification: conventional JSON to rdf-array through a mapping document, with the output, the errors and the reference implementation |
 | [targets.md](targets.md) | — | further `-array` targets (Oxigraph, rudof, QLever, SHACL-array, …) assessed for impact and utility, with a recommended order |
 
 The rendered documents are listed at <https://rdf-array.github.io/rdf-array/html-index.html>, the
