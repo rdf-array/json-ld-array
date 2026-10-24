@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>rdf-array: RDF with sequences as terms</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus: "unofficial",
+      shortName: "rdf-array",
+      editors: [{ name: "Eric Prud'hommeaux" }],
+      edDraftURI: "https://rdf-array.github.io/rdf-array/rdf-array.html",
+      latestVersion: null,
+      overrideCopyright: "<p class='copyright'>Copyright &copy; 2026 the rdf-array project. This document is licensed under a <a href='https://creativecommons.org/licenses/by/4.0/'>Creative Commons Attribution 4.0 License</a>.</p>",
+      lint: { "no-unused-dfns": false },
+      localBiblio: {
+        "RML-CORE": { title: "RML-Core: Generic Mapping Language for RDF", href: "https://w3id.org/rml/core/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-CC": { title: "RML-CC: RML Collections and Containers", href: "https://w3id.org/rml/cc/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-LV": { title: "RML-LV: RML Logical Views", href: "https://w3id.org/rml/lv/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-FNML": { title: "RML-FNML: RML Functions", href: "https://w3id.org/rml/fnml/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "YARRRML": { title: "YARRRML", href: "https://rml.io/yarrrml/spec/", publisher: "IDLab, Ghent University" }
+      }
+    };
+  </script>
+  <style>
+    table.simple { font-size: 0.9em; }
+    table.simple td, table.simple th { vertical-align: top; }
+    pre.example { font-size: 0.9em; line-height: 1.35; }
+    .hljs-iri { color: #0b5394; }
+    .hljs-pname { color: #38761d; }
+    .hljs-lit { color: #a61c00; }
+    .hljs-kw { color: #741b47; font-weight: bold; }
+    .hljs-var { color: #b45f06; }
+    .hljs-cmt { color: #777; font-style: italic; }
+    .hljs-bnode { color: #666; }
+    .hljs-num, .hljs-number { color: #a61c00; }
+    .hljs-attr { color: #0b5394; }
+    .hljs-string { color: #38761d; }
+    .hljs-literal { color: #741b47; }
+  </style>
+</head>
+<body>
+  <section id="abstract">
+    <p>rdf-array is RDF whose data model has one more kind of term, the <strong>sequence</strong>: <code>(1 2 3)</code> in Turtle is one term holding three literals in order, <code>()</code> is the empty sequence, and a sequence may hold terms of any kind, sequences included. Nothing else about RDF changes. This page says what changes and what does not, how each syntax spells it, what the implementations do, and what is still open. The organisation's <a href="https://github.com/rdf-array/rdf-array">README</a> lists the repositories; each fork has its own <code>doc/rdf-array.md</code> with the detail.</p>
+  </section>
+  <section id="sotd">
+    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/rdf-array.md">rdf-array.md</a> by <code>md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
+  </section>
+  <section class="introductory" id="introduction">
+    <h2>Introduction</h2>
+    <p><em>An overview, 2026-10-23. rdf-array was called RDF- ("RDF minus") until October 2026, and its syntaxes Turtle-, SPARQL-, ShEx- and JSON-LD-; the forks were always <code>&lt;project&gt;-array</code>. Everything here is a working spike, not a standard.</em></p>
+  </section>
+  <section id="why">
+  <h2>Why</h2>
+  <p>RDF 1.1 has no ordered collection in its data model. Turtle's <code>( … )</code> is sugar for a ladder of blank nodes joined by <code>rdf:first</code> and <code>rdf:rest</code> and closed by <code>rdf:nil</code>: two triples and a blank node per element, which SPARQL reaches with a property path (<code>rdf:rest*/rdf:first</code>) that forgets the order, which SHACL (<code>sh:in</code>), OWL (<code>owl:unionOf</code>) and SKOS each had to interpret for themselves, which JSON-LD can only produce from <code>@list</code>, and which the <code>rdf:Seq</code>, <code>rdf:Bag</code> and <code>rdf:Alt</code> containers tried to do instead with numbered properties <code>rdf:_1</code>, <code>rdf:_2</code>, … The spike asks what RDF, its syntaxes and its tools look like when the ordered collection is a term in its own right, as the triple term became one in RDF 1.2.</p>
+  </section>
+  <section id="what-changes">
+  <h2>What changes</h2>
+    <section id="the-data-model">
+    <h3>The data model</h3>
+    <ul><li><strong>Terms.</strong> IRIs, blank nodes, literals, triple terms (RDF 1.2) and sequences. A sequence is a</li></ul>
+    <p>finite, ordered, possibly empty list of terms of any kind, sequences included. It is a value, as a literal is: two sequences are equal when their elements are equal, pairwise; it has no identity of its own, no triples are <em>about</em> it, and no blank node stands for it.</p>
+    <ul><li><strong>Positions.</strong> A sequence may be the subject or the object of a triple, and an element of a</li></ul>
+    <p>sequence. It may not be a predicate or a graph name.</p>
+    <ul><li><strong><code>rdf:first</code>, <code>rdf:rest</code>, <code>rdf:nil</code>.</strong> They keep no special meaning: they are ordinary IRIs, and a</li></ul>
+    <p>triple using them is an ordinary triple. <code>()</code> is the empty sequence, not <code>rdf:nil</code>. The container vocabulary (<code>rdf:Seq</code>, <code>rdf:Bag</code>, <code>rdf:Alt</code>, <code>rdf:_n</code>, <code>rdfs:member</code>) is likewise plain IRIs; no syntax numbers membership properties any more (RDF/XML's <code>rdf:li</code> stays the property <code>rdf:li</code>).</p>
+    <ul><li><strong>Ordering.</strong> Where terms are ordered (SPARQL <code>ORDER BY</code>, <code>&lt;</code>), sequences come after literals and</li></ul>
+    <p>triple terms and are compared element by element, a shorter prefix first.</p>
+    <ul><li><strong>Blank nodes inside sequences</strong> are ordinary blank nodes: <code>( [ :p 1 ] )</code> is a sequence holding a</li></ul>
+    <p>blank node that also has a triple. Graph isomorphism has to canonicalize blank nodes inside sequences too, which stock tools do not yet (see [Open questions](#open-questions)).</p>
+    </section>
+    <section id="the-sequence-in-code">
+    <h3>The sequence in code</h3>
+    <table class="simple">
+    <thead><tr><th>Implementation</th><th>The term</th><th>Making one</th><th>Spelling of <code>value</code></th></tr></thead>
+    <tbody>
+    <tr><td>Apache Jena (<a href="https://github.com/rdf-array/jena-array">jena-array</a>)</td><td><code>Node_Seq</code>, a fifth <code>Node</code> kind</td><td>the sequence node factory</td><td>—</td></tr>
+    <tr><td>RDF/JS (<a href="https://github.com/rdf-array/types-array">types-array</a>, <a href="https://github.com/rdf-array/rdf-data-factory-array">rdf-data-factory-array</a>, <a href="https://github.com/rdf-array/N3.js-array">N3.js-array</a>)</td><td><code>{ termType: "Sequence", elements: readonly Term[], value }</code>, a member of <code>Term</code>, <code>Quad_Subject</code> and <code>Quad_Object</code></td><td><code>DataFactory.sequence(elements)</code></td><td><code>(e1 e2 …)</code>, the elements in N-Triples spelling: <code>(&lt;http://a&gt; "x" (1 2))</code></td></tr>
+    <tr><td>RDFLib (<a href="https://github.com/rdf-array/rdflib-array">rdflib-array</a>)</td><td><code>rdflib.term.Sequence</code>, with <code>.elements</code></td><td><code>Sequence(elements)</code></td><td>the Turtle spelling</td></tr>
+    </tbody></table>
+    <p>The RDF/JS helpers that recurse into triple terms (<code>rdf-terms</code>'s <code>*Nested</code> functions, <code>rdf-string</code>'s <code>termToString</code> and <code>stringToTerm</code>) recurse into sequences the same way; a nested path key may be a quad component name or an element index.</p>
+    </section>
+    <section id="sparql-results">
+    <h3>SPARQL results</h3>
+    <table class="simple">
+    <thead><tr><th>Format</th><th>A sequence binding</th></tr></thead>
+    <tbody>
+    <tr><td>SPARQL Results JSON</td><td><code>{ "type": "seq", "value": [ …one binding object per element… ] }</code></td></tr>
+    <tr><td>SPARQL Results XML</td><td><code>&lt;seq&gt;</code> with one child element per element (<code>&lt;uri&gt;</code>, <code>&lt;literal&gt;</code>, <code>&lt;bnode&gt;</code>, <code>&lt;triple&gt;</code>, a nested <code>&lt;seq&gt;</code>)</td></tr>
+    <tr><td>CSV</td><td>the sequence as one cell, <code>("1" http://a.example/o (…))</code>, quoted once</td></tr>
+    <tr><td>TSV</td><td>the Turtle spelling</td></tr>
+    </tbody></table>
+    </section>
+    <section id="concrete-syntaxes">
+    <h3>Concrete syntaxes</h3>
+    <p><strong>Turtle-array, TriG-array, N-Triples-array, N-Quads-array.</strong> <code>( e1 e2 … )</code> is a term wherever a subject or an object may stand, nested freely; <code>()</code> is the empty sequence. N-Triples and N-Quads use the same spelling on one line. A Turtle document written for RDF 1.1 therefore means something new under rdf-array: its collections are sequences, not ladders.</p>
+    <p><strong>SPARQL-array.</strong> A collection in a triple pattern, a CONSTRUCT template or INSERT/DELETE DATA is one sequence term. A variable inside a pattern's sequence is bound from the corresponding element of a matching sequence, nested sequences included, and a repeated variable must match equal elements. A <strong>position pattern</strong> reaches elements by index:</p>
+    <pre class="example sparql nohighlight">SELECT ?x ?o WHERE { ?s :p (?x (2 3) ?o) }    # binds ?x and ?o from a matching sequence
+    SELECT ?s WHERE { ?s :p () }                     # the empty sequence is a term
+    ?s :p ((?e))[2]                                  # the 2nd element (1-based)
+    ?s :p ((?e))[?i]                                 # every element, ?i bound to its position
+    ?s :p ((?e))[*]                                  # every element
+    ?s :p ((((?e))[1]))[2]                           # nested: the first element of the second
+    FILTER(isSEQ(?x) &amp;&amp; SEQLEN(?x) = 3)              # functions, with SEQ(e1, …) and expr[i]</pre>
+    <p>In expressions a sequence is a term of its own kind: <code>isIRI</code>, <code>isBlank</code>, <code>isLiteral</code> and <code>isTriple</code> are false for it, <code>=</code> and <code>!=</code> compare whole sequences, <code>&lt;</code> orders them as above, <code>STR()</code> spells <code>(e1 e2 …)</code>. jena-array has all of this; comunica-array has the patterns, the ordering and the result formats, not yet the functions. Whether an application wants a sequence or repeated properties is a question about the RDF, answered by an update rather than by a syntax:</p>
+    <pre class="example sparql nohighlight">DELETE { ?s :tags ?seq }  INSERT { ?s :tags ?tag }
+    WHERE  { ?s :tags ?seq . ?s :tags ((?tag))[*] }</pre>
+    <p><strong>ShEx-array.</strong> The <strong>Collection shape expression</strong> <code>((shapeExpr))[min, max]</code> matches a sequence whose every element conforms to <code>shapeExpr</code> and whose length is within the bounds:</p>
+    <pre class="example nohighlight">:Colour   { :rgb ((xsd:integer MININCLUSIVE 0 MAXINCLUSIVE 255))[3] }
+    :Polygon  { :points ((( xsd:decimal ))[2])[3,*] }
+    :Playlist { :tracks ((@&lt;Track&gt;))[1,*] }
+    :Anything { :seq ((.))[0,*] }</pre>
+    <p>The shex.js, PyShEx and Jena ShEx implementations have it, with test-suite examples in shex.js-array's webapp manifest.</p>
+    <p><strong>JSON-LD-array.</strong> A mapping language for conventional JSON, specified in [json-ld-array.md](json-ld-array.html): a JSON array is one sequence term, nested arrays nested sequences, so JSON-LD's <code>@list</code> and <code>@set</code> containers are not needed; property maps, type maps, lexically scoped bases and templates replace the flat <code>@context</code>. Implemented in <a href="https://github.com/rdf-array/jsonld.js-array">jsonld.js-array</a>, which has a <a href="https://rdf-array.github.io/jsonld.js-array/">playground</a>.</p>
+    <p><strong>JSON-LD as it is.</strong> For the RDF/JS stack, the jsonld-streaming-parser fork reads a JSON-LD <code>@list</code> as one sequence (nested lists as nested sequences) and the jsonld-streaming-serializer fork writes a sequence as <code>@list</code>. jsonld.js's own <code>toRDF</code> is unchanged and still makes ladders; Components.js, the dependency injection comunica is built with, reads its configuration lists through it.</p>
+    <p><strong>RDF/XML.</strong> <code>rdf:parseType="Collection"</code> is one sequence, <code>()</code> when empty, and <code>rdf:ID</code> reification or <code>rdf:annotation</code> applies to that one triple; <code>rdf:li</code> is no longer numbered into <code>rdf:_1</code>, <code>rdf:_2</code>, …. RDFLib's RDF/XML, TriX and HexTuples writers refuse sequence terms rather than invent a spelling.</p>
+    <p><strong>Not touched.</strong> SHACL (a sequence-valued <code>sh:in</code> has no reading yet), RDFa (<code>inlist</code> still builds a ladder), the canonicalization algorithm RDFC-1.0 (no sequence term), N3 formulas (fine in RDFLib).</p>
+    </section>
+    <section id="converting-between-rdf-and-rdf-array">
+    <h3>Converting between RDF and rdf-array</h3>
+    <p>Nothing converts automatically. Parsing an RDF 1.1 document with an rdf-array parser gives sequences where it had collections and leaves any explicit <code>rdf:first</code>/<code>rdf:rest</code> triples as they are; parsing an rdf-array document with an RDF 1.1 parser fails on <code>( … )</code> in the places RDF 1.1 does not allow it, or silently makes a ladder. Folding ladders into sequences is beyond a single SPARQL-array update (the fold recurses); CFGraph-array flattens both for ShEx validation, and a dedicated converter is still to be written. Spreading a sequence into repeated properties is the update above; gathering repeated properties back needs an aggregate.</p>
+    </section>
+  </section>
+  <section id="what-does-not-change">
+  <h2>What does not change</h2>
+  <p>Triples, graphs, datasets and their semantics; IRIs, blank nodes and literals; SPARQL's algebra apart from the term kind and its position patterns; ShEx apart from the Collection shape expression; JSON-LD 1.1 itself (JSON-LD-array is a different mapping language, not a change to JSON-LD). An rdf-array graph with no sequences is an RDF graph.</p>
+  </section>
+  <section id="implementations">
+  <h2>Implementations</h2>
+  <table class="simple">
+  <thead><tr><th>Language</th><th>Project</th><th>What the fork does</th></tr></thead>
+  <tbody>
+  <tr><td>Java</td><td><a href="https://github.com/rdf-array/jena-array">jena-array</a></td><td>Apache Jena with the <code>Node_Seq</code> term: Turtle-array, SPARQL-array (patterns, position patterns, functions, results), ShEx-array; the <code>jena-rdfminus</code> demo server and page; <code>RDF-SEQUENCES-HANDOFF.md</code> tabulates the flagged tests</td></tr>
+  <tr><td>JavaScript</td><td><a href="https://github.com/rdf-array/shex.js-array">shex.js-array</a> with <a href="https://github.com/rdf-array/N3.js-array">N3.js-array</a>, <a href="https://github.com/rdf-array/types-array">types-array</a>, <a href="https://github.com/rdf-array/lezer-turtle-array">lezer-turtle-array</a>, <a href="https://github.com/rdf-array/lezer-shexc-array">lezer-shexc-array</a></td><td>ShEx-array validation in the browser and Node, with the Turtle-array and ShExC-array editor grammars; &lt;https://rdf-array.github.io/shex.js-array/&gt;</td></tr>
+  <tr><td>JavaScript</td><td><a href="https://github.com/rdf-array/comunica-array">comunica-array</a> with <a href="https://github.com/rdf-array/traqula-array">traqula-array</a>, <a href="https://github.com/rdf-array/rdf-data-factory-array">rdf-data-factory-array</a>, <a href="https://github.com/rdf-array/rdf-string-array">rdf-string-array</a>, <a href="https://github.com/rdf-array/rdf-string-ttl-array">rdf-string-ttl-array</a>, <a href="https://github.com/rdf-array/rdf-terms-array">rdf-terms-array</a>, <a href="https://github.com/rdf-array/jsonld-streaming-parser-array">jsonld-streaming-parser-array</a>, <a href="https://github.com/rdf-array/jsonld-streaming-serializer-array">jsonld-streaming-serializer-array</a>, <a href="https://github.com/rdf-array/rdfxml-streaming-parser-array">rdfxml-streaming-parser-array</a>, <a href="https://github.com/rdf-array/sparqljson-parse-array">sparqljson-parse-array</a>, <a href="https://github.com/rdf-array/sparqlxml-parse-array">sparqlxml-parse-array</a></td><td>the SPARQL-array engine over Turtle, JSON-LD and RDF/XML sources and remote endpoints, with the result formats; comunica-array's <code>doc/rdf-array.md</code> has the stack table</td></tr>
+  <tr><td>JavaScript</td><td><a href="https://github.com/rdf-array/jsonld.js-array">jsonld.js-array</a></td><td>JSON-LD-array: <code>jsonld.arrayToRDF</code>, writers for N-Quads-array and Turtle-array, the <a href="https://rdf-array.github.io/jsonld.js-array/">playground</a></td></tr>
+  <tr><td>Python</td><td><a href="https://github.com/rdf-array/PyShEx-array">PyShEx-array</a> with <a href="https://github.com/rdf-array/rdflib-array">rdflib-array</a>, <a href="https://github.com/rdf-array/grammar-python-antlr-linkml-array">grammar-python-antlr-linkml-array</a> (the <code>pyshexc</code> parser), <a href="https://github.com/rdf-array/ShExJSG-array">ShExJSG-array</a>, <a href="https://github.com/rdf-array/CFGraph-array">CFGraph-array</a></td><td>ShEx-array validation over RDFLib with <code>rdflib.term.Sequence</code>; RDFLib's Turtle, N-Triples, N3, JSON-LD and SPARQL read and write sequences</td></tr>
+  <tr><td>Specification</td><td><a href="https://github.com/rdf-array/rdf-array">rdf-array</a></td><td>this overview, the JSON-LD-array specification and its brief</td></tr>
+  </tbody></table>
+  </section>
+  <section id="conventions-of-the-organisation">
+  <h2>Conventions of the organisation</h2>
+  <ul><li>A fork is named <code>&lt;project&gt;-array</code> and works on a branch <code>rdf-sequences</code>, which is its default</li></ul>
+  <p>branch; <code>origin</code> is the fork and <code>upstream</code> the original.</p>
+  <ul><li>Its README opens with a banner, "<code>&lt;project&gt;-array</code>: <code>&lt;project&gt;</code> for rdf-array", beside an icon that</li></ul>
+  <p>puts the original's avatar between big <code>[</code> <code>]</code> brackets (<code>.github/rdf-array-logo.{png,svg}</code>), and its notes live in <code>doc/rdf-array.md</code>.</p>
+  <ul><li>Commit messages start with <code>rdf-array:</code> (older ones with <code>RDF-:</code>); repository descriptions likewise.</li><li>A test that depends on <code>rdf:first</code>/<code>rdf:rest</code> ladders is flagged with the reason, never silently</li></ul>
+  <p>dropped, and gets an rdf-array counterpart where one makes sense.</p>
+  <ul><li>Dependencies that had to learn the term are forked too and pinned from the dependent fork (yarn</li></ul>
+  <p><code>resolutions</code>, npm <code>overrides</code>, <code>[tool.uv.sources]</code>); JavaScript forks commit their compiled output so that a git dependency installs without a build.</p>
+  </section>
+  <section id="open-questions">
+  <h2>Open questions</h2>
+  <ul><li><strong>A placeholder element.</strong> JSON <code>null</code> inside an array leaves no element, which shifts the</li></ul>
+  <p>positions after it; rdf-array has no term to hold a place.</p>
+  <ul><li><strong>Blank nodes inside sequences.</strong> <code>rdf-isomorphic</code> and the canonicalization algorithms do not look</li></ul>
+  <p>inside sequences, so two graphs that differ only in blank node labels inside sequences are not recognised as isomorphic; tests compare such cases by hand.</p>
+  <ul><li><strong>Sequences as subjects</strong> are allowed; JSON-LD-array cannot write them (no <code>@id</code> for a value), and</li></ul>
+  <p>nothing yet needs them.</p>
+  <ul><li><strong>Containers.</strong> <code>rdf:Seq</code>, <code>rdf:Bag</code> and <code>rdf:Alt</code> keep their vocabulary but lose the only syntax</li></ul>
+  <p>that produced them (<code>rdf:li</code>); whether a sequence should ever be read as a bag or an alternative is open.</p>
+  <ul><li><strong>SHACL, OWL, SKOS.</strong> Each reads collections as ladders; their rdf-array readings are not written.</li><li><strong>Specification test suites.</strong> The W3C SPARQL, JSON-LD, RDF/XML and Turtle suites spell ladders in</li></ul>
+  <p>their expected output; the forks skip or re-record those tests with an rdf-array reason, and no suite expresses the rdf-array expectations yet.</p>
+  <ul><li><strong>Interchange with RDF 1.1 systems.</strong> Until a converter exists, an rdf-array document is readable</li></ul>
+  <p>only by rdf-array tools; the same was true of RDF-star documents for a while.</p>
+  </section>
+  <script>
+  // Turtle-array and SPARQL-array highlighting: a few token classes are enough for these examples.
+  (function () {
+    var token = /(<[^>\s]*>)|("""[\s\S]*?"""|"(?:[^"\\]|\\.)*")(@[A-Za-z0-9-]+|\^\^[^\s;,.()\]]+)?|(#[^\n]*)|(\?[A-Za-z_][\w]*)|(_:[A-Za-z0-9_-]+)|(\b(?:PREFIX|BASE|SELECT|CONSTRUCT|ASK|DESCRIBE|WHERE|DELETE|INSERT|DATA|FILTER|OPTIONAL|UNION|ORDER|BY|GROUP|LIMIT|OFFSET|BIND|VALUES|GRAPH|a)\b)|(\b-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|([A-Za-z][\w-]*:[\w#./-]*|[A-Za-z][\w-]*:)/g;
+    function paint(pre) {
+      var src = pre.textContent, out = '', last = 0, m;
+      token.lastIndex = 0;
+      while ((m = token.exec(src))) {
+        out += esc(src.slice(last, m.index));
+        var cls = m[1] ? 'hljs-iri' : m[2] ? 'hljs-lit' : m[4] ? 'hljs-cmt' : m[5] ? 'hljs-var' : m[6] ? 'hljs-bnode' : m[7] ? 'hljs-kw' : m[8] ? 'hljs-num' : 'hljs-pname';
+        out += '<span class="' + cls + '">' + esc(m[0]) + '</span>';
+        last = token.lastIndex;
+      }
+      out += esc(src.slice(last));
+      pre.innerHTML = out;
+    }
+    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    var jsonToken = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(true|false|null)\b/g;
+    function paintJson(pre) {
+      var src = pre.textContent, out = '', last = 0, m;
+      jsonToken.lastIndex = 0;
+      while ((m = jsonToken.exec(src))) {
+        out += esc(src.slice(last, m.index));
+        if (m[1]) { out += '<span class="' + (m[2] ? 'hljs-attr' : 'hljs-string') + '">' + esc(m[1]) + '</span>' + esc(m[2] || ''); }
+        else if (m[3]) { out += '<span class="hljs-number">' + esc(m[3]) + '</span>'; }
+        else { out += '<span class="hljs-literal">' + esc(m[4]) + '</span>'; }
+        last = jsonToken.lastIndex;
+      }
+      out += esc(src.slice(last));
+      pre.innerHTML = out;
+    }
+    function tidyHeader() {
+      // An unofficial draft has no published version; ReSpec prints the line anyway.
+      document.querySelectorAll('.head dt').forEach(function (dt) {
+        if (/^Latest published version/.test(dt.textContent)) { var dd = dt.nextElementSibling; dt.remove(); if (dd && dd.tagName === 'DD') dd.remove(); }
+      });
+    }
+    function run() { tidyHeader(); document.querySelectorAll('pre.turtle, pre.sparql').forEach(paint); document.querySelectorAll('pre.json').forEach(paintJson); }
+    if (document.respec && document.respec.ready) { document.respec.ready.then(run); } else { document.addEventListener('DOMContentLoaded', run); }
+  })();
+  </script>
+</body>
+</html>

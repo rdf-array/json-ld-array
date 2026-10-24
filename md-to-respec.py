@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Turn json-ld-array.md (a small, regular Markdown subset) into a ReSpec HTML document.
+"""Turn a Markdown document of this repository (a small, regular subset of Markdown) into a ReSpec
+HTML page.
 
     python3 md-to-respec.py json-ld-array.md json-ld-array.html
+    python3 md-to-respec.py rdf-array.md rdf-array.html
 
 Handles: the leading H1 (becomes the title), paragraphs, bullet lists with continuation lines,
 fenced code blocks (```json / ```turtle / ```sparql), pipe tables with a header row, inline code,
@@ -11,6 +13,7 @@ unnumbered introduction, so "§3.4" references in the prose keep pointing at the
 JSON is highlighted by ReSpec's highlight.js; Turtle and SPARQL by a small script of their own.
 """
 import html
+import os
 import re
 import sys
 
@@ -177,9 +180,9 @@ TEMPLATE = '''<!DOCTYPE html>
   <script class="remove">
     var respecConfig = {
       specStatus: "unofficial",
-      shortName: "json-ld-array",
+      shortName: "%(short_name)s",
       editors: [{ name: "Eric Prud'hommeaux" }],
-      edDraftURI: "https://rdf-array.github.io/json-ld-array/",
+      edDraftURI: "https://rdf-array.github.io/rdf-array/%(short_name)s.html",
       latestVersion: null,
       overrideCopyright: "<p class='copyright'>Copyright &copy; 2026 the rdf-array project. This document is licensed under a <a href='https://creativecommons.org/licenses/by/4.0/'>Creative Commons Attribution 4.0 License</a>.</p>",
       lint: { "no-unused-dfns": false },
@@ -214,7 +217,7 @@ TEMPLATE = '''<!DOCTYPE html>
 %(abstract)s
   </section>
   <section id="sotd">
-    <p>This is a design sketch for the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/json-ld-array">json-ld-array.md</a> by <code>md-to-respec.py</code>. It is implemented in <a href="https://github.com/rdf-array/jsonld.js-array">jsonld.js-array</a>, which has a <a href="https://rdf-array.github.io/jsonld.js-array/">playground</a>. It is not a W3C document and has no standing anywhere.</p>
+    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/%(source)s">%(source)s</a> by <code>md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
   </section>
   <section class="introductory" id="introduction">
     <h2>Introduction</h2>
@@ -276,8 +279,11 @@ def main(src, dst):
     abstract = rest[0] if rest else ''
     intro = ([status] if status else []) + rest[1:]
     title_text = re.sub(r'<[^>]+>', '', title or 'JSON-LD-array')
+    short_name = os.path.splitext(os.path.basename(dst))[0]
     page = TEMPLATE % {
         'title_text': html.escape(title_text, quote=False),
+        'short_name': short_name,
+        'source': html.escape(os.path.basename(src), quote=False),
         'abstract': '    ' + abstract,
         'intro': '\n'.join('    ' + b for b in intro),
         'sections': render_sections(tops),

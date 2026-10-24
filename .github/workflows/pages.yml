@@ -1,12 +1,14 @@
 name: pages
 
-# Deploy the specification to GitHub Pages:
+# Deploy the documents to GitHub Pages:
 #
-#   https://rdf-array.github.io/json-ld-array/   (redirects to json-ld-array.html)
+#   https://rdf-array.github.io/rdf-array/rdf-array.html
+#   https://rdf-array.github.io/rdf-array/json-ld-array.html
 #
-# The tracked tree is the site: json-ld-array.html is generated from
-# json-ld-array.md by md-to-respec.py and committed, so nothing is built here.
-# Modelled on shex.js-array's pages.yml.
+# The tracked tree is the site: each .html is generated from its .md by
+# md-to-respec.py and committed, so nothing is built here; there is no
+# index.html, the README being the front page on GitHub. Modelled on
+# shex.js-array's pages.yml.
 #
 # One-time setup: Settings -> Pages -> Source: "GitHub Actions" (configure-pages
 # with `enablement: true` does it on the first run when the token may).
@@ -30,13 +32,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: check that the HTML is current
+      - name: check that the HTML renderings are current
         run: |
-          python3 md-to-respec.py json-ld-array.md /tmp/regenerated.html
-          if ! diff -q /tmp/regenerated.html json-ld-array.html >/dev/null; then
-            echo 'json-ld-array.html is out of date: run python3 md-to-respec.py json-ld-array.md json-ld-array.html' >&2
-            exit 1
-          fi
+          for doc in rdf-array json-ld-array; do
+            python3 md-to-respec.py "$doc.md" "/tmp/$doc.html"
+            if ! diff -q "/tmp/$doc.html" "$doc.html" >/dev/null; then
+              echo "$doc.html is out of date: run python3 md-to-respec.py $doc.md $doc.html" >&2
+              exit 1
+            fi
+          done
       - uses: actions/configure-pages@v6
         with:
           enablement: true

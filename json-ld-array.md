@@ -4,8 +4,9 @@
 [jsonld.js-array](https://github.com/rdf-array/jsonld.js-array) (`jsonld.arrayToRDF`, with a
 [playground](https://rdf-array.github.io/jsonld.js-array/)), whose doc/rdf-array.md lists the
 decisions the implementation added. This document is
-[json-ld-array.md](https://github.com/rdf-array/json-ld-array) there, rendered at
-<https://rdf-array.github.io/json-ld-array/>. The
+[json-ld-array.md](https://github.com/rdf-array/rdf-array) in the organisation's meta-repository,
+rendered at <https://rdf-array.github.io/rdf-array/json-ld-array.html>; [rdf-array.md](rdf-array.html)
+there describes the change from RDF to rdf-array. The
 names follow the rdf-array organisation: rdf-array is RDF whose data model has sequences as terms,
 and Turtle-array, SPARQL-array, ShEx-array and JSON-LD-array are its syntaxes.*
 

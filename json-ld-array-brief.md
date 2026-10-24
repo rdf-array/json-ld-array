@@ -1,6 +1,6 @@
 # JSON-LD-array: brief for a sanity check and a jsonld.js prototype
 
-Paste-ready summary of `json-ld-array.md` (design sketch, 2026-10-23, https://github.com/rdf-array/json-ld-array). The
+Paste-ready summary of `json-ld-array.md` (design sketch, 2026-10-23, https://github.com/rdf-array/rdf-array). The
 target is a fork of https://github.com/digitalbazaar/jsonld.js whose `toRDF` accepts a JSON-LD-array
 mapping, so the language can be tried in a locally modified JSON-LD playground. The full document has
 the tables of examples; this brief has the rules.
