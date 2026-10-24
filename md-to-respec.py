@@ -20,7 +20,7 @@ import sys
 INLINE_CODE = re.compile(r'`([^`]+)`')
 BOLD = re.compile(r'\*\*(.+?)\*\*')
 ITALIC = re.compile(r'(?<![\w*])\*(?!\*)(.+?)(?<!\*)\*(?![\w*])')
-LINK = re.compile(r'\[([^\]]+)\]\((https?://[^)]+)\)')
+LINK = re.compile(r'\[([^\]]+)\]\(([^)\s]+)\)')
 CITE = re.compile(r'\[(RFC) (\d+)( §[^\]]*)?\]')
 
 
