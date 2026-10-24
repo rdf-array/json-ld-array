@@ -13,6 +13,7 @@ meta-repository: the documents below and the list of the forks.
 | [rdf-array.md](rdf-array.md) | [rdf-array.html](https://rdf-array.github.io/rdf-array/rdf-array.html) | the change from RDF to rdf-array: the data model, the syntaxes, the implementations, the conventions, the open questions |
 | [json-ld-array.md](json-ld-array.md) | [json-ld-array.html](https://rdf-array.github.io/rdf-array/json-ld-array.html) | the JSON-LD-array specification: conventional JSON to rdf-array through a mapping document |
 | [json-ld-array-brief.md](json-ld-array-brief.md) | — | the summary of JSON-LD-array written for implementers |
+| [targets.md](targets.md) | — | further `-array` targets (Oxigraph, rudof, QLever, SHACL-array, …) assessed for impact and utility, with a recommended order |
 
 The rendered documents are listed at <https://rdf-array.github.io/rdf-array/html-index.html>, the
 repository's homepage. `python3 md-to-respec.py <doc>.md <doc>.html` regenerates a rendering
@@ -79,6 +80,23 @@ dependency shared by several stacks is listed once, under the first, with the ot
       the ShExJ schema objects with the Collection shape expression.
     - [CFGraph](https://github.com/rdf-array/CFGraph-array) ([linkml/CFGraph](https://github.com/linkml/CFGraph)) —
       the closed-first graph wrapper, flattening sequence terms as well as `rdf:first`/`rdf:rest` ladders.
+
+## Skills and tools
+
+The formula the forks follow is written down as skills, in `.claude/skills/`, for the sessions
+that make the next ones:
+
+- [fork-array](.claude/skills/fork-array/SKILL.md): forking a project into the organisation and
+  teaching it the term, layer by layer, with the naming, remotes, banner, notes, pinning and Pages
+  conventions.
+- [array-tests](.claude/skills/array-tests/SKILL.md): transforming a project's tests, flagging the
+  ladder-dependent ones, folding ladder expectations into sequences with
+  [tools/rewrite-ladders.py](tools/rewrite-ladders.py), and the cases every fork must pass.
+- [w3c-test-suites](.claude/skills/w3c-test-suites/SKILL.md): which W3C and community suites apply,
+  what rdf-array changes in each, how to fork them as `<suite>-array`, and how each implementation
+  runs them.
+- [readme-manifest](.claude/skills/readme-manifest/SKILL.md): keeping the repository list above in
+  step with GitHub, checked by [tools/manifest-check.py](tools/manifest-check.py).
 
 ## Conventions
 
