@@ -95,6 +95,12 @@ dependency shared by several stacks is listed once, under the first, with the ot
       the ShExJ schema objects with the Collection shape expression.
     - [CFGraph](https://github.com/rdf-array/CFGraph-array) ([linkml/CFGraph](https://github.com/linkml/CFGraph)) —
       the closed-first graph wrapper, flattening sequence terms as well as `rdf:first`/`rdf:rest` ladders.
+- **Rust**
+  - [oxigraph](https://github.com/rdf-array/oxigraph-array) ([oxigraph/oxigraph](https://github.com/oxigraph/oxigraph)) —
+    `oxrdf::Sequence` as a term and a subject; Turtle, TriG, N3, N-Triples, N-Quads, RDF/XML and
+    JSON-LD read and write it; SPARQL-array with sequence and position patterns and the functions;
+    the `seq` results; the RocksDB store; `pyoxigraph.Sequence` and the WASM package's
+    `oxigraph.sequence()`. The whole family is one workspace: no forked dependencies.
 
 ## Skills and tools
 

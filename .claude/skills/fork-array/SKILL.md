@@ -18,15 +18,15 @@ each such dependency is a fork of its own, pinned from the dependent fork. The l
 
 | Layer | What changes | Done before in |
 |---|---|---|
-| data model | a sequence term: constructor, `elements`, equality by elements, the `(e1 e2 …)` spelling, membership in the subject and object positions | types-array, rdf-data-factory-array, jena-array (`Node_Seq`), rdflib-array (`rdflib.term.Sequence`) |
+| data model | a sequence term: constructor, `elements`, equality by elements, the `(e1 e2 …)` spelling, membership in the subject and object positions | types-array, rdf-data-factory-array, jena-array (`Node_Seq`), rdflib-array (`rdflib.term.Sequence`), oxigraph-array (`oxrdf::Sequence`, and a `Subject` enum for triples' subjects) |
 | term ↔ string | spelling and reading `( … )`, nested, with the elements' own spellings | rdf-string-array, rdf-string-ttl-array, N3.js-array's `value` |
 | parsers | a collection becomes one term, `()` the empty sequence, nested collections nested terms; blank node property lists inside still hoist their triples; JSON-LD `@list`, RDF/XML `rdf:parseType="Collection"`, `rdf:li` no longer numbered | N3.js-array, jsonld-streaming-parser-array, rdfxml-streaming-parser-array, rdflib-array, traqula-array (SPARQL) |
 | serializers | print sequences, nested; refuse where the format cannot (RDFLib's RDF/XML, TriX, HexTuples) | N3.js-array, jsonld-streaming-serializer-array, rdflib-array |
-| store or index | encode the term (nest it as RDF-star's triple term is nested); match a pattern holding a sequence with variables by fetching with that position open and matching elements afterwards; keep it away from fast paths that do not know it (rdf-stores' `matchBindings`) | comunica-array's `QuerySourceRdfJs`, jena-array's solvers |
+| store or index | encode the term (nest it as RDF-star's triple term is nested); match a pattern holding a sequence with variables by fetching with that position open and matching elements afterwards; keep it away from fast paths that do not know it (rdf-stores' `matchBindings`) | comunica-array's `QuerySourceRdfJs`, jena-array's solvers, oxigraph-array's `EncodedTerm::Sequence` and spareval's `TupleSelector::Sequence`/`SequencePosition` |
 | query | a collection in a pattern, template or update is a term; variables inside bind element by element; position patterns `((?e))[i]`, `[?i]`, `[*]`; ordering after literals and triple terms, element-wise; `isSEQ`, `SEQLEN`, `SEQ`, `expr[i]`; `STR()` spelling | jena-array, comunica-array, traqula-array |
 | results | SPARQL JSON `{"type": "seq", "value": [ … ]}`, XML `<seq>`, CSV one quoted cell, TSV the Turtle spelling; readers of those | comunica-array serializers, sparqljson-parse-array, sparqlxml-parse-array, rdflib-array |
 | validation | ShEx-array's Collection shape expression `((shapeExpr))[min, max]`; SHACL-array once defined | shex.js-array, PyShEx-array, jena-array's ShEx |
-| bindings | the term in every language binding (Python, WASM) | — |
+| bindings | the term in every language binding (Python, WASM) | oxigraph-array (`pyoxigraph.Sequence`, `oxigraph.sequence()`) |
 
 Remove the code dedicated to ladders and containers (`CommonIRIs.FIRST/REST/NIL`, list builders,
 `rdf:li` counters); `rdf:first`, `rdf:rest`, `rdf:nil` and `rdf:_n` stay ordinary IRIs with no
@@ -114,7 +114,9 @@ Tests are transformed by the `array-tests` skill as the implementation goes, nev
   `prerelease = "allow"`; one shared editable venv for the stack (`uv pip install -e …`).
 - **Java (Jena)**: in-tree; Maven may be unavailable, so the notes carry the `javac`/`java`
   incantations.
-- **Rust**: `[patch.crates-io]` or path/git dependencies on the forked crates.
+- **Rust**: `[patch.crates-io]` or path/git dependencies on the forked crates. Oxigraph's crates are one
+  workspace, so oxigraph-array needed none; a dependent such as rudof patches `oxrdf`, `oxttl`, … to
+  oxigraph-array's `rdf-sequences` branch.
 
 ## 6. Notes, commits, publication
 

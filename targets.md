@@ -12,11 +12,17 @@ what the fork buys rdf-array: users reached, capabilities shown for the first ti
 how much it unblocks. Both are scored 1 (small) to 5 (large). The forks so far cost roughly: a term
 in a data-model library, days; a parser or serializer, days; a SPARQL engine, weeks.
 
+## Done
+
+- **Oxigraph**, 2026-10-24: [oxigraph-array](https://github.com/rdf-array/oxigraph-array), all the
+  crates of the family in one fork, with pyoxigraph and the WASM package; its `doc/rdf-array.md`
+  lists what changed. The assessment below is kept as it was written.
+
 ## The short list
 
 | Target | Language | What it is | Impact | Utility | Forks it needs | Order |
 |---|---|---|---|---|---|---|
-| Oxigraph family (oxrdf, oxttl, oxrdfxml, oxjsonld, oxrdfio, spargebra, sparesults, sparopt, oxigraph, pyoxigraph, oxigraph-js) | Rust, with Python and WASM bindings | data model, parsers, SPARQL 1.1/1.2 engine and persistent store | 4 | 5 | none outside the family | 1 |
+| Oxigraph family (oxrdf, oxttl, oxrdfxml, oxjsonld, oxrdfio, spargebra, sparesults, sparopt, oxigraph, pyoxigraph, oxigraph-js) | Rust, with Python and WASM bindings | data model, parsers, SPARQL 1.1/1.2 engine and persistent store | 4 | 5 | none outside the family | done: [oxigraph-array](https://github.com/rdf-array/oxigraph-array) |
 | rudof | Rust, with Python and WASM bindings | ShEx, SHACL, DCTAP, shape conversion | 3 | 4 | the Oxigraph crates it uses | 2, after oxrdf and oxttl |
 | SHACL-array: a definition and a first implementation (jena-shacl, pySHACL, rdf-validate-shacl or rudof's `shacl`) | — | the validation language rdf-array has no reading of | 2–3 | 5 | the host's data model (already forked for Jena, RDFLib) | with 2 |
 | rdf-canonize and rdf-isomorphic (and Python rdf-canon) | JavaScript, Python | canonicalization and isomorphism | 2–3 | 4 | none | soon: the JS tests need it |
@@ -175,8 +181,9 @@ Oxigraph gives Rust.
 
 1. Extract a conformance suite from the forks' tests (Turtle-array, SPARQL-array, ShEx-array,
    JSON-LD-array, results formats), so that each port below starts from shared expectations.
-2. Fork the Oxigraph family, data model and parsers first, then `spargebra` and `sparesults`, then
-   the store; publish pyoxigraph-array and the WASM package.
+2. ~~Fork the Oxigraph family, data model and parsers first, then `spargebra` and `sparesults`, then
+   the store; publish pyoxigraph-array and the WASM package.~~ Done: oxigraph-array (2026-10-24);
+   the Python and WASM packages build from it but are not published.
 3. Fork rudof on top of it, with ShEx-array; define SHACL-array alongside and implement it in
    jena-shacl, then in rudof's `shacl`.
 4. Fork rdf-isomorphic and rdf-canonize, and switch the JavaScript forks' tests to them.

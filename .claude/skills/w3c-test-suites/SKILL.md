@@ -136,7 +136,7 @@ change of syntax has to rewrite.
 | PyShEx-array | the shexTest manifest tests under `tests/`, fetched from GitHub | the branch and URL in the test utilities |
 | shex.js-array | the mocha manifest tests over the `shex-test` dependency, `"shex-test": "github:shexSpec/shexTest#main"` in the root `package.json` (the Pages workflow clones the same ref beside the checkout) | that dependency, pointed at `rdf-array/shexTest-array#rdf-sequences`, and the workflow's clone |
 | rudof | the `shex_testsuite` crate over a shexTest checkout | its path argument |
-| Oxigraph (future) | `testsuite/` crate with its vendored suites | the vendored copies |
+| oxigraph-array | `cargo test -p oxigraph-testsuite` (`tests/parser.rs`, `tests/sparql.rs`, one function per manifest, each with a skip list) | the `testsuite/` submodules, pointed at the -array forks (branch `rdf-sequences`) and the contrib repositories (`main`); `src/files.rs` maps `https://w3c.github.io/` and `https://rdf-array.github.io/` onto them |
 | QLever (future) | its own end-to-end tests | — |
 
 A run is recorded as an EARL report where the runner produces one (`rdf-test-suite -o earl
