@@ -147,6 +147,12 @@ flagged tests in its `doc/rdf-array.md`.
 
 1. Point the runner at the suite fork (URL or path), not at W3C's copy, and at its `*-contrib` sibling.
 2. Run; sort the failures into: expectation still spells a ladder (fix the suite fork), meaning
-   changed (flag in the suite fork, add the counterpart), implementation bug (fix the fork).
+   changed (flag in the suite fork, add the counterpart), implementation bug (fix the fork), and
+   upstream drift. The suite forks are cut from upstream's head and are usually newer than the suite
+   the implementation pins, so run the unmodified implementation over upstream's suite at the commit
+   the fork was cut from: the failures it shares are drift, recorded in the fork's notes, not
+   rdf-array failures ([rdf-array#11](https://github.com/rdf-array/rdf-array/issues/11)). A test on
+   which implementations disagree, or whose meaning rdf-array has not decided, is a `cross-repo`
+   issue in rdf-array/rdf-array (`fork-array` §8).
 3. Add the rdf-array additions (§4) for the layers the implementation has.
 4. Record counts, skips and the EARL report; note any test the implementation cannot run and why.

@@ -46,7 +46,8 @@ nested under it. `tools/manifest-check.py` compares it with GitHub.
 1. **Created or forked:** set its GitHub description (`gh repo edit rdf-array/<name> --description
    "rdf-array: …"`) and default branch; add the README entry; add the fork to the implementations
    table in `rdf-array.md` (and regenerate `rdf-array.html`, which the Pages workflow checks); if it
-   has a site, the homepage URL. Add it to the session's memory note of the forks.
+   has a site, the homepage URL. Add it to the session's memory note of the forks. Leave issues off
+   on a fork (GitHub's default): its issues go to rdf-array/rdf-array (`fork-array` §8).
 2. **Renamed:** GitHub redirects the old name, but update every link in this repository and in the
    forks that point at it (`grep -rn "rdf-array/<old>" ~/checkouts/rdf-array/*/README.md
    ~/checkouts/rdf-array/*/doc/rdf-array.md`), the local checkout directory and its `origin`.

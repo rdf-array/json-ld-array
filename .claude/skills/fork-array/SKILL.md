@@ -1,6 +1,6 @@
 ---
 name: fork-array
-description: Fork an RDF implementation into the rdf-array organisation as <project>-array and teach it the sequence term — naming, remotes, branch, banner and icon, notes, where the term goes in each layer, dependency pinning per ecosystem, commits and GitHub Pages. Use when adding a new -array fork or a forked dependency.
+description: Fork an RDF implementation into the rdf-array organisation as <project>-array and teach it the sequence term — naming, remotes, branch, banner and icon, notes, where the term goes in each layer, dependency pinning per ecosystem, commits, GitHub Pages, and where issues go (rdf-array/rdf-array, cross-repo or repo-specific). Use when adding a new -array fork or a forked dependency.
 ---
 
 # Forking a project into rdf-array
@@ -89,8 +89,8 @@ Work through the closure of §1 in dependency order (data model, then string spe
 parsers, then the rest), building and testing each dependency fork before the dependent one picks
 it up. For each layer follow the existing fork of the same ecosystem (its `doc/rdf-array.md` lists
 the files it touched) and the semantics in rdf-array.md; where the project forces a decision the
-documents do not make, take it, note it under "Decisions" in the notes, and raise it in the
-rdf-array.md open questions if it is general.
+documents do not make, take it, note it under "Decisions" in the notes, and, if other
+implementations face the same choice, raise it as an issue (§8).
 
 Tests are transformed by the `array-tests` skill as the implementation goes, never afterwards.
 
@@ -123,7 +123,7 @@ Tests are transformed by the `array-tests` skill as the implementation goes, nev
 `doc/rdf-array.md` in the fork has: what rdf-array is in one paragraph and the stack table
 (dependencies, their forks, base versions); setting up; what a sequence does here; what changed
 (files, modules); tests (added, flagged with reasons, suites run and their numbers, suites not
-run); decisions taken; not done. Commit messages start `rdf-array:` (older ones `RDF-:`) and end
+run); decisions taken; not done. Link each decision or gap that has an issue (§8) to it. Commit messages start `rdf-array:` (older ones `RDF-:`) and end
 with the attribution trailer the session uses; the first commit's body says what the fork changes
 and what it pins. Pre-commit hooks may run lint, build and full test suites (comunica ~12 min,
 traqula's `spec:all` needs the network); run them, and commit with `-n` only when the hook was
@@ -139,6 +139,32 @@ homepage at the site.
 
 Add it to this repository's README manifest (the `readme-manifest` skill), to the implementations
 table of rdf-array.md, and to the memory note the session keeps; set the GitHub description.
+
+## 8. Issues
+
+All rdf-array issues live in [rdf-array/rdf-array](https://github.com/rdf-array/rdf-array/issues).
+GitHub turns issues off on forks, and every `-array` fork keeps them off; only this repository
+and the three `*-contrib` repositories have them on. Never file rdf-array issues on an upstream
+project's tracker.
+
+1. **Search first**, across the organisation, and comment on an existing issue rather than open a
+   duplicate; the comment says what this fork does about it (accepts, rejects, not done, where in
+   the code):
+
+   ```bash
+   gh issue list -R rdf-array/rdf-array --state all --limit 100
+   gh search issues --owner rdf-array --state open "<words>"
+   ```
+
+2. **Cross-repo**: a question several implementations or suites face, a disagreement between
+   implementations, a gap in a suite that every port meets, or a process problem across forks.
+   Label it `cross-repo`. If it is a decision the model or a syntax has not made, also label it
+   `open-question` and add a bullet with the link to the open questions of rdf-array.md
+   (then regenerate `rdf-array.html`). State what each implementation does today, and what deciding
+   would change (tests to add to a `*-contrib`, implementations to fix).
+3. **Repo-specific**: a gap or bug in one fork. Title it `<repo>: …` (as `shex.js-array: …`).
+4. Name the issue in the fork's `doc/rdf-array.md` (Decisions, Not done) and, when a commit settles
+   it, in the commit message (`rdf-array/rdf-array#9`).
 
 ## Pitfalls met before
 

@@ -186,16 +186,23 @@ graph with no sequences is an RDF graph.
   that produced them (`rdf:li`); whether a sequence should ever be read as a bag or an alternative is
   open.
 - **SHACL, OWL, SKOS.** Each reads collections as ladders; their rdf-array readings are not written.
+  rudof-array reads a SHACL shapes graph's lists as sequences only, which four W3C SHACL tests
+  contradict ([#9](https://github.com/rdf-array/rdf-array/issues/9)).
 - **Specification test suites.** The W3C suites are forked with their expectations rewritten
   (rdf-tests-array, json-ld-api-array, json-ld-streaming-array, shexTest-array), and the tests no W3C
   suite has live in rdf-tests-contrib, json-ld-api-contrib and shexTest-contrib; the implementations do
-  not walk them yet (see the README for the repositories and contrib-duplicates.md for the overlap).
+  not all walk them yet ([#3](https://github.com/rdf-array/rdf-array/issues/3); see the README for the repositories and contrib-duplicates.md for the
+  overlap). The suite forks are newer than the suites the implementations pin, so a port must tell
+  upstream drift from rdf-array failures ([#11](https://github.com/rdf-array/rdf-array/issues/11)).
   SHACL's and RDF canonicalization's suites wait for SHACL-array and for a canonicalization of sequences.
 - **A sequence inside a triple term.** RDF 1.2 forbids a collection in a triple term because it generates
   triples; a sequence generates none, so rdf-array could allow `<< :s :p ( 1 ) >>`, but jena-array and
-  N3.js-array reject it today, and rdf-tests-array keeps the RDF 1.2 negative test (`trig12-syntax-bad-06`).
-- **Collection bounds with the minimum above the maximum** (`((x))[3, 1]`): shex.js-array accepts them and
-  jena-array rejects them; no contrib test decides it yet.
+  N3.js-array reject it today, and rdf-tests-array keeps the RDF 1.2 negative test (`trig12-syntax-bad-06`)
+  ([#5](https://github.com/rdf-array/rdf-array/issues/5)).
+- **Collection bounds with the minimum above the maximum** (`((x))[3, 1]`): shex.js-array accepts them,
+  jena-array and rudof-array reject them; no contrib test decides it yet ([#6](https://github.com/rdf-array/rdf-array/issues/6)).
+- **Sequences in shape maps and value sets.** ShEx-array has no compact shape map spelling for a sequence
+  focus node and does not say whether a value set may hold a sequence ([#10](https://github.com/rdf-array/rdf-array/issues/10)).
 - **The array syntax itself.** Position patterns `((x))[i]` and the Collection shape expression
   `((shapeExpr))[m, n]` are the syntax proposed today and are expected to change; their alikeness in SPARQL
   and ShEx is convenient rather than required. [array-syntax-uses.md](array-syntax-uses.md) lists every file

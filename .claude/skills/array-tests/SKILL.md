@@ -122,4 +122,6 @@ fork tests the contrib suites already reproduce. The cases:
 
 Run the fork's whole suite, the dependency forks' suites, and the applicable W3C suites
 (`w3c-test-suites`); put the numbers, the skipped tests with reasons, and the suites not run in
-`doc/rdf-array.md`. A fork is done when the only failures left are the flagged ones.
+`doc/rdf-array.md`. A fork is done when the only failures left are the flagged ones. A flag that
+reflects a choice other implementations will face (rudof-array's ladder-spelled SHACL paths, for
+one) gets a `cross-repo` issue in rdf-array/rdf-array (`fork-array` §8), linked from the notes.
