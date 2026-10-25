@@ -80,8 +80,10 @@ regenerate with the fork's own serializer once the parser is trusted, and read t
 
 ## 4. Cases every fork must pass
 
-Add these, in the fork's own test style, wherever the layer exists; they are what the conformance
-suite will contain:
+Most of these are now shared tests in the `*-contrib` repositories (see the `w3c-test-suites` skill):
+walk those manifests rather than re-deriving the cases, and add a case there, not only in the fork, when it
+would serve other implementations. [contrib-duplicates.md](../../../contrib-duplicates.md) lists which existing
+fork tests the contrib suites already reproduce. The cases:
 
 - parse `( 1 2 )`, `()`, `( 1 ( 2 3 ) )`, `( [ :p 1 ] )`, a sequence as subject, as an element of a
   sequence inside a triple term, and the empty sequence against `rdf:nil` (they differ);

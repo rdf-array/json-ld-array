@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>rdf-array test vocabulary</title>
+<style>
+:root { --fg: #222; --bg: #fff; --muted: #666; --accent: #0b5394; --line: #ddd; }
+@media (prefers-color-scheme: dark) { :root { --fg: #e8e8e8; --bg: #1e1e1e; --muted: #aaa; --accent: #8ab4f8; --line: #444; } }
+body { margin: 0 auto; max-width: 56em; padding: 2em 1em; font: 15px/1.5 system-ui, sans-serif; color: var(--fg); background: var(--bg); }
+table { border-collapse: collapse; width: 100%; } td, th { border-bottom: 1px solid var(--line); padding: .4em .5em; text-align: left; vertical-align: top; }
+a { color: var(--accent); } .muted { color: var(--muted); }
+</style></head>
+<body>
+<h1>rdf-array test vocabulary</h1>
+<p class="muted">Namespace <code>https://rdf-array.github.io/rdf-array/vocab#</code>, also as <a href="vocab.ttl">Turtle</a>. The rdf-array test suites use these terms with
+<code>mf:requires</code>, so that a runner can skip what an implementation does not have, and to mark the tests that use the array
+syntax proposed today. See the <a href="../html-index.html">rdf-array documents</a>.</p>
+<table><tr><th>Term</th><th>Kind</th><th>Meaning</th></tr>
+<tr id="Sequences"><td><code>ra:Sequences</code></td><td>feature</td><td>The sequence term: a syntax reads and writes ( e1 e2 … ) as one term, () the empty sequence.</td></tr>
+<tr id="SequencePatterns"><td><code>ra:SequencePatterns</code></td><td>feature</td><td>SPARQL-array: a sequence term in a triple pattern, template or INSERT/DELETE DATA, with variables bound element by element.</td></tr>
+<tr id="SequenceResults"><td><code>ra:SequenceResults</code></td><td>feature</td><td>SPARQL results carrying sequence terms: JSON {&quot;type&quot;: &quot;seq&quot;, &quot;value&quot;: [ … ]}, XML &lt;seq&gt;, CSV and TSV spellings.</td></tr>
+<tr id="PositionPatterns"><td><code>ra:PositionPatterns</code></td><td>feature</td><td>SPARQL-array position patterns ((element))[index], index an integer, a variable or *. Proposed syntax, expected to change.</td></tr>
+<tr id="SequenceFunctions"><td><code>ra:SequenceFunctions</code></td><td>feature</td><td>SPARQL-array functions isSEQ, SEQLEN, SEQ and the index expression expr[i]. Proposed syntax, expected to change.</td></tr>
+<tr id="CollectionShapeExpression"><td><code>ra:CollectionShapeExpression</code></td><td>feature</td><td>ShEx-array Collection shape expression ((shapeExpr))[min, max], ShExJ {&quot;type&quot;: &quot;Collection&quot;}, ShExR sx:Collection. Proposed syntax, expected to change.</td></tr>
+<tr id="JsonLdArrayToRdfTest"><td><code>ra:JsonLdArrayToRdfTest</code></td><td>class</td><td>A JSON-LD-array test: plain JSON (input) and a mapping document (ra:mapping) to N-Quads-array (expect) or an error code (expectErrorCode).</td></tr>
+<tr id="mapping"><td><code>ra:mapping</code></td><td>property</td><td>The JSON-LD-array mapping document of a ra:JsonLdArrayToRdfTest.</td></tr>
+</table>
+</body></html>

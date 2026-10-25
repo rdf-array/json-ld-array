@@ -1,0 +1,38 @@
+@prefix ra:   <https://rdf-array.github.io/rdf-array/vocab#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix mf:   <http://www.w3.org/2001/sw/DataAccess/tests/test-manifest#> .
+
+# The rdf-array test vocabulary: what a test requires (mf:requires) and the JSON-LD-array test type.
+
+ra:Sequences a mf:Requirement ;
+    rdfs:label "Sequences" ;
+    rdfs:comment "The sequence term: a syntax reads and writes ( e1 e2 … ) as one term, () the empty sequence." .
+
+ra:SequencePatterns a mf:Requirement ;
+    rdfs:label "SequencePatterns" ;
+    rdfs:comment "SPARQL-array: a sequence term in a triple pattern, template or INSERT/DELETE DATA, with variables bound element by element." .
+
+ra:SequenceResults a mf:Requirement ;
+    rdfs:label "SequenceResults" ;
+    rdfs:comment "SPARQL results carrying sequence terms: JSON {\"type\": \"seq\", \"value\": [ … ]}, XML <seq>, CSV and TSV spellings." .
+
+ra:PositionPatterns a mf:Requirement ;
+    rdfs:label "PositionPatterns" ;
+    rdfs:comment "SPARQL-array position patterns ((element))[index], index an integer, a variable or *. Proposed syntax, expected to change." .
+
+ra:SequenceFunctions a mf:Requirement ;
+    rdfs:label "SequenceFunctions" ;
+    rdfs:comment "SPARQL-array functions isSEQ, SEQLEN, SEQ and the index expression expr[i]. Proposed syntax, expected to change." .
+
+ra:CollectionShapeExpression a mf:Requirement ;
+    rdfs:label "CollectionShapeExpression" ;
+    rdfs:comment "ShEx-array Collection shape expression ((shapeExpr))[min, max], ShExJ {\"type\": \"Collection\"}, ShExR sx:Collection. Proposed syntax, expected to change." .
+
+ra:JsonLdArrayToRdfTest a rdfs:Class ;
+    rdfs:label "JsonLdArrayToRdfTest" ;
+    rdfs:comment "A JSON-LD-array test: plain JSON (input) and a mapping document (ra:mapping) to N-Quads-array (expect) or an error code (expectErrorCode)." .
+
+ra:mapping a rdf:Property ;
+    rdfs:label "mapping" ;
+    rdfs:comment "The JSON-LD-array mapping document of a ra:JsonLdArrayToRdfTest." .

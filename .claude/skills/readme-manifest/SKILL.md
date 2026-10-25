@@ -27,6 +27,8 @@ nested under it. `tools/manifest-check.py` compares it with GitHub.
 - **Ordering.** Within a stack: the data model and term libraries, then parsers and serializers,
   then query, then results; or simply the order of the stack table in the fork's
   `doc/rdf-array.md`.
+- **Test suites** form their own group: each W3C fork, elided like the others, with its `*-contrib`
+  sibling named in full on the same bullet (contrib repositories are new, use `main`, and are not forks).
 - **This repository** is the host and is not listed; the documents table at the top covers it.
 
 ## An entry

@@ -23,7 +23,7 @@ implementation runs the same expectations, and how each implementation is pointe
 | ShEx | [shexSpec/shexTest](https://github.com/shexSpec/shexTest) | `validation/manifest.jsonld`, `schemas/manifest.jsonld`, `negativeSyntax/`, `negativeStructure/` | shex.js, PyShEx, Jena ShEx, rudof |
 | SHACL | [w3c/data-shapes](https://github.com/w3c/data-shapes) `data-shapes-test-suite/tests/` | `core/manifest.ttl`, `sparql/manifest.ttl` | jena-shacl, pySHACL, rdf-validate-shacl, rudof — after SHACL-array is defined |
 | RDF canonicalization (RDFC-1.0) | [w3c/rdf-canon](https://github.com/w3c/rdf-canon) `tests/` | `manifest.ttl` | rdf-canonize, Jena, Oxigraph — after sequences are canonicalized |
-| SPARQL-array, ShEx-array, JSON-LD-array additions | this organisation (§4) | new manifests in the W3C formats | every implementation |
+| SPARQL-array, ShEx-array, JSON-LD-array additions | the `*-contrib` repositories (§4) | the W3C formats | every implementation |
 
 ## 2. What rdf-array changes in each suite
 
@@ -66,43 +66,61 @@ on the ladder, the test is flagged and a counterpart added. Specifically:
 - **RDF canonicalization.** Add sequence cases (nested, with blank nodes inside) once an algorithm
   exists; the existing tests pass unchanged.
 
-## 3. Forking a suite
+## 3. The forks (done) and how they were rewritten
 
-One fork per suite, named like the implementation forks and laid out so that existing runners
-need only a different base URL:
+| Fork | Of | What changed |
+|---|---|---|
+| [rdf-tests-array](https://github.com/rdf-array/rdf-tests-array) | w3c/rdf-tests | 40 Turtle, TriG and RDF/XML evaluation results; syntax, semantics and SPARQL unchanged (doc/rdf-array.md says why, test by test) |
+| [json-ld-api-array](https://github.com/rdf-array/json-ld-api-array) | w3c/json-ld-api | 27 toRdf and 4 html results, 16 fromRdf inputs |
+| [json-ld-streaming-array](https://github.com/rdf-array/json-ld-streaming-array) | w3c/json-ld-streaming | 23 stream-toRdf results |
+| [shexTest-array](https://github.com/rdf-array/shexTest-array) | shexSpec/shexTest | the 1list schemas as Collections, 1val1 ShExR fixtures, manualList tests switched off, ShExR.shex, ShExJ.jsg, vocabulary and context |
 
-```bash
-gh repo fork w3c/rdf-tests --org rdf-array --fork-name rdf-tests-array --default-branch-only --clone=false
-gh repo fork w3c/json-ld-api --org rdf-array --fork-name json-ld-api-array --default-branch-only --clone=false
-gh repo fork shexSpec/shexTest --org rdf-array --fork-name shexTest-array --default-branch-only --clone=false
-```
+The rules: never delete a test; change expectations, not inputs; derive each rewrite twice and write it
+only when the two agree; leave explicit uses of `rdf:first`/`rdf:rest`/`rdf:nil` as ordinary triples;
+annotate each changed test (`rdfs:comment "rdf-array: …"` in Turtle manifests, `"rdfArrayNote"` in
+JSON-LD ones; ShEx tests that no longer test anything are commented out of the manifest, as shexTest does).
+The tools, in this repository's `tools/`:
 
-On the `rdf-sequences` branch of each: re-record expected files in place (the diff is the
-documentation); give every changed test `rdfs:comment "rdf-array: …"` saying what changed and
-why, and keep its name; put added tests in a sibling manifest per directory,
-`manifest-array.ttl` (or `-array.jsonld`), included from the directory's manifest with
-`mf:include`, with `mf:name`s prefixed `rdf-array:` and `rdft:approval rdft:Proposed`; never
-delete a test, mark one that cannot hold under rdf-array `rdft:Rejected` with the comment. Serve
-the fork with the same Pages workflow as the documents (static, `upload-pages-artifact` of the
-tree) so that every implementation reads the suite from one stable base,
-`https://rdf-array.github.io/rdf-tests-array/…`, rather than from a local path each.
+- `rdfarray.py`: N-Triples-array/N-Quads-array read and write, `fold` (ladders → sequences; `--json-ld`
+  applies JSON-LD 1.1's list well-formedness, `--holes` lets a cell without `rdf:first` contribute
+  nothing), `iso` (isomorphism with blank nodes inside sequences).
+- `rewrite-rdf-syntax.py`: folds the RDF syntax suites' expectations and cross-checks them against
+  jena-array (`JenaArray.java`, built into `.tools/` with `cp.txt` holding jena-array's classpath) and
+  rdfxml-streaming-parser-array (`parse-rdfxml-array.js`); `--write` applies.
+- `rewrite-json-ld.py`: the same for JSON-LD suites, cross-checked by jsonld-streaming-parser-array
+  (`parse-jsonld-array.js`).
+- `annotate-manifest.py`, `annotate-json-manifest.py`: add the rdf-array notes.
+- `JenaArray.java`: `parse`, `query`, `update`, `inspect` (does a file hold a sequence?) and `shex`
+  against jena-array's build tree.
 
-Jena and RDFLib vendor copies of the suites in-tree (`jena-arq/testing/`, RDFLib's
-`test/data/suites/`): re-record those copies from the fork, do not maintain them separately.
+For a suite not yet forked (SHACL once SHACL-array is defined, RDF canonicalization once sequences are
+canonicalized): fork with `gh repo fork <owner>/<repo> --org rdf-array --fork-name <repo>-array`, branch
+`rdf-sequences`, rewrite with the tools above or their like, write `doc/rdf-array.md` with the table of
+changed tests and the "unchanged on purpose" list, add the README banner and icon, and publish with the
+`rdf-array-pages.yml` workflow the other forks carry (static tree to GitHub Pages).
 
-## 4. The rdf-array additions
+## 4. The contrib suites (tests no W3C suite has)
 
-The cases that are new under rdf-array (position patterns, sequence ordering, the results
-spellings, the Collection shape expression, JSON-LD-array) belong in one place in the formats the
-runners already read: a repository `rdf-array/rdf-array-tests` with `turtle/`, `sparql/`,
-`results/`, `shex/`, `json-ld-array/` directories, each a W3C-style manifest (`mf:Manifest`,
-`rdft:TestTurtleEval`, `mf:QueryEvaluationTest`, `sht:ValidationTest`), and for JSON-LD-array a
-test type of its own, `jla:ToRdfTest`, with `mf:action` the data, `jla:mapping` the mapping and
-`mf:result` the N-Quads-array. Seed it from what the forks already test: jena-array's
-`RDF-SEQUENCES-HANDOFF.md` tables and SPARQL counterparts, comunica-array's system tests,
-shex.js-array's webapp manifest, jsonld.js-array's `tests/array.js`, and §4 of the `array-tests`
-skill. Until it exists each fork re-derives the cases; it is the highest-utility item in
-[targets.md](../../../targets.md).
+Tests that are new under rdf-array do **not** go into the forks: each fork has a sibling `*-contrib`
+repository, laid out like it and in the same manifest vocabulary, so that the runner of one walks the
+other; shexTest's own `schemas-contrib`/`validation-contrib` directories are the model.
+
+| Contrib | Beside | Contents |
+|---|---|---|
+| [rdf-tests-contrib](https://github.com/rdf-array/rdf-tests-contrib) | rdf-tests-array | Turtle/TriG/N-Triples/N-Quads-array syntax and evaluation; SPARQL-array evaluation, update, syntax, results formats |
+| [json-ld-api-contrib](https://github.com/rdf-array/json-ld-api-contrib) | json-ld-api-array | toRdf and fromRdf with sequences; JSON-LD-array (`ra:JsonLdArrayToRdfTest`) |
+| [shexTest-contrib](https://github.com/rdf-array/shexTest-contrib) | shexTest-array | Collection schemas (ShExC/ShExJ/ShExR), validation, negative syntax |
+
+Each holds its cases in `bin/build.py`, which writes every file and manifest and cross-checks every
+expectation against at least two implementations where two exist (jena-array and N3.js-array for syntax,
+jena-array and comunica-array for SPARQL, jsonld-streaming-parser-array and rdflib-array for JSON-LD,
+shex.js-array and jena-array for ShEx); `--check` fails if a rebuild would change anything. To add a test,
+add a row to the table there and rebuild; give it its `duplicates` (the implementation tests it reproduces)
+and run `tools/contrib-duplicates.py` here, which regenerates [contrib-duplicates.md](../../../contrib-duplicates.md).
+Every test that uses the proposed array syntax says so with `mf:requires` (`ra:PositionPatterns`,
+`ra:SequenceFunctions`, `ra:CollectionShapeExpression`, from [vocab/vocab.ttl](../../../vocab/vocab.ttl)), and
+`tools/array-syntax-uses.py` regenerates [array-syntax-uses.md](../../../array-syntax-uses.md), the list a
+change of syntax has to rewrite.
 
 ## 5. Running a suite against each implementation
 
@@ -127,7 +145,7 @@ flagged tests in its `doc/rdf-array.md`.
 
 ## 6. Checklist for one implementation and one suite
 
-1. Point the runner at the suite fork (URL or path), not at W3C's copy.
+1. Point the runner at the suite fork (URL or path), not at W3C's copy, and at its `*-contrib` sibling.
 2. Run; sort the failures into: expectation still spells a ladder (fix the suite fork), meaning
    changed (flag in the suite fork, add the counterpart), implementation bug (fix the fork).
 3. Add the rdf-array additions (§4) for the layers the implementation has.

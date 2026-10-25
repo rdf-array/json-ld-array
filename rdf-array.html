@@ -159,8 +159,16 @@
   <p>nothing yet needs them.</p>
   <ul><li><strong>Containers.</strong> <code>rdf:Seq</code>, <code>rdf:Bag</code> and <code>rdf:Alt</code> keep their vocabulary but lose the only syntax</li></ul>
   <p>that produced them (<code>rdf:li</code>); whether a sequence should ever be read as a bag or an alternative is open.</p>
-  <ul><li><strong>SHACL, OWL, SKOS.</strong> Each reads collections as ladders; their rdf-array readings are not written.</li><li><strong>Specification test suites.</strong> The W3C SPARQL, JSON-LD, RDF/XML and Turtle suites spell ladders in</li></ul>
-  <p>their expected output; the forks skip or re-record those tests with an rdf-array reason, and no suite expresses the rdf-array expectations yet.</p>
+  <ul><li><strong>SHACL, OWL, SKOS.</strong> Each reads collections as ladders; their rdf-array readings are not written.</li><li><strong>Specification test suites.</strong> The W3C suites are forked with their expectations rewritten</li></ul>
+  <p>(rdf-tests-array, json-ld-api-array, json-ld-streaming-array, shexTest-array), and the tests no W3C suite has live in rdf-tests-contrib, json-ld-api-contrib and shexTest-contrib; the implementations do not walk them yet (see the README for the repositories and contrib-duplicates.md for the overlap). SHACL's and RDF canonicalization's suites wait for SHACL-array and for a canonicalization of sequences.</p>
+  <ul><li><strong>A sequence inside a triple term.</strong> RDF 1.2 forbids a collection in a triple term because it generates</li></ul>
+  <p>triples; a sequence generates none, so rdf-array could allow <code>&lt;&lt; :s :p ( 1 ) &gt;&gt;</code>, but jena-array and N3.js-array reject it today, and rdf-tests-array keeps the RDF 1.2 negative test (<code>trig12-syntax-bad-06</code>).</p>
+  <ul><li><strong>Collection bounds with the minimum above the maximum</strong> (<code>((x))[3, 1]</code>): shex.js-array accepts them and</li></ul>
+  <p>jena-array rejects them; no contrib test decides it yet.</p>
+  <ul><li><strong>The array syntax itself.</strong> Position patterns <code>((x))[i]</code> and the Collection shape expression</li></ul>
+  <p><code>((shapeExpr))[m, n]</code> are the syntax proposed today and are expected to change; their alikeness in SPARQL and ShEx is convenient rather than required. <a href="array-syntax-uses.md">array-syntax-uses.md</a> lists every file a change would rewrite.</p>
+  <ul><li><strong>Test manifests.</strong> A W3C manifest's <code>mf:entries ( … )</code> is one sequence term when an rdf-array parser</li></ul>
+  <p>reads it; test runners of rdf-array implementations must accept a sequence there as well as a ladder.</p>
   <ul><li><strong>Interchange with RDF 1.1 systems.</strong> Until a converter exists, an rdf-array document is readable</li></ul>
   <p>only by rdf-array tools; the same was true of RDF-star documents for a while.</p>
   </section>

@@ -183,8 +183,21 @@ graph with no sequences is an RDF graph.
   that produced them (`rdf:li`); whether a sequence should ever be read as a bag or an alternative is
   open.
 - **SHACL, OWL, SKOS.** Each reads collections as ladders; their rdf-array readings are not written.
-- **Specification test suites.** The W3C SPARQL, JSON-LD, RDF/XML and Turtle suites spell ladders in
-  their expected output; the forks skip or re-record those tests with an rdf-array reason, and no
-  suite expresses the rdf-array expectations yet.
+- **Specification test suites.** The W3C suites are forked with their expectations rewritten
+  (rdf-tests-array, json-ld-api-array, json-ld-streaming-array, shexTest-array), and the tests no W3C
+  suite has live in rdf-tests-contrib, json-ld-api-contrib and shexTest-contrib; the implementations do
+  not walk them yet (see the README for the repositories and contrib-duplicates.md for the overlap).
+  SHACL's and RDF canonicalization's suites wait for SHACL-array and for a canonicalization of sequences.
+- **A sequence inside a triple term.** RDF 1.2 forbids a collection in a triple term because it generates
+  triples; a sequence generates none, so rdf-array could allow `<< :s :p ( 1 ) >>`, but jena-array and
+  N3.js-array reject it today, and rdf-tests-array keeps the RDF 1.2 negative test (`trig12-syntax-bad-06`).
+- **Collection bounds with the minimum above the maximum** (`((x))[3, 1]`): shex.js-array accepts them and
+  jena-array rejects them; no contrib test decides it yet.
+- **The array syntax itself.** Position patterns `((x))[i]` and the Collection shape expression
+  `((shapeExpr))[m, n]` are the syntax proposed today and are expected to change; their alikeness in SPARQL
+  and ShEx is convenient rather than required. [array-syntax-uses.md](array-syntax-uses.md) lists every file
+  a change would rewrite.
+- **Test manifests.** A W3C manifest's `mf:entries ( … )` is one sequence term when an rdf-array parser
+  reads it; test runners of rdf-array implementations must accept a sequence there as well as a ladder.
 - **Interchange with RDF 1.1 systems.** Until a converter exists, an rdf-array document is readable
   only by rdf-array tools; the same was true of RDF-star documents for a while.
