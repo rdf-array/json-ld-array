@@ -101,6 +101,11 @@ dependency shared by several stacks is listed once, under the first, with the ot
     JSON-LD read and write it; SPARQL-array with sequence and position patterns and the functions;
     the `seq` results; the RocksDB store; `pyoxigraph.Sequence` and the WASM package's
     `oxigraph.sequence()`. The whole family is one workspace: no forked dependencies.
+  - [rudof](https://github.com/rdf-array/rudof-array) ([rudof-project/rudof](https://github.com/rudof-project/rudof)) —
+    ShEx-array: the Collection shape expression `((shapeExpr))[min, max]` in ShExC, ShExJ and ShExR,
+    and its validation, over oxigraph-array's `oxrdf::Sequence`; ShExR schemas and SHACL shapes
+    graphs read and write their lists as sequences; runs shexTest-array and shexTest-contrib.
+    Forked dependencies: oxigraph-array, above.
 
 ## Skills and tools
 

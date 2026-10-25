@@ -17,13 +17,18 @@ in a data-model library, days; a parser or serializer, days; a SPARQL engine, we
 - **Oxigraph**, 2026-10-24: [oxigraph-array](https://github.com/rdf-array/oxigraph-array), all the
   crates of the family in one fork, with pyoxigraph and the WASM package; its `doc/rdf-array.md`
   lists what changed. The assessment below is kept as it was written.
+- **rudof**, 2026-10-25: [rudof-array](https://github.com/rdf-array/rudof-array), from rudof 0.3.35
+  on oxigraph-array; ShEx-array in ShExC, ShExJ and ShExR with validation, and the lists of ShExR
+  schemas and SHACL shapes graphs read as sequences. It runs shexTest-array (the same results as
+  vanilla rudof on upstream's suite) and shexTest-contrib (all pass); its `doc/rdf-array.md` lists
+  what changed. SHACL-array, the next item, now has a host whose lists are already sequences.
 
 ## The short list
 
 | Target | Language | What it is | Impact | Utility | Forks it needs | Order |
 |---|---|---|---|---|---|---|
 | Oxigraph family (oxrdf, oxttl, oxrdfxml, oxjsonld, oxrdfio, spargebra, sparesults, sparopt, oxigraph, pyoxigraph, oxigraph-js) | Rust, with Python and WASM bindings | data model, parsers, SPARQL 1.1/1.2 engine and persistent store | 4 | 5 | none outside the family | done: [oxigraph-array](https://github.com/rdf-array/oxigraph-array) |
-| rudof | Rust, with Python and WASM bindings | ShEx, SHACL, DCTAP, shape conversion | 3 | 4 | the Oxigraph crates it uses | 2, after oxrdf and oxttl |
+| rudof | Rust, with Python and WASM bindings | ShEx, SHACL, DCTAP, shape conversion | 3 | 4 | the Oxigraph crates it uses | done: [rudof-array](https://github.com/rdf-array/rudof-array) |
 | SHACL-array: a definition and a first implementation (jena-shacl, pySHACL, rdf-validate-shacl or rudof's `shacl`) | — | the validation language rdf-array has no reading of | 2–3 | 5 | the host's data model (already forked for Jena, RDFLib) | with 2 |
 | rdf-canonize and rdf-isomorphic (and Python rdf-canon) | JavaScript, Python | canonicalization and isomorphism | 2–3 | 4 | none | soon: the JS tests need it |
 | QLever | C++ | a compressed-index SPARQL engine for billions of triples | 5 | 4 | none | 3, a project of its own |
@@ -184,8 +189,9 @@ Oxigraph gives Rust.
 2. ~~Fork the Oxigraph family, data model and parsers first, then `spargebra` and `sparesults`, then
    the store; publish pyoxigraph-array and the WASM package.~~ Done: oxigraph-array (2026-10-24);
    the Python and WASM packages build from it but are not published.
-3. Fork rudof on top of it, with ShEx-array; define SHACL-array alongside and implement it in
-   jena-shacl, then in rudof's `shacl`.
+3. ~~Fork rudof on top of it, with ShEx-array;~~ done: rudof-array (2026-10-25). Define SHACL-array
+   and implement it in jena-shacl, then in rudof's `shacl`, whose lists rudof-array already reads as
+   sequences.
 4. Fork rdf-isomorphic and rdf-canonize, and switch the JavaScript forks' tests to them.
 5. Deploy a Fuseki-array endpoint and point Yasgui and SPARQLWrapper at it.
 6. Fork QLever when the model is stable enough to carry a C++ index design.

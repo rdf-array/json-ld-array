@@ -107,7 +107,7 @@ whose every element conforms to `shapeExpr` and whose length is within the bound
 :Anything { :seq ((.))[0,*] }
 ```
 
-The shex.js, PyShEx and Jena ShEx implementations have it, with test-suite examples in
+The shex.js, PyShEx, Jena ShEx and rudof implementations have it, with test-suite examples in
 shex.js-array's webapp manifest.
 
 **JSON-LD-array.** A mapping language for conventional JSON, specified in
@@ -156,6 +156,7 @@ graph with no sequences is an RDF graph.
 | JavaScript | [jsonld.js-array](https://github.com/rdf-array/jsonld.js-array) | JSON-LD-array: `jsonld.arrayToRDF`, writers for N-Quads-array and Turtle-array, the [playground](https://rdf-array.github.io/jsonld.js-array/) |
 | Python | [PyShEx-array](https://github.com/rdf-array/PyShEx-array) with [rdflib-array](https://github.com/rdf-array/rdflib-array), [grammar-python-antlr-linkml-array](https://github.com/rdf-array/grammar-python-antlr-linkml-array) (the `pyshexc` parser), [ShExJSG-array](https://github.com/rdf-array/ShExJSG-array), [CFGraph-array](https://github.com/rdf-array/CFGraph-array) | ShEx-array validation over RDFLib with `rdflib.term.Sequence`; RDFLib's Turtle, N-Triples, N3, JSON-LD and SPARQL read and write sequences |
 | Rust, Python, WASM | [oxigraph-array](https://github.com/rdf-array/oxigraph-array) | Oxigraph with `oxrdf::Sequence`: every syntax it reads and writes, SPARQL-array (patterns, position patterns, functions, results) and the store, in Rust, Python (`pyoxigraph`) and JavaScript; runs the W3C -array and the contrib suites |
+| Rust | [rudof-array](https://github.com/rdf-array/rudof-array) with [oxigraph-array](https://github.com/rdf-array/oxigraph-array) | ShEx-array (ShExC, ShExJ, ShExR and validation) in rudof's library and CLI; ShExR and SHACL lists read as sequences; runs shexTest-array and shexTest-contrib |
 | Specification | [rdf-array](https://github.com/rdf-array/rdf-array) | this overview, the JSON-LD-array specification, the assessment of further targets, and the skills for making forks |
 
 ## Conventions of the organisation
