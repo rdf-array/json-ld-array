@@ -12,38 +12,14 @@ what the fork buys rdf-array: users reached, capabilities shown for the first ti
 how much it unblocks. Both are scored 1 (small) to 5 (large). The forks so far cost roughly: a term
 in a data-model library, days; a parser or serializer, days; a SPARQL engine, weeks.
 
-## Done
+## The list
 
-- **Oxigraph**, 2026-10-24: [oxigraph-array](https://github.com/rdf-array/oxigraph-array), all the
-  crates of the family in one fork, with pyoxigraph and the WASM package; its `doc/rdf-array.md`
-  lists what changed. The assessment below is kept as it was written.
-- **rudof**, 2026-10-25: [rudof-array](https://github.com/rdf-array/rudof-array), from rudof 0.3.35
-  on oxigraph-array; ShEx-array in ShExC, ShExJ and ShExR with validation, and the lists of ShExR
-  schemas and SHACL shapes graphs read as sequences. It runs shexTest-array (the same results as
-  vanilla rudof on upstream's suite) and shexTest-contrib (all pass); its `doc/rdf-array.md` lists
-  what changed. SHACL-array, the next item, now has a host whose lists are already sequences.
-
-## The short list
-
-| Target | Language | What it is | Impact | Utility | Forks it needs | Order |
-|---|---|---|---|---|---|---|
-| Oxigraph family (oxrdf, oxttl, oxrdfxml, oxjsonld, oxrdfio, spargebra, sparesults, sparopt, oxigraph, pyoxigraph, oxigraph-js) | Rust, with Python and WASM bindings | data model, parsers, SPARQL 1.1/1.2 engine and persistent store | 4 | 5 | none outside the family | done: [oxigraph-array](https://github.com/rdf-array/oxigraph-array) |
-| rudof | Rust, with Python and WASM bindings | ShEx, SHACL, DCTAP, shape conversion | 3 | 4 | the Oxigraph crates it uses | done: [rudof-array](https://github.com/rdf-array/rudof-array) |
-| SHACL-array: a definition and a first implementation (jena-shacl, pySHACL, rdf-validate-shacl or rudof's `shacl`) | — | the validation language rdf-array has no reading of | 2–3 | 5 | the host's data model (already forked for Jena, RDFLib) | with 2 |
-| rdf-canonize and rdf-isomorphic (and Python rdf-canon) | JavaScript, Python | canonicalization and isomorphism | 2–3 | 4 | none | soon: the JS tests need it |
-| QLever | C++ | a compressed-index SPARQL engine for billions of triples | 5 | 4 | none | 3, a project of its own |
-| RDF4J | Java | the other Java stack: model, Rio, SAIL stores, ShaclSail | 4–5 | 3 | none | later |
-| The rdf-ext / Zazuko RDF/JS stack (@rdfjs/data-model, @rdfjs/dataset, rdf-ext, @zazuko/env, clownface, rdf-validate-shacl) | JavaScript | the second RDF/JS ecosystem | 2 each, many packages | 3 | N3.js-array, types-array exist | later |
-| rdflib.js | JavaScript | Solid's library, which already has a `Collection` term kind | 3 | 3 | none | later |
-| Morph-KGC (RML-CC `gatherAs` a sequence) | Python | the mainstream mapping language, as RML | 2 | 3 | rdflib-array exists | when JSON-LD-array settles |
-| Yasgui (Yasqe, Yasr) | TypeScript | SPARQL editor and results viewer | 2–3 | 3 | none | with a public endpoint |
-| SPARQLWrapper | Python | SPARQL client | 1 | 2 | rdflib-array exists | with a public endpoint |
-| A public Fuseki-array endpoint | — | jena-array's Fuseki, deployed | 1 | 3 | none | any time |
-| Sophia | Rust | the other Rust RDF library | 3 | 2 | none | not while Oxigraph serves |
-| pyld, as a JSON-LD-array port | Python | JSON-LD-array for Python users | 2 | 2 | rdflib-array exists | when JSON-LD-array settles |
-| OWL API, Protégé | Java | OWL, whose syntax is made of lists | 5 | 2 | — | not now |
-| Raptor and Redland | C | the old C stack | 4 | 1 | — | no |
-| Virtuoso, GraphDB, Stardog, AllegroGraph, Neptune, Blazegraph | various | commercial, closed, or unmaintained | — | — | — | not forkable |
+The targets, ticked as their forks appear and in the recommended order, are listed in the
+README under [Not yet forked](README.md#not-yet-forked); the forks that exist are the README's
+[Repositories](README.md#repositories). The table this section held, with each target's language,
+impact, utility, needed forks and order, was moved there on 2026-10-25. Done so far: Oxigraph
+(oxigraph-array, 2026-10-24) and rudof (rudof-array, 2026-10-25). The sections below are the
+assessment as it was written.
 
 Two things that are not implementations rank above most of the list: a **conformance suite**
 (impact 3, utility 5) assembled from the tests the forks already carry, so that the next port does

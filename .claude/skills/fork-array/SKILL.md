@@ -8,8 +8,9 @@ description: Fork an RDF implementation into the rdf-array organisation as <proj
 rdf-array is RDF with one more kind of term, the sequence (`(1 2 3)`, `()`); see
 [rdf-array.md](../../../rdf-array.md). A fork teaches one project that term and removes the code
 that built `rdf:first`/`rdf:rest` ladders or numbered `rdf:_n` container members. The formula below
-is what every fork so far followed; [targets.md](../../../targets.md) says which projects are worth
-it and what each one's change list looks like.
+is what every fork so far followed; the README's [Not yet forked](../../../README.md#not-yet-forked)
+list says which projects are worth it, in order, and [targets.md](../../../targets.md) what each
+one's change list looks like.
 
 ## 1. Decide the closure first
 
@@ -137,8 +138,10 @@ homepage at the site.
 
 ## 7. Register the fork
 
-Add it to this repository's README manifest (the `readme-manifest` skill), to the implementations
-table of rdf-array.md, and to the memory note the session keeps; set the GitHub description.
+Add it to this repository's README manifest (the `readme-manifest` skill: a heading under its
+language, or a quoted item under the project it serves, with an anchor; tick it in "Not yet
+forked" if it was a target), to the implementations table of rdf-array.md, and to the memory note
+the session keeps; set the GitHub description.
 
 ## 8. Issues
 
