@@ -24,6 +24,7 @@ SPARQL-array reaches into a sequence with **position patterns** `((element))[ind
 | rdf-tests-contrib | [sparql/eval/position-out-of-range.rq](https://github.com/rdf-array/rdf-tests-contrib/blob/main/sparql/eval/position-out-of-range.rq) | sparql | 1 |
 | rdf-tests-contrib | [sparql/eval/position-variable.rq](https://github.com/rdf-array/rdf-tests-contrib/blob/main/sparql/eval/position-variable.rq) | sparql | 1 |
 | rdf-tests-contrib | [sparql/update/delete-where-position.ru](https://github.com/rdf-array/rdf-tests-contrib/blob/main/sparql/update/delete-where-position.ru) | sparql | 1 |
+| shexTest-contrib | [README.md](https://github.com/rdf-array/shexTest-contrib/blob/main/README.md) | doc | 1 |
 | shexTest-contrib | [schemas-contrib/collColour.shex](https://github.com/rdf-array/shexTest-contrib/blob/main/schemas-contrib/collColour.shex) | shex | 1 |
 | shexTest-contrib | [schemas-contrib/collDecl.shex](https://github.com/rdf-array/shexTest-contrib/blob/main/schemas-contrib/collDecl.shex) | shex | 1 |
 | shexTest-contrib | [schemas-contrib/collDot.shex](https://github.com/rdf-array/shexTest-contrib/blob/main/schemas-contrib/collDot.shex) | shex | 1 |
@@ -38,5 +39,5 @@ SPARQL-array reaches into a sequence with **position patterns** `((element))[ind
 | shexTest-contrib | [schemas-contrib/collRef1to2.shex](https://github.com/rdf-array/shexTest-contrib/blob/main/schemas-contrib/collRef1to2.shex) | shex | 1 |
 | rdf-array | [.claude/skills/array-tests/SKILL.md](https://github.com/rdf-array/rdf-array/blob/main/.claude/skills/array-tests/SKILL.md) | doc | 5 |
 | rdf-array | [json-ld-array.md](https://github.com/rdf-array/rdf-array/blob/main/json-ld-array.md) | doc | 1 |
-| rdf-array | [rdf-array.md](https://github.com/rdf-array/rdf-array/blob/main/rdf-array.md) | doc | 13 |
+| rdf-array | [rdf-array.md](https://github.com/rdf-array/rdf-array/blob/main/rdf-array.md) | doc | 14 |
 | rdf-array | [targets.md](https://github.com/rdf-array/rdf-array/blob/main/targets.md) | doc | 1 |
