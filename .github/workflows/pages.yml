@@ -5,6 +5,7 @@ name: pages
 #   https://rdf-array.github.io/rdf-array/html-index.html   (the repository's homepage)
 #   https://rdf-array.github.io/rdf-array/rdf-array.html
 #   https://rdf-array.github.io/rdf-array/json-ld-array.html
+#   https://rdf-array.github.io/rdf-array/shacl-array.html
 #
 # The tracked tree is the site: each .html is generated from its .md by
 # md-to-respec.py and committed, so nothing is built here; html-index.html is
@@ -35,7 +36,7 @@ jobs:
       - uses: actions/checkout@v7
       - name: check that the HTML renderings are current
         run: |
-          for doc in rdf-array json-ld-array; do
+          for doc in rdf-array json-ld-array shacl-array; do
             python3 md-to-respec.py "$doc.md" "/tmp/$doc.html"
             if ! diff -q "/tmp/$doc.html" "$doc.html" >/dev/null; then
               echo "$doc.html is out of date: run python3 md-to-respec.py $doc.md $doc.html" >&2

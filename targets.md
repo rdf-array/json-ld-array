@@ -171,9 +171,10 @@ Oxigraph gives Rust.
 2. ~~Fork the Oxigraph family, data model and parsers first, then `spargebra` and `sparesults`, then
    the store; publish pyoxigraph-array and the WASM package.~~ Done: oxigraph-array (2026-10-24);
    the Python and WASM packages build from it but are not published.
-3. ~~Fork rudof on top of it, with ShEx-array;~~ done: rudof-array (2026-10-25). Define SHACL-array
-   and implement it in jena-shacl, then in rudof's `shacl`, whose lists rudof-array already reads as
-   sequences.
+3. ~~Fork rudof on top of it, with ShEx-array;~~ done: rudof-array (2026-10-25). ~~Define SHACL-array
+   and implement it in jena-shacl,~~ done: [shacl-array.md](shacl-array.md) and jena-array's
+   `jena-shacl` (2026-10-25). Then rudof's `shacl`, whose lists rudof-array already reads as
+   sequences but which lacks SHACL 1.2's list constraints, and a data-shapes-array suite fork.
 4. Fork rdf-isomorphic and rdf-canonize, and switch the JavaScript forks' tests to them.
 5. Deploy a Fuseki-array endpoint and point Yasgui and SPARQLWrapper at it.
 6. Fork QLever when the model is stable enough to carry a C++ index design.

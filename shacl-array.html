@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SHACL-array: SHACL over rdf-array</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus: "unofficial",
+      shortName: "shacl-array",
+      editors: [{ name: "Eric Prud'hommeaux" }],
+      edDraftURI: "https://rdf-array.github.io/rdf-array/shacl-array.html",
+      latestVersion: null,
+      overrideCopyright: "<p class='copyright'>Copyright &copy; 2026 the rdf-array project. This document is licensed under a <a href='https://creativecommons.org/licenses/by/4.0/'>Creative Commons Attribution 4.0 License</a>.</p>",
+      lint: { "no-unused-dfns": false },
+      localBiblio: {
+        "RML-CORE": { title: "RML-Core: Generic Mapping Language for RDF", href: "https://w3id.org/rml/core/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-CC": { title: "RML-CC: RML Collections and Containers", href: "https://w3id.org/rml/cc/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-LV": { title: "RML-LV: RML Logical Views", href: "https://w3id.org/rml/lv/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-FNML": { title: "RML-FNML: RML Functions", href: "https://w3id.org/rml/fnml/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "YARRRML": { title: "YARRRML", href: "https://rml.io/yarrrml/spec/", publisher: "IDLab, Ghent University" }
+      }
+    };
+  </script>
+  <style>
+    table.simple { font-size: 0.9em; }
+    table.simple td, table.simple th { vertical-align: top; }
+    pre.example { font-size: 0.9em; line-height: 1.35; }
+    .hljs-iri { color: #0b5394; }
+    .hljs-pname { color: #38761d; }
+    .hljs-lit { color: #a61c00; }
+    .hljs-kw { color: #741b47; font-weight: bold; }
+    .hljs-var { color: #b45f06; }
+    .hljs-cmt { color: #777; font-style: italic; }
+    .hljs-bnode { color: #666; }
+    .hljs-num, .hljs-number { color: #a61c00; }
+    .hljs-attr { color: #0b5394; }
+    .hljs-string { color: #38761d; }
+    .hljs-literal { color: #741b47; }
+  </style>
+</head>
+<body>
+  <section id="abstract">
+    <p>SHACL-array is SHACL ([SHACL], with the list constraints of [SHACL 1.2 Core]) over the rdf-array data model, in which <code>( … )</code> is one term, a <em>sequence</em>, and <code>()</code> is the empty sequence. It changes two things and adds no vocabulary:</p>
+  </section>
+  <section id="sotd">
+    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/shacl-array.md">shacl-array.md</a> by <code>md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
+  </section>
+  <section class="introductory" id="introduction">
+    <h2>Introduction</h2>
+    <p><em>Definition, 2026-10-25. Implemented in <a href="https://github.com/rdf-array/jena-array">jena-array</a>'s <code>jena-shacl</code>. This document is <a href="https://github.com/rdf-array/rdf-array">shacl-array.md</a> in the organisation's meta-repository, rendered at &lt;https://rdf-array.github.io/rdf-array/shacl-array.html&gt;; <a href="rdf-array.html">rdf-array.md</a> describes the change from RDF to rdf-array, and <a href="https://github.com/rdf-array/rdf-array/issues/9">rdf-array#9</a> holds the discussion this settles.</em></p>
+    <ol><li><strong>A SHACL list is a sequence term.</strong> Everywhere SHACL reads a list from the shapes graph, it reads a sequence. An <code>rdf:first</code>/<code>rdf:rest</code> ladder spelled out in triples is triples, not a list, and <code>rdf:nil</code> is an IRI like any other.</li><li><strong>SHACL 1.2's list constraints apply to sequence values.</strong> <code>sh:memberShape</code>, <code>sh:minListLength</code>, <code>sh:maxListLength</code> and <code>sh:uniqueMembers</code> constrain a value node that is a sequence. They are the counterpart of ShEx-array's Collection shape expression, <code>((shapeExpr))[min, max]</code>.</li></ol>
+  </section>
+  <section id="lists-in-the-shapes-graph">
+  <h2>Lists in the shapes graph</h2>
+  <p>These parameters take a SHACL list, which in SHACL-array is a sequence term:</p>
+  <table class="simple">
+  <thead><tr><th>Parameter</th><th>In Turtle-array</th></tr></thead>
+  <tbody>
+  <tr><td><code>sh:path</code> (a sequence path)</td><td><code>sh:path ( ex:parent ex:name )</code></td></tr>
+  <tr><td><code>sh:alternativePath</code></td><td><code>sh:path [ sh:alternativePath ( ex:father ex:mother ) ]</code></td></tr>
+  <tr><td><code>sh:in</code></td><td><code>sh:in ( "red" "green" "blue" )</code></td></tr>
+  <tr><td><code>sh:languageIn</code></td><td><code>sh:languageIn ( "en" "fr" )</code></td></tr>
+  <tr><td><code>sh:and</code>, <code>sh:or</code>, <code>sh:xone</code></td><td><code>sh:or ( [ sh:datatype xsd:string ] [ sh:datatype rdf:langString ] )</code></td></tr>
+  <tr><td><code>sh:ignoredProperties</code></td><td><code>sh:ignoredProperties ( rdf:type )</code></td></tr>
+  <tr><td>SHACL 1.2 list node expressions</td><td><code>( ex:a ex:b )</code>, and <code>()</code> the empty list</td></tr>
+  </tbody></table>
+  <p>Written in Turtle-array these are sequences already: the syntax is unchanged, and a shapes graph written for SHACL reads the same under SHACL-array. Three consequences:</p>
+  <ul><li><strong>A ladder is not a list.</strong> A shapes graph that spells a list as <code>rdf:first</code>/<code>rdf:rest</code> triples</li></ul>
+  <p>(in N-Triples written by an RDF 1.1 tool, say) is ill-formed where a list is expected, and a processor reports a shapes-graph error. Convert it first. A ladder read as triples is no longer special anywhere in rdf-array.</p>
+  <ul><li><strong><code>()</code> is the empty list; <code>rdf:nil</code> is not.</strong> <code>sh:path ()</code> is an error, as an empty sequence path</li></ul>
+  <p>was before. <code>sh:path rdf:nil</code> is the predicate path of the IRI <code>rdf:nil</code>.</p>
+  <ul><li><strong>Lists hold no blank-node structure.</strong> A shape inside a list, <code>sh:or ( [ … ] )</code>, is a blank node</li></ul>
+  <p>that is an element of the sequence; its own triples are ordinary triples of the shapes graph.</p>
+  <p>The same holds for what a processor writes: <code>sh:resultPath</code> of a sequence path is a sequence term, and SHACL compact syntax arrays (<code>in=[ 1 2 ]</code>, <code>|</code> alternatives) produce sequences.</p>
+  </section>
+  <section id="sequence-valued-data">
+  <h2>Sequence-valued data</h2>
+  <p>SHACL 1.2 Core defines four constraint components for "SHACL lists" in the data graph. In SHACL-array a SHACL list in the data is a sequence term, so they constrain sequence values:</p>
+  <table class="simple">
+  <thead><tr><th>Parameter</th><th>A value node conforms when it is a sequence and …</th></tr></thead>
+  <tbody>
+  <tr><td><code>sh:memberShape S</code></td><td>every member conforms to the node shape <code>S</code></td></tr>
+  <tr><td><code>sh:minListLength n</code></td><td>it has at least <code>n</code> members</td></tr>
+  <tr><td><code>sh:maxListLength n</code></td><td>it has at most <code>n</code> members</td></tr>
+  <tr><td><code>sh:uniqueMembers true</code></td><td>no member occurs twice (by RDF term equality); <code>false</code> constrains nothing</td></tr>
+  </tbody></table>
+  <p>A value node that is not a sequence violates each of them. That includes an IRI, a literal, <code>rdf:nil</code>, and a blank node at the head of a ladder. Each violating value node gives one result: <code>sh:value</code> is the value node (the sequence) and <code>sh:resultPath</code> the path that reached it. SHACL 1.2 also lists the failing members as <code>sh:detail</code>; jena-array does not emit <code>sh:detail</code> yet.</p>
+  <p>An RGB colour, in ShEx-array <code>((xsd:integer MININCLUSIVE 0 MAXINCLUSIVE 255))[3]</code>:</p>
+  <pre class="example turtle nohighlight">PREFIX ex:  &lt;http://example/&gt;
+  PREFIX sh:  &lt;http://www.w3.org/ns/shacl#&gt;
+  PREFIX xsd: &lt;http://www.w3.org/2001/XMLSchema#&gt;
+  
+  ex:ColourShape a sh:NodeShape ;
+    sh:targetClass ex:Swatch ;
+    sh:property [
+      sh:path ex:rgb ;
+      sh:minCount 1 ; sh:maxCount 1 ;
+      sh:minListLength 3 ; sh:maxListLength 3 ;
+      sh:memberShape [ sh:datatype xsd:integer ; sh:minInclusive 0 ; sh:maxInclusive 255 ]
+    ] .
+  
+  ex:red  a ex:Swatch ; ex:rgb ( 255 0 0 ) .    # conforms
+  ex:pink a ex:Swatch ; ex:rgb ( 255 192 ) .    # too short: MinListLength
+  ex:blue a ex:Swatch ; ex:rgb ( 0 0 256 ) .    # 256 out of range: MemberShape</pre>
+  <p>A playlist whose tracks are each a <code>ex:Track</code> with a title, and which never repeats a track:</p>
+  <pre class="example turtle nohighlight">ex:PlaylistShape a sh:NodeShape ;
+    sh:targetClass ex:Playlist ;
+    sh:property [
+      sh:path ex:tracks ;
+      sh:minListLength 1 ;
+      sh:uniqueMembers true ;
+      sh:memberShape [ sh:class ex:Track ;
+                       sh:property [ sh:path ex:title ; sh:minCount 1 ] ]
+    ] .</pre>
+  <p><code>sh:minCount</code> and <code>sh:maxCount</code> keep counting values: <code>ex:rgb ( 255 0 0 )</code> is one value. Nested sequences are members like any other, so a polygon of points is <code>sh:memberShape [ sh:minListLength 2 ; sh:maxListLength 2 ; sh:memberShape [ sh:datatype xsd:decimal ] ]</code>.</p>
+  </section>
+  <section id="what-shacl-array-does-not-add">
+  <h2>What SHACL-array does not add</h2>
+  <ul><li><strong>No path into a sequence.</strong> SHACL property paths reach value nodes through triples, and a</li></ul>
+  <p>sequence's members are not reached through triples. <code>sh:memberShape</code> is the way to constrain them. SPARQL-array's position patterns (<code>((?e))[2]</code>, <code>[*]</code>) have no SHACL path counterpart, and SHACL-SPARQL constraints can use them where the engine has them.</p>
+  <ul><li><strong>No positional constraints.</strong> Neither SHACL 1.2 nor SHACL-array can say "the first member is a</li></ul>
+  <p>string, the rest are integers". ShEx-array cannot say it either; it is an open question for both.</p>
+  <ul><li><strong>No new results vocabulary.</strong> A sequence value appears in a report as itself: <code>sh:value ( 255 192 )</code>.</li></ul>
+  </section>
+  <section id="tests">
+  <h2>Tests</h2>
+  <p>The W3C SHACL suites (<code>w3c/data-shapes</code>) are read with lists as sequences. These tests depend on ladders, or on <code>rdf:nil</code> being the empty list. The SHACL 1.0 core ones are flagged in jena-array and rudof-array; the SHACL 1.2 ones, which jena-shacl does not carry and rudof does not yet pass, need rdf-array counterparts:</p>
+  <table class="simple">
+  <thead><tr><th>Test</th><th>Why</th></tr></thead>
+  <tbody>
+  <tr><td><code>core/path/path-strange-001</code>, <code>-002</code></td><td>the <code>sh:path</code> is an explicit <code>rdf:first</code>/<code>rdf:rest</code> ladder</td></tr>
+  <tr><td><code>core/complex/shacl-shacl</code></td><td>shacl-shacl's list shapes walk <code>rdf:rest*/rdf:first</code> over the shapes graph's lists, which are sequences</td></tr>
+  <tr><td>SHACL 1.2 <code>core/{node,property}/memberShape-001</code>, <code>maxListLength-001</code>, <code>uniqueMembers-001</code></td><td>the data spells some lists as ladders, written with <code>rdf:first</code> and ending in <code>( … )</code></td></tr>
+  <tr><td>SHACL 1.2 <code>core/{node,property}/minListLength-001</code>, <code>maxListLength-001</code>, <code>uniqueMembers-001</code></td><td><code>rdf:nil</code> as the empty list, which conforms to <code>sh:maxListLength</code> and <code>sh:uniqueMembers</code> there</td></tr>
+  <tr><td>SHACL 1.2 <code>node-expr/list</code></td><td>expects <code>()</code> to be the constant <code>rdf:nil</code></td></tr>
+  </tbody></table>
+  <p>Still to do: a <code>data-shapes-array</code> fork of w3c/data-shapes with these tests re-recorded and shacl-shacl's list shapes rewritten with <code>sh:memberShape</code> over sequences. Its contrib sibling would take the shared cases (as rdf-tests-contrib does for the syntaxes), starting from jena-array's <code>jena-shacl/src/test/files/local/rdf-array/</code> manifests: sequence paths, <code>sh:in</code> and <code>sh:or</code> sequences, the four list constraints, a ladder as a value, and <code>rdf:nil</code> as a value.</p>
+  </section>
+  <section id="implementations">
+  <h2>Implementations</h2>
+  <table class="simple">
+  <thead><tr><th>Implementation</th><th>Lists as sequences</th><th>List constraints</th><th>Notes</th></tr></thead>
+  <tbody>
+  <tr><td><a href="https://github.com/rdf-array/jena-array">jena-array</a> <code>jena-shacl</code></td><td>yes, sequences only</td><td><code>sh:memberShape</code>, <code>sh:minListLength</code>, <code>sh:maxListLength</code>, <code>sh:uniqueMembers</code></td><td>no <code>sh:detail</code>; compact syntax builds sequences; the W3C core suite passes except the three flagged tests</td></tr>
+  <tr><td><a href="https://github.com/rdf-array/rudof-array">rudof-array</a> <code>shacl</code></td><td>yes, sequences only</td><td>not yet (rudof's own TODO)</td><td>flags <code>path-strange-001/002</code>, <code>shacl-shacl</code>, <code>node-expr/list</code></td></tr>
+  <tr><td>pySHACL over rdflib-array, rdf-validate-shacl over the RDF/JS forks</td><td>not forked</td><td>—</td><td><a href="https://github.com/rdf-array/rdf-array/blob/main/targets.md">targets.md</a></td></tr>
+  </tbody></table>
+  <p>[SHACL]: https://www.w3.org/TR/shacl/ [SHACL 1.2 Core]: https://www.w3.org/TR/shacl12-core/</p>
+  </section>
+  <script>
+  // Turtle-array and SPARQL-array highlighting: a few token classes are enough for these examples.
+  (function () {
+    var token = /(<[^>\s]*>)|("""[\s\S]*?"""|"(?:[^"\\]|\\.)*")(@[A-Za-z0-9-]+|\^\^[^\s;,.()\]]+)?|(#[^\n]*)|(\?[A-Za-z_][\w]*)|(_:[A-Za-z0-9_-]+)|(\b(?:PREFIX|BASE|SELECT|CONSTRUCT|ASK|DESCRIBE|WHERE|DELETE|INSERT|DATA|FILTER|OPTIONAL|UNION|ORDER|BY|GROUP|LIMIT|OFFSET|BIND|VALUES|GRAPH|a)\b)|(\b-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|([A-Za-z][\w-]*:[\w#./-]*|[A-Za-z][\w-]*:)/g;
+    function paint(pre) {
+      var src = pre.textContent, out = '', last = 0, m;
+      token.lastIndex = 0;
+      while ((m = token.exec(src))) {
+        out += esc(src.slice(last, m.index));
+        var cls = m[1] ? 'hljs-iri' : m[2] ? 'hljs-lit' : m[4] ? 'hljs-cmt' : m[5] ? 'hljs-var' : m[6] ? 'hljs-bnode' : m[7] ? 'hljs-kw' : m[8] ? 'hljs-num' : 'hljs-pname';
+        out += '<span class="' + cls + '">' + esc(m[0]) + '</span>';
+        last = token.lastIndex;
+      }
+      out += esc(src.slice(last));
+      pre.innerHTML = out;
+    }
+    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    var jsonToken = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(true|false|null)\b/g;
+    function paintJson(pre) {
+      var src = pre.textContent, out = '', last = 0, m;
+      jsonToken.lastIndex = 0;
+      while ((m = jsonToken.exec(src))) {
+        out += esc(src.slice(last, m.index));
+        if (m[1]) { out += '<span class="' + (m[2] ? 'hljs-attr' : 'hljs-string') + '">' + esc(m[1]) + '</span>' + esc(m[2] || ''); }
+        else if (m[3]) { out += '<span class="hljs-number">' + esc(m[3]) + '</span>'; }
+        else { out += '<span class="hljs-literal">' + esc(m[4]) + '</span>'; }
+        last = jsonToken.lastIndex;
+      }
+      out += esc(src.slice(last));
+      pre.innerHTML = out;
+    }
+    function tidyHeader() {
+      // An unofficial draft has no published version; ReSpec prints the line anyway.
+      document.querySelectorAll('.head dt').forEach(function (dt) {
+        if (/^Latest published version/.test(dt.textContent)) { var dd = dt.nextElementSibling; dt.remove(); if (dd && dd.tagName === 'DD') dd.remove(); }
+      });
+    }
+    function run() { tidyHeader(); document.querySelectorAll('pre.turtle, pre.sparql').forEach(paint); document.querySelectorAll('pre.json').forEach(paintJson); }
+    if (document.respec && document.respec.ready) { document.respec.ready.then(run); } else { document.addEventListener('DOMContentLoaded', run); }
+  })();
+  </script>
+</body>
+</html>

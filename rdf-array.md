@@ -126,7 +126,11 @@ dependency injection comunica is built with, reads its configuration lists throu
 or `rdf:annotation` applies to that one triple; `rdf:li` is no longer numbered into `rdf:_1`, `rdf:_2`,
 …. RDFLib's RDF/XML, TriX and HexTuples writers refuse sequence terms rather than invent a spelling.
 
-**Not touched.** SHACL (a sequence-valued `sh:in` has no reading yet), RDFa (`inlist` still builds a
+**SHACL.** [SHACL-array](shacl-array.html): a SHACL list (`sh:path ( … )`, `sh:in`, `sh:or`, …) is
+a sequence term and a ladder is not a list; SHACL 1.2's `sh:memberShape`, `sh:minListLength`,
+`sh:maxListLength` and `sh:uniqueMembers` constrain sequence values.
+
+**Not touched.** RDFa (`inlist` still builds a
 ladder), the canonicalization algorithm RDFC-1.0 (no sequence term), N3 formulas (fine in RDFLib).
 
 ### Converting between RDF and rdf-array
@@ -150,7 +154,7 @@ graph with no sequences is an RDF graph.
 
 | Language | Project | What the fork does |
 |---|---|---|
-| Java | [jena-array](https://github.com/rdf-array/jena-array) | Apache Jena with the `Node_Seq` term: Turtle-array, SPARQL-array (patterns, position patterns, functions, results), ShEx-array; the `jena-rdfminus` demo server and page; `RDF-SEQUENCES-HANDOFF.md` tabulates the flagged tests |
+| Java | [jena-array](https://github.com/rdf-array/jena-array) | Apache Jena with the `Node_Seq` term: Turtle-array, SPARQL-array (patterns, position patterns, functions, results), ShEx-array, SHACL-array (`jena-shacl`); the `jena-rdfminus` demo server and page; `RDF-SEQUENCES-HANDOFF.md` tabulates the flagged tests |
 | JavaScript | [shex.js-array](https://github.com/rdf-array/shex.js-array) with [N3.js-array](https://github.com/rdf-array/N3.js-array), [types-array](https://github.com/rdf-array/types-array), [lezer-turtle-array](https://github.com/rdf-array/lezer-turtle-array), [lezer-shexc-array](https://github.com/rdf-array/lezer-shexc-array) | ShEx-array validation in the browser and Node, with the Turtle-array and ShExC-array editor grammars; <https://rdf-array.github.io/shex.js-array/> |
 | JavaScript | [comunica-array](https://github.com/rdf-array/comunica-array) with [traqula-array](https://github.com/rdf-array/traqula-array), [rdf-data-factory-array](https://github.com/rdf-array/rdf-data-factory-array), [rdf-string-array](https://github.com/rdf-array/rdf-string-array), [rdf-string-ttl-array](https://github.com/rdf-array/rdf-string-ttl-array), [rdf-terms-array](https://github.com/rdf-array/rdf-terms-array), [jsonld-streaming-parser-array](https://github.com/rdf-array/jsonld-streaming-parser-array), [jsonld-streaming-serializer-array](https://github.com/rdf-array/jsonld-streaming-serializer-array), [rdfxml-streaming-parser-array](https://github.com/rdf-array/rdfxml-streaming-parser-array), [sparqljson-parse-array](https://github.com/rdf-array/sparqljson-parse-array), [sparqlxml-parse-array](https://github.com/rdf-array/sparqlxml-parse-array) | the SPARQL-array engine over Turtle, JSON-LD and RDF/XML sources and remote endpoints, with the result formats; comunica-array's `doc/rdf-array.md` has the stack table |
 | JavaScript | [jsonld.js-array](https://github.com/rdf-array/jsonld.js-array) | JSON-LD-array: `jsonld.arrayToRDF`, writers for N-Quads-array and Turtle-array, the [playground](https://rdf-array.github.io/jsonld.js-array/) |
@@ -185,16 +189,18 @@ graph with no sequences is an RDF graph.
 - **Containers.** `rdf:Seq`, `rdf:Bag` and `rdf:Alt` keep their vocabulary but lose the only syntax
   that produced them (`rdf:li`); whether a sequence should ever be read as a bag or an alternative is
   open.
-- **SHACL, OWL, SKOS.** Each reads collections as ladders; their rdf-array readings are not written.
-  rudof-array reads a SHACL shapes graph's lists as sequences only, which four W3C SHACL tests
-  contradict ([#9](https://github.com/rdf-array/rdf-array/issues/9)).
+- **OWL, SKOS.** Each reads collections as ladders; their rdf-array readings are not written. SHACL's
+  is [SHACL-array](shacl-array.html) (sequences only, as rudof-array and jena-array read them;
+  [#9](https://github.com/rdf-array/rdf-array/issues/9)); positional constraints on a sequence's
+  members are open for SHACL-array and ShEx-array alike.
 - **Specification test suites.** The W3C suites are forked with their expectations rewritten
   (rdf-tests-array, json-ld-api-array, json-ld-streaming-array, shexTest-array), and the tests no W3C
   suite has live in rdf-tests-contrib, json-ld-api-contrib and shexTest-contrib; the implementations do
   not all walk them yet ([#3](https://github.com/rdf-array/rdf-array/issues/3); see the README for the repositories and contrib-duplicates.md for the
   overlap). The suite forks are newer than the suites the implementations pin, so a port must tell
   upstream drift from rdf-array failures ([#11](https://github.com/rdf-array/rdf-array/issues/11)).
-  SHACL's and RDF canonicalization's suites wait for SHACL-array and for a canonicalization of sequences.
+  SHACL's suite waits for a data-shapes-array fork (shacl-array.md §4), and RDF canonicalization's
+  for a canonicalization of sequences.
 - **A sequence inside a triple term.** RDF 1.2 forbids a collection in a triple term because it generates
   triples; a sequence generates none, so rdf-array could allow `<< :s :p ( 1 ) >>`, but jena-array and
   N3.js-array reject it today, and rdf-tests-array keeps the RDF 1.2 negative test (`trig12-syntax-bad-06`)
