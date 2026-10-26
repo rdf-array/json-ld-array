@@ -1,5 +1,11 @@
 {
   "$comment": "The rdf-array organisation's repositories and the dependency edges between them, read by repos.html and checked by tools/manifest-check.py against GitHub and against each repository's build files. A stack is a repository with \"stack\": true plus every repository its runtime deps reach. Edit by hand; see the repos-manifest skill.",
+  "issues": {
+    "ignore": [
+      1
+    ],
+    "$comment": "Issue numbers repos.html leaves out: #1 holds the meta-information about rdf-array's issues, which may one day be shown as text."
+  },
   "repos": [
     {
       "name": "rdf-tests-array",

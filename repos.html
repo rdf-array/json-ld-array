@@ -264,7 +264,8 @@ function render(doc, issues, issueError) {
   try { doc = await (await fetch("repos.json", {cache: "no-cache"})).json(); }
   catch (e) { document.getElementById("status").textContent = `Could not read repos.json: ${e.message}`; return; }
   render(doc, null, "loading");
-  try { render(doc, await fetchIssues()); }
+  const ignore = new Set(((doc.issues || {}).ignore) || []);   // e.g. #1, the issues' own meta-information
+  try { render(doc, (await fetchIssues()).filter(i => !ignore.has(i.number))); }
   catch (e) { render(doc, null, e.message); }
 })();
 </script>

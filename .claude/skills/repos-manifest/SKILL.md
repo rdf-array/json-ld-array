@@ -113,7 +113,8 @@ All issues live in rdf-array/rdf-array; repos.html files them as follows:
   SHACL-array. These issues are in their own section.
 - **`rdf-array: …`**: about this repository (its documents, tools, conventions), listed under it in
   the Meta section.
-- Anything else shows as **Unfiled**.
+- Anything else shows as **Unfiled**, except the issue numbers in repos.json's `issues.ignore`
+  (#1, the meta-information about the issues themselves), which the page leaves out.
 - `open-question`, `bug` and `enhancement` are added as they apply.
 
 ## Other lists to keep in step
