@@ -69,6 +69,12 @@ shape expressions in place of ladder shapes, ShExR.shex included.
 > - <a id="shextest-contrib"></a>[shexTest-contrib](https://github.com/rdf-array/shexTest-contrib) —
 >   Collection schemas (ShExC, ShExJ, ShExR), validation and negative syntax tests.
 
+#### [rdf-test-suite](https://github.com/rdf-array/rdf-test-suite-array)
+
+Fork of [rubensworks/rdf-test-suite.js](https://github.com/rubensworks/rdf-test-suite.js): the
+manifest runner of the JavaScript forks, reading expectations that hold `( … )` (stock
+rdf-test-suite drops those tests) and comparing graphs and results that hold sequences.
+
 ### Java
 
 #### [jena](https://github.com/rdf-array/jena-array)
@@ -206,9 +212,10 @@ list looks like. A target is ticked and moved up into its language when its fork
 - [ ] <a id="owl-api"></a>**[OWL API](https://github.com/owlcs/owlapi), Protégé** (Java) — OWL,
   whose syntax is made of lists; not before SHACL-array. Impact 5, utility 2.
 
-Two things that are not implementations rank above most of these: a conformance suite, begun as the
-[`*-contrib` repositories](#test-suites), and a converter between ladders and sequences, without which
-rdf-array data cannot meet RDF 1.1 systems.
+One thing that is not an implementation ranks above most of these: a converter between ladders and
+sequences, without which rdf-array data cannot meet RDF 1.1 systems. The conformance suite that
+ranked beside it is done: the [`*-contrib` repositories](#test-suites), which
+jena, comunica, N3.js, shex.js, jsonld.js, rdflib, PyShEx, oxigraph and rudof run.
 
 Not targets ([why](targets.md#not-targets)): Raptor and Redland; Virtuoso, GraphDB, Stardog,
 AllegroGraph, Neptune, Blazegraph.

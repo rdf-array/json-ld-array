@@ -126,18 +126,24 @@ change of syntax has to rewrite.
 
 | Implementation | Runner | Where the suite URL or path is set |
 |---|---|---|
-| N3.js-array | `npm run spec` (`spec/run.js`); `npm run spec-1-1-earl` runs `rdf-test-suite` per syntax and writes EARL | the manifest URLs in the `spec-1-1-earl-*` scripts and in `spec/run.js` |
+| N3.js-array | `npm run spec` (`spec/run.js`, `rdf-test-suite-array`); `scripts/fetch-rdf-array-tests.sh` clones rdf-tests-array and rdf-tests-contrib into `.rdf-array-tests/`, which `-m` maps the W3C and Pages URLs onto; `npm run spec-1-1-earl` writes EARL | `RDF_TESTS_ARRAY`, `CONTRIB_MANIFESTS` and the skip list in `spec/run.js` |
 | rdfxml-streaming-parser-array, jsonld-streaming-parser-array, jsonld-streaming-serializer-array, sparqljson-parse-array, sparqlxml-parse-array | `npm run spec` (`rdf-test-suite` with `spec/parser.js`, `-c .rdf-test-suite-cache/`) | the manifest URL in the `spec` script; `-i '{ "streamingProfile": true }'` for the streaming profile |
-| jsonld.js-array | `npm run fetch-test-suites` clones the JSON-LD API, framing, json-ld.org and rdf-canon suites into `test-suites/`, then `npm test` (`JSONLD_TESTS=<dir>` for one suite) | the `git clone` URLs in the `fetch-*` scripts |
+| jsonld.js-array | `npm run fetch-test-suites` clones the JSON-LD API, framing, json-ld.org and rdf-canon suites into `test-suites/`, then `npm test` (`JSONLD_TESTS=<dir>` for one suite); `npm run fetch-json-ld-api-contrib && npm run test-contrib` walks json-ld-api-contrib's `array-manifest.jsonld` (`tests/contrib.js`) | the `git clone` URLs in the `fetch-*` scripts |
 | traqula-array | `yarn spec:all` (lerna over the parser packages, `rdf-test-suite`) | each package's `spec` script |
-| comunica-array | in `engines/query-sparql`: `yarn spec:query-1-1`, `spec:update-1-1`, `spec:csv-tsv-1-1`, `spec:query-1-2` (`rdf-test-suite` with `spec/sparql-engine.js`, each with a `--skip` list of known failures), plus `rdf-test-suite-ldf` | the `spec:base-*` scripts' manifest URLs; add rdf-array skips to the `--skip` lists with a comment |
-| jena-array | ARQ: `arq.qtest --earl <manifest>` or the `TS_*` JUnit suites over `jena-arq/testing/`; RIOT: the `testing/RIOT/` manifests | the in-tree copies |
-| rdflib-array | `pytest test/test_w3c_spec/` over `test/data/suites/` | the in-tree copies |
-| PyShEx-array | the shexTest manifest tests under `tests/`, fetched from GitHub | the branch and URL in the test utilities |
-| shex.js-array | the mocha manifest tests over the `shex-test` dependency, `"shex-test": "github:shexSpec/shexTest#main"` in the root `package.json` (the Pages workflow clones the same ref beside the checkout) | that dependency, pointed at `rdf-array/shexTest-array#rdf-sequences`, and the workflow's clone |
+| comunica-array | in `engines/query-sparql`: `yarn spec:query-1-1`, `spec:update-1-1`, `spec:csv-tsv-1-1`, `spec:query-1-2` (`rdf-test-suite` with `spec/sparql-engine.js`, each with a `--skip` list of known failures), plus `rdf-test-suite-ldf`; `yarn spec:rdf-array` fetches rdf-tests-contrib into `.rdf-array-tests/` and runs its four SPARQL manifests | the `spec:base-*` scripts' manifest URLs; add rdf-array skips to the `--skip` lists with a comment; `spec:base-rdf-array` holds the contrib mapping and skips |
+| jena-array | ARQ: `arq.qtest --earl <manifest>` or the `TS_*` JUnit suites over `jena-arq/testing/`; RIOT: the `testing/RIOT/` manifests; the contrib suites: `Scripts_RdfArrayContrib` and `Scripts_RdfArrayContribSPARQL` (in `ARQTestSuite`), `TestShexContrib*` (in `TS_Shex`) | the in-tree copies; `jena-arq/testing/rdf-array/update.sh` and `jena-shex/src/test/files/shexTest-contrib/update.sh` refresh the contrib ones |
+| rdflib-array | `pytest test/test_w3c_spec/` over `test/data/suites/`; `test_w3c_spec/test_rdf_array_contrib.py` and `test/jsonld/test_rdf_array_contrib.py` over the contrib copies | the in-tree copies; `test/data/suites/rdf-array/update.sh` refreshes rdf-tests-contrib and json-ld-api-contrib |
+| PyShEx-array | the shexTest manifest tests under `tests/` (`tests/utils/manifest_tester.py`), and `tests/test_shextest_validation/test_manifest_contrib.py` for shexTest-contrib | the `tests/data/shexTest` and `tests/data/shexTest-contrib` submodules (shexTest-array `rdf-sequences`, shexTest-contrib `main`), or `SHEXTEST` / `SHEXTEST_CONTRIB` |
+| shex.js-array | the mocha manifest tests over the `shex-test` and `shex-test-contrib` dependencies (`packages/shex-cli/test/findPath.js`, `findContribPath.js`); `ValidationContrib-test.js` and `Parser-Writer-test.js` loop over both corpora | `"shex-test": "github:rdf-array/shexTest-array#rdf-sequences"`, `"shex-test-contrib": "github:rdf-array/shexTest-contrib#main"`, or `TESTSDIR` / `SHEXTEST_CONTRIB`; the workflows clone shexTest-array beside the checkout |
 | rudof-array | `cargo test -p shex_testsuite` (baselines in `tests/`, `tests/rdf_array_contrib.rs`) and `cargo run -p shex_testsuite -- -m <manifest> -s shexc\|shexj\|shexr` | the `shex_testsuite/shexTest` and `shex_testsuite/shexTest-contrib` submodules, pointed at shexTest-array (`rdf-sequences`) and shexTest-contrib (`main`) |
 | oxigraph-array | `cargo test -p oxigraph-testsuite` (`tests/parser.rs`, `tests/sparql.rs`, one function per manifest, each with a skip list) | the `testsuite/` submodules, pointed at the -array forks (branch `rdf-sequences`) and the contrib repositories (`main`); `src/files.rs` maps `https://w3c.github.io/` and `https://rdf-array.github.io/` onto them |
 | QLever (future) | its own end-to-end tests | — |
+
+The JavaScript runners use [rdf-test-suite-array](https://github.com/rdf-array/rdf-test-suite-array)
+(`"rdf-test-suite": "github:rdf-array/rdf-test-suite-array#rdf-sequences"`): stock rdf-test-suite reads
+expected results with stock N3.js and silently drops every test whose expectation holds `( … )`, and its
+isomorphism check cannot compare sequences. Prefer a local clone mapped with `-m <url>~<path>` over the
+Pages URL through `-c`: through the HTTP cache, results files arrived gzipped and were dropped.
 
 A run is recorded as an EARL report where the runner produces one (`rdf-test-suite -o earl
 -p spec/earl-meta.json`), kept under `reports/` in the implementation fork, with the counts and the

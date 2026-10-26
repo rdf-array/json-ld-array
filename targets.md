@@ -25,7 +25,9 @@ Two things that are not implementations rank above most of the list: a **conform
 (impact 3, utility 5) assembled from the tests the forks already carry, so that the next port does
 not re-derive its expectations from jena-array's and comunica-array's test files; and a
 **converter** between ladders and sequences (impact 2, utility 4), without which rdf-array data
-cannot meet RDF 1.1 systems at all (the open question in [rdf-array.md](rdf-array.html)).
+cannot meet RDF 1.1 systems at all (the open question in [rdf-array.md](rdf-array.html)). The
+conformance suite now exists, as the `*-contrib` repositories, which jena, comunica, N3.js,
+shex.js, jsonld.js, rdflib, PyShEx, oxigraph and rudof run (2026-10-25); the converter does not.
 
 ## Oxigraph: the foundation for Rust, Python and WASM
 
@@ -160,8 +162,12 @@ Oxigraph gives Rust.
 
 ## What to do first
 
-1. Extract a conformance suite from the forks' tests (Turtle-array, SPARQL-array, ShEx-array,
-   JSON-LD-array, results formats), so that each port below starts from shared expectations.
+1. ~~Extract a conformance suite from the forks' tests (Turtle-array, SPARQL-array, ShEx-array,
+   JSON-LD-array, results formats), so that each port below starts from shared expectations.~~
+   Done: rdf-tests-contrib, json-ld-api-contrib and shexTest-contrib, run by jena, comunica,
+   N3.js, shex.js, jsonld.js, rdflib, PyShEx, oxigraph and rudof (2026-10-25; each fork's notes
+   have its counts and skips). The W3C suite forks and the parser forks' runners still to wire
+   are tracked in [rdf-array#3](https://github.com/rdf-array/rdf-array/issues/3).
 2. ~~Fork the Oxigraph family, data model and parsers first, then `spargebra` and `sparesults`, then
    the store; publish pyoxigraph-array and the WASM package.~~ Done: oxigraph-array (2026-10-24);
    the Python and WASM packages build from it but are not published.
