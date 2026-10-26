@@ -29,6 +29,10 @@ ra:CollectionShapeExpression a mf:Requirement ;
     rdfs:label "CollectionShapeExpression" ;
     rdfs:comment "ShEx-array Collection shape expression ((shapeExpr))[min, max], ShExJ {\"type\": \"Collection\"}, ShExR sx:Collection. Proposed syntax, expected to change." .
 
+ra:ShaclListConstraints a mf:Requirement ;
+    rdfs:label "ShaclListConstraints" ;
+    rdfs:comment "SHACL-array: SHACL 1.2's sh:memberShape, sh:minListLength, sh:maxListLength and sh:uniqueMembers over sequence values (a SHACL list is a sequence term)." .
+
 ra:JsonLdArrayToRdfTest a rdfs:Class ;
     rdfs:label "JsonLdArrayToRdfTest" ;
     rdfs:comment "A JSON-LD-array test: plain JSON (input) and a mapping document (ra:mapping) to N-Quads-array (expect) or an error code (expectErrorCode)." .

@@ -82,7 +82,7 @@ rdf-test-suite drops those tests) and comparing graphs and results that hold seq
 
 Fork of [apache/jena](https://github.com/apache/jena): Apache Jena with the `Node_Seq` term:
 Turtle-array, SPARQL-array with position patterns and functions, ShEx-array, SHACL-array, and the
-`jena-rdfminus` demo server. No forked dependencies.
+`jena-rdfarray` demo server. No forked dependencies.
 
 ### JavaScript
 

@@ -38,7 +38,7 @@ Skip with the reason in the test file, in the framework's idiom, and keep the te
 diff shows what changed:
 
 ```ts
-// RDF-array: skipped, the rdf:rest*/rdf:first path walks a ladder that `fhir:coding ( [ … ] )` no longer is
+// rdf-array: skipped, the rdf:rest*/rdf:first path walks a ladder that `fhir:coding ( [ … ] )` no longer is
 // eslint-disable-next-line jest/no-disabled-tests
 it.skip('should handle zero-or-more paths with lists', …);
 ```
@@ -54,7 +54,7 @@ it.skip('should handle zero-or-more paths with lists', …);
 Write the counterpart beside it, named for what it tests under rdf-array ("should bind a sequence
 after a link", "should handle a sequence holding a blank node property list"), over the same data.
 List both in `doc/rdf-array.md` under Tests, with the reason; jena-array keeps a table of them in
-`RDF-SEQUENCES-HANDOFF.md`.
+`RDF-ARRAY-HANDOFF.md`.
 
 ## 3. Rewriting ladder expectations
 

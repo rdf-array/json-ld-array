@@ -91,7 +91,7 @@ The contrib suites ([rdf-tests-contrib](https://github.com/rdf-array/rdf-tests-c
 
 | Implementation test | Duplicated by |
 |---|---|
-| test/lib "should emit a sequence term as a list (RDF-)" | json-ld-api-contrib `tests/fromRdf-manifest#tseq01` |
+| test/lib "should emit a sequence term as a list (rdf-array)" | json-ld-api-contrib `tests/fromRdf-manifest#tseq01` |
 
 ## jsonld.js-array
 
@@ -174,8 +174,8 @@ The contrib suites ([rdf-tests-contrib](https://github.com/rdf-array/rdf-tests-c
 | packages/shex-validator/test/Collection-test.js "reports the elements that fail, by index" | shexTest-contrib `validation-contrib/manifest#collRef1to2_badElement_fail` |
 | packages/shex-validator/test/Collection-test.js "wants a sequence" | shexTest-contrib `validation-contrib/manifest#collRef1to2_notSeq_fail` |
 | packages/shex-validator/test/Collection-test.js (parser) "takes a shape expression of any kind" | shexTest-contrib `validation-contrib/manifest#collIriOrInt_pass` |
-| packages/shex-webapp/examples/manifest.json "RDF-: anything" with () | shexTest-contrib `validation-contrib/manifest#collDot_empty_pass` |
-| packages/shex-webapp/examples/manifest.json "RDF-: anything" with a non-sequence | shexTest-contrib `validation-contrib/manifest#collDot_notSeq_fail` |
+| packages/shex-webapp/examples/manifest.json "rdf-array: anything" with () | shexTest-contrib `validation-contrib/manifest#collDot_empty_pass` |
+| packages/shex-webapp/examples/manifest.json "rdf-array: anything" with a non-sequence | shexTest-contrib `validation-contrib/manifest#collDot_notSeq_fail` |
 | packages/shex-webapp/examples/manifest.json "a triangle" | shexTest-contrib `validation-contrib/manifest#collPolygon_triangle_pass` |
 | packages/shex-webapp/examples/manifest.json "pink has only two components" | shexTest-contrib `validation-contrib/manifest#collColour_pink_fail` |
 | packages/shex-webapp/examples/manifest.json "red" | shexTest-contrib `validation-contrib/manifest#collColour_red_pass` |
@@ -185,10 +185,10 @@ The contrib suites ([rdf-tests-contrib](https://github.com/rdf-array/rdf-tests-c
 
 | Implementation test | Duplicated by |
 |---|---|
-| test/SparqlJsonParser-test.ts "RDF- sequences" | rdf-tests-contrib `sparql/results/manifest#results-srj` |
+| test/SparqlJsonParser-test.ts "rdf-array sequences" | rdf-tests-contrib `sparql/results/manifest#results-srj` |
 
 ## sparqlxml-parse-array
 
 | Implementation test | Duplicated by |
 |---|---|
-| test/SparqlXmlParser-test.ts "RDF- sequences" | rdf-tests-contrib `sparql/results/manifest#results-srx` |
+| test/SparqlXmlParser-test.ts "rdf-array sequences" | rdf-tests-contrib `sparql/results/manifest#results-srx` |
