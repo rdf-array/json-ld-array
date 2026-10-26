@@ -649,6 +649,13 @@
       "anchor": "rdf-array",
       "kind": "meta",
       "description": "This repository: the documents, the issues of every repository, the skills and tools, and this list."
+    },
+    {
+      "name": ".github",
+      "short": ".github",
+      "anchor": "github",
+      "kind": "meta",
+      "description": "The organisation's profile page, `profile/README.md`, shown on github.com/rdf-array: the stacks, deep-linked into this page."
     }
   ],
   "targets": [
