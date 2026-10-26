@@ -10,7 +10,8 @@ import org.apache.jena.sparql.resultset.ResultsFormat;
 /** Drive jena-array for test-suite rewriting.
  *  parse FILE [BASE]               -> N-Quads-array on stdout
  *  query QUERY DATA|- [NAMED...]   -> SPARQL JSON results (or N-Quads-array for CONSTRUCT/DESCRIBE)
- *  update UPDATE DATA|-            -> N-Quads-array of the dataset after the update */
+ *  update UPDATE DATA|-            -> N-Quads-array of the dataset after the update
+ *  shacl SHAPES DATA               -> the SHACL-array validation report as N-Triples-array */
 public class JenaArray {
     static boolean hasSeq(org.apache.jena.graph.Node n) {
         if (n.isNodeSeq()) return true;
@@ -78,6 +79,19 @@ public class JenaArray {
                 var report = org.apache.jena.shex.ShexValidator.getNew(java.util.List.of())
                     .validate(g, schema, org.apache.jena.graph.NodeFactory.createURI(a[4]), org.apache.jena.graph.NodeFactory.createURI(a[3]));
                 System.out.println(report.conforms() ? "conformant" : "nonconformant");
+            }
+            case "shacl" -> {
+                // shacl SHAPES DATA: the validation report as N-Triples-array, or "error: …" when the
+                // shapes graph is ill-formed (jena-shacl must be on the classpath)
+                org.apache.jena.graph.Graph shapes = RDFParser.source(a[1]).base(Path.of(a[1]).toUri().toString()).toGraph();
+                org.apache.jena.graph.Graph data = a[2].equals(a[1]) ? shapes
+                    : RDFParser.source(a[2]).base(Path.of(a[2]).toUri().toString()).toGraph();
+                try {
+                    var report = org.apache.jena.shacl.ShaclValidator.get().validate(shapes, data);
+                    RDFDataMgr.write(System.out, report.getGraph(), Lang.NTRIPLES);
+                } catch (RuntimeException ex) {
+                    System.out.println("error: " + ex.getMessage());
+                }
             }
             default -> throw new IllegalArgumentException(a[0]);
         }

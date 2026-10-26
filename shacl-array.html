@@ -125,25 +125,27 @@
   </section>
   <section id="tests">
   <h2>Tests</h2>
-  <p>The W3C SHACL suites (<code>w3c/data-shapes</code>) are read with lists as sequences. These tests depend on ladders, or on <code>rdf:nil</code> being the empty list. The SHACL 1.0 core ones are flagged in jena-array and rudof-array; the SHACL 1.2 ones, which jena-shacl does not carry and rudof does not yet pass, need rdf-array counterparts:</p>
+  <p><a href="https://github.com/rdf-array/data-shapes-array">data-shapes-array</a> is the W3C SHACL 1.0 and 1.2 test suites (<code>w3c/data-shapes</code>) read as SHACL-array, following the rules of the other suite forks: no test deleted, expectations changed and inputs not, every changed test with an <code>rdfs:comment "rdf-array: …"</code>. A test with nothing left to test is marked <code>mf:status sht:rejected</code>, the SHACL test vocabulary's status for a test not to run. Its <code>doc/rdf-array.md</code> has the details:</p>
   <table class="simple">
-  <thead><tr><th>Test</th><th>Why</th></tr></thead>
+  <thead><tr><th>Test</th><th>Under SHACL-array</th></tr></thead>
   <tbody>
-  <tr><td><code>core/path/path-strange-001</code>, <code>-002</code></td><td>the <code>sh:path</code> is an explicit <code>rdf:first</code>/<code>rdf:rest</code> ladder</td></tr>
-  <tr><td><code>core/complex/shacl-shacl</code></td><td>shacl-shacl's list shapes walk <code>rdf:rest*/rdf:first</code> over the shapes graph's lists, which are sequences</td></tr>
-  <tr><td>SHACL 1.2 <code>core/{node,property}/memberShape-001</code>, <code>maxListLength-001</code>, <code>uniqueMembers-001</code></td><td>the data spells some lists as ladders, written with <code>rdf:first</code> and ending in <code>( … )</code></td></tr>
-  <tr><td>SHACL 1.2 <code>core/{node,property}/minListLength-001</code>, <code>maxListLength-001</code>, <code>uniqueMembers-001</code></td><td><code>rdf:nil</code> as the empty list, which conforms to <code>sh:maxListLength</code> and <code>sh:uniqueMembers</code> there</td></tr>
-  <tr><td>SHACL 1.2 <code>node-expr/list</code></td><td>expects <code>()</code> to be the constant <code>rdf:nil</code></td></tr>
+  <tr><td>1.0 <code>core/path/path-strange-001</code></td><td>re-recorded: the ladder on the path node is ordinary triples, so the path is the inverse path <code>^ex:p</code></td></tr>
+  <tr><td>1.0 <code>core/path/path-strange-002</code></td><td>rejected: without the ladder only a one-member sequence path is left, which SHACL does not allow</td></tr>
+  <tr><td>1.0 and 1.2 <code>core/complex/shacl-shacl</code></td><td>shacl-shacl itself rewritten: <code>sh:memberShape</code> and <code>sh:minListLength</code> instead of <code>rdf:rest*/rdf:first</code> (<code>tools/rewrite-shacl-shacl.py</code>); the test requires <code>ra:ShaclListConstraints</code></td></tr>
+  <tr><td>1.2 <code>core/property/memberShape-001</code>, <code>maxListLength-001</code>, <code>uniqueMembers-001</code></td><td>re-recorded: ladders and <code>rdf:nil</code> are not lists, so they violate as non-lists</td></tr>
+  <tr><td>1.2 <code>core/node/memberShape-001</code>, <code>minListLength-001</code>, <code>maxListLength-001</code>, <code>uniqueMembers-001</code></td><td>rejected: their focus nodes are IRIs spelled as ladders, and an IRI is never a sequence</td></tr>
+  <tr><td>1.2 <code>core/node/in-003</code>, <code>xone-003</code></td><td>rejected: <code>sh:in rdf:nil</code> and <code>sh:xone rdf:nil</code> make the shapes graph ill-formed</td></tr>
+  <tr><td>1.2 <code>node-expr/shnex/list</code> <code>list-empty</code></td><td>re-recorded: <code>()</code> is a list expression with no members and outputs nothing</td></tr>
   </tbody></table>
-  <p>Still to do: a <code>data-shapes-array</code> fork of w3c/data-shapes with these tests re-recorded and shacl-shacl's list shapes rewritten with <code>sh:memberShape</code> over sequences. Its contrib sibling would take the shared cases (as rdf-tests-contrib does for the syntaxes), starting from jena-array's <code>jena-shacl/src/test/files/local/rdf-array/</code> manifests: sequence paths, <code>sh:in</code> and <code>sh:or</code> sequences, the four list constraints, a ladder as a value, and <code>rdf:nil</code> as a value.</p>
+  <p>Its sibling <a href="https://github.com/rdf-array/data-shapes-contrib">data-shapes-contrib</a> holds 21 tests no W3C suite has, in the same layout, seeded from jena-array's own: sequence paths (nested in alternative paths), <code>rdf:nil</code> as a predicate path, and ladders and <code>()</code> where a list is expected (<code>sht:Failure</code>). Under <code>sh:in</code>, <code>sh:or</code>, <code>sh:languageIn</code> and <code>sh:ignoredProperties</code> they hold sequences, and <code>sh:in ()</code> and <code>sh:xone ()</code> are the counterparts of the rejected <code>in-003</code> and <code>xone-003</code>. The four list constraints appear on property values and on focus nodes that are sequences (the counterparts of the rejected node-level tests), together with this document's colour, playlist and polygon. Its <code>bin/build.py</code> takes each expectation from jena-array and requires rudof-array to agree wherever it has the feature. The vocabulary adds <a href="https://rdf-array.github.io/rdf-array/vocab/#ShaclListConstraints"><code>ra:ShaclListConstraints</code></a> for tests that need the list constraints.</p>
   </section>
   <section id="implementations">
   <h2>Implementations</h2>
   <table class="simple">
-  <thead><tr><th>Implementation</th><th>Lists as sequences</th><th>List constraints</th><th>Notes</th></tr></thead>
+  <thead><tr><th>Implementation</th><th>Lists as sequences</th><th>List constraints</th><th>Suites</th></tr></thead>
   <tbody>
-  <tr><td><a href="https://github.com/rdf-array/jena-array">jena-array</a> <code>jena-shacl</code></td><td>yes, sequences only</td><td><code>sh:memberShape</code>, <code>sh:minListLength</code>, <code>sh:maxListLength</code>, <code>sh:uniqueMembers</code></td><td>no <code>sh:detail</code>; compact syntax builds sequences; the W3C core suite passes except the three flagged tests</td></tr>
-  <tr><td><a href="https://github.com/rdf-array/rudof-array">rudof-array</a> <code>shacl</code></td><td>yes, sequences only</td><td>not yet (rudof's own TODO)</td><td>flags <code>path-strange-001/002</code>, <code>shacl-shacl</code>, <code>node-expr/list</code></td></tr>
+  <tr><td><a href="https://github.com/rdf-array/jena-array">jena-array</a> <code>jena-shacl</code></td><td>yes, sequences only</td><td><code>sh:memberShape</code>, <code>sh:minListLength</code>, <code>sh:maxListLength</code>, <code>sh:uniqueMembers</code>; no <code>sh:detail</code></td><td>data-shapes-array's SHACL 1.0 core suite and SHACL 1.2's list tests, and data-shapes-contrib: TC_SHACL 272 pass, 5 skipped (the rejected tests); compact syntax builds sequences</td></tr>
+  <tr><td><a href="https://github.com/rdf-array/rudof-array">rudof-array</a> <code>shacl</code></td><td>yes, sequences only</td><td>not yet (rudof's own TODO)</td><td>data-shapes-array: path-strange-001 and node-expr <code>list</code> pass, <code>shacl-shacl</code> and <code>path-strange-002</code> ignored; data-shapes-contrib: 6 pass, 15 ignored. Divergences: <a href="https://github.com/rdf-array/rdf-array/issues/17">rdf-array#17</a></td></tr>
   <tr><td>pySHACL over rdflib-array, rdf-validate-shacl over the RDF/JS forks</td><td>not forked</td><td>—</td><td><a href="https://github.com/rdf-array/rdf-array/blob/main/targets.md">targets.md</a></td></tr>
   </tbody></table>
   <p>[SHACL]: https://www.w3.org/TR/shacl/ [SHACL 1.2 Core]: https://www.w3.org/TR/shacl12-core/</p>

@@ -70,6 +70,17 @@ shape expressions in place of ladder shapes, ShExR.shex included.
 > - <a id="shextest-contrib"></a>[shexTest-contrib](https://github.com/rdf-array/shexTest-contrib) —
 >   Collection schemas (ShExC, ShExJ, ShExR), validation and negative syntax tests.
 
+#### [data-shapes](https://github.com/rdf-array/data-shapes-array)
+
+Fork of [w3c/data-shapes](https://github.com/w3c/data-shapes): the SHACL 1.0 and 1.2 test suites and
+shacl-shacl read as [SHACL-array](https://rdf-array.github.io/rdf-array/shacl-array.html), the tests that
+depended on ladders or on `rdf:nil` re-recorded or rejected, and shacl-shacl checking lists with
+`sh:memberShape`.
+
+> - <a id="data-shapes-contrib"></a>[data-shapes-contrib](https://github.com/rdf-array/data-shapes-contrib) —
+>   SHACL-array tests: sequence paths and lists in shapes graphs, ladders and `()` where a list is
+>   expected, and SHACL 1.2's list constraints over sequence values.
+
 #### [rdf-test-suite](https://github.com/rdf-array/rdf-test-suite-array)
 
 Fork of [rubensworks/rdf-test-suite.js](https://github.com/rubensworks/rdf-test-suite.js): the

@@ -21,7 +21,7 @@ implementation runs the same expectations, and how each implementation is pointe
 | JSON-LD framing and streaming | w3c/json-ld-framing `tests/`, w3c/json-ld-streaming `tests/` | `frame-manifest.jsonld`, `stream-toRdf-manifest.jsonld` | jsonld.js, jsonld-streaming-parser |
 | JSON-LD-star | json-ld/json-ld-star `tests/` | `toRdf-manifest.jsonld` | jsonld-streaming-parser |
 | ShEx | [shexSpec/shexTest](https://github.com/shexSpec/shexTest) | `validation/manifest.jsonld`, `schemas/manifest.jsonld`, `negativeSyntax/`, `negativeStructure/` | shex.js, PyShEx, Jena ShEx, rudof |
-| SHACL | [w3c/data-shapes](https://github.com/w3c/data-shapes) `data-shapes-test-suite/tests/` | `core/manifest.ttl`, `sparql/manifest.ttl` | jena-shacl, pySHACL, rdf-validate-shacl, rudof — after SHACL-array is defined |
+| SHACL 1.0 and 1.2 | [w3c/data-shapes](https://github.com/w3c/data-shapes) `data-shapes-test-suite/tests/`, `shacl12-test-suite/tests/` | `core/manifest.ttl`, `sparql/manifest.ttl` | jena-shacl, rudof, pySHACL, rdf-validate-shacl — read as [SHACL-array](../../../shacl-array.md) |
 | RDF canonicalization (RDFC-1.0) | [w3c/rdf-canon](https://github.com/w3c/rdf-canon) `tests/` | `manifest.ttl` | rdf-canonize, Jena, Oxigraph — after sequences are canonicalized |
 | SPARQL-array, ShEx-array, JSON-LD-array additions | the `*-contrib` repositories (§4) | the W3C formats | every implementation |
 
@@ -60,9 +60,13 @@ on the ladder, the test is flagged and a counterpart added. Specifically:
   suite, the suite avoids lists) is reviewed and the Collection shape expression tests are added
   from shex.js-array's webapp manifest: the RGB colour, the too-short failure, the nested polygon,
   the playlist, `((.))` with `()` and with a non-sequence.
-- **SHACL.** Every shapes graph uses lists (`sh:path ( … )`, `sh:in`, `sh:or`); nothing can be
-  re-recorded before SHACL-array says how a shapes graph's lists and sequence-valued data read.
-  Leave the suite until then.
+- **SHACL.** Read as SHACL-array ([shacl-array.md](../../../shacl-array.md)): a SHACL list is a sequence
+  term, so every shapes graph written with `( … )` reads unchanged; explicit `rdf:first`/`rdf:rest`
+  ladders are triples and `rdf:nil` an IRI. Tests whose point was a ladder or `rdf:nil` as the empty
+  list are re-recorded when they still test something and marked `mf:status sht:rejected` otherwise
+  (the focus node is an IRI spelled as a ladder; `sh:in rdf:nil`). shacl-shacl's list shapes become
+  `sh:memberShape` and `sh:minListLength` (`tools/rewrite-shacl-shacl.py`). An ill-formed shapes graph
+  expects `sht:Failure`.
 - **RDF canonicalization.** Add sequence cases (nested, with blank nodes inside) once an algorithm
   exists; the existing tests pass unchanged.
 
@@ -73,6 +77,7 @@ on the ladder, the test is flagged and a counterpart added. Specifically:
 | [rdf-tests-array](https://github.com/rdf-array/rdf-tests-array) | w3c/rdf-tests | 40 Turtle, TriG and RDF/XML evaluation results; syntax, semantics and SPARQL unchanged (doc/rdf-array.md says why, test by test) |
 | [json-ld-api-array](https://github.com/rdf-array/json-ld-api-array) | w3c/json-ld-api | 27 toRdf and 4 html results, 16 fromRdf inputs |
 | [json-ld-streaming-array](https://github.com/rdf-array/json-ld-streaming-array) | w3c/json-ld-streaming | 23 stream-toRdf results |
+| [data-shapes-array](https://github.com/rdf-array/data-shapes-array) | w3c/data-shapes | SHACL 1.0 path-strange-001 and SHACL 1.2's property-level list tests and node-expr `list` re-recorded; path-strange-002, the 1.2 node-level list tests, in-003 and xone-003 rejected; shacl-shacl rewritten (doc/rdf-array.md) |
 | [shexTest-array](https://github.com/rdf-array/shexTest-array) | shexSpec/shexTest | the 1list schemas as Collections, 1val1 ShExR fixtures, manualList tests switched off, ShExR.shex, ShExJ.jsg, vocabulary and context |
 
 The rules: never delete a test; change expectations, not inputs; derive each rewrite twice and write it
@@ -93,8 +98,7 @@ The tools, in this repository's `tools/`:
 - `JenaArray.java`: `parse`, `query`, `update`, `inspect` (does a file hold a sequence?) and `shex`
   against jena-array's build tree.
 
-For a suite not yet forked (SHACL once SHACL-array is defined, RDF canonicalization once sequences are
-canonicalized): fork with `gh repo fork <owner>/<repo> --org rdf-array --fork-name <repo>-array`, branch
+For a suite not yet forked (RDF canonicalization once sequences are canonicalized): fork with `gh repo fork <owner>/<repo> --org rdf-array --fork-name <repo>-array`, branch
 `rdf-sequences`, rewrite with the tools above or their like, write `doc/rdf-array.md` with the table of
 changed tests and the "unchanged on purpose" list, add the README banner and icon, and publish with the
 `rdf-array-pages.yml` workflow the other forks carry (static tree to GitHub Pages).
@@ -110,6 +114,7 @@ other; shexTest's own `schemas-contrib`/`validation-contrib` directories are the
 | [rdf-tests-contrib](https://github.com/rdf-array/rdf-tests-contrib) | rdf-tests-array | Turtle/TriG/N-Triples/N-Quads-array syntax and evaluation; SPARQL-array evaluation, update, syntax, results formats |
 | [json-ld-api-contrib](https://github.com/rdf-array/json-ld-api-contrib) | json-ld-api-array | toRdf and fromRdf with sequences; JSON-LD-array (`ra:JsonLdArrayToRdfTest`) |
 | [shexTest-contrib](https://github.com/rdf-array/shexTest-contrib) | shexTest-array | Collection schemas (ShExC/ShExJ/ShExR), validation, negative syntax |
+| [data-shapes-contrib](https://github.com/rdf-array/data-shapes-contrib) | data-shapes-array | SHACL-array: sequence paths and lists in shapes graphs, ladders and `()` where a list is expected, SHACL 1.2's list constraints over sequences (cross-checked jena-array / rudof-array) |
 
 Each holds its cases in `bin/build.py`, which writes every file and manifest and cross-checks every
 expectation against at least two implementations where two exist (jena-array and N3.js-array for syntax,
@@ -131,11 +136,11 @@ change of syntax has to rewrite.
 | jsonld.js-array | `npm run fetch-test-suites` clones the JSON-LD API, framing, json-ld.org and rdf-canon suites into `test-suites/`, then `npm test` (`JSONLD_TESTS=<dir>` for one suite); `npm run fetch-json-ld-api-contrib && npm run test-contrib` walks json-ld-api-contrib's `array-manifest.jsonld` (`tests/contrib.js`) | the `git clone` URLs in the `fetch-*` scripts |
 | traqula-array | `yarn spec:all` (lerna over the parser packages, `rdf-test-suite`) | each package's `spec` script |
 | comunica-array | in `engines/query-sparql`: `yarn spec:query-1-1`, `spec:update-1-1`, `spec:csv-tsv-1-1`, `spec:query-1-2` (`rdf-test-suite` with `spec/sparql-engine.js`, each with a `--skip` list of known failures), plus `rdf-test-suite-ldf`; `yarn spec:rdf-array` fetches rdf-tests-contrib into `.rdf-array-tests/` and runs its four SPARQL manifests | the `spec:base-*` scripts' manifest URLs; add rdf-array skips to the `--skip` lists with a comment; `spec:base-rdf-array` holds the contrib mapping and skips |
-| jena-array | ARQ: `arq.qtest --earl <manifest>` or the `TS_*` JUnit suites over `jena-arq/testing/`; RIOT: the `testing/RIOT/` manifests; the contrib suites: `Scripts_RdfArrayContrib` and `Scripts_RdfArrayContribSPARQL` (in `ARQTestSuite`), `TestShexContrib*` (in `TS_Shex`) | the in-tree copies; `jena-arq/testing/rdf-array/update.sh` and `jena-shex/src/test/files/shexTest-contrib/update.sh` refresh the contrib ones |
+| jena-array | ARQ: `arq.qtest --earl <manifest>` or the `TS_*` JUnit suites over `jena-arq/testing/`; RIOT: the `testing/RIOT/` manifests; the contrib suites: `Scripts_RdfArrayContrib` and `Scripts_RdfArrayContribSPARQL` (in `ARQTestSuite`), `TestShexContrib*` (in `TS_Shex`); SHACL: `TestShaclCoreWG`, `TestShacl12Lists`, `TestShaclContrib` (in `TC_SHACL`), skipping `mf:status sht:rejected` | the in-tree copies; `jena-arq/testing/rdf-array/update.sh`, `jena-shex/src/test/files/shexTest-contrib/update.sh`, `jena-shacl/src/test/files/std/update.sh` (data-shapes-array) and `jena-shacl/src/test/files/data-shapes-contrib/update.sh` refresh the contrib ones |
 | rdflib-array | `pytest test/test_w3c_spec/` over `test/data/suites/`; `test_w3c_spec/test_rdf_array_contrib.py` and `test/jsonld/test_rdf_array_contrib.py` over the contrib copies | the in-tree copies; `test/data/suites/rdf-array/update.sh` refreshes rdf-tests-contrib and json-ld-api-contrib |
 | PyShEx-array | the shexTest manifest tests under `tests/` (`tests/utils/manifest_tester.py`), and `tests/test_shextest_validation/test_manifest_contrib.py` for shexTest-contrib | the `tests/data/shexTest` and `tests/data/shexTest-contrib` submodules (shexTest-array `rdf-sequences`, shexTest-contrib `main`), or `SHEXTEST` / `SHEXTEST_CONTRIB` |
 | shex.js-array | the mocha manifest tests over the `shex-test` and `shex-test-contrib` dependencies (`packages/shex-cli/test/findPath.js`, `findContribPath.js`); `ValidationContrib-test.js` and `Parser-Writer-test.js` loop over both corpora | `"shex-test": "github:rdf-array/shexTest-array#rdf-sequences"`, `"shex-test-contrib": "github:rdf-array/shexTest-contrib#main"`, or `TESTSDIR` / `SHEXTEST_CONTRIB`; the workflows clone shexTest-array beside the checkout |
-| rudof-array | `cargo test -p shex_testsuite` (baselines in `tests/`, `tests/rdf_array_contrib.rs`) and `cargo run -p shex_testsuite -- -m <manifest> -s shexc\|shexj\|shexr` | the `shex_testsuite/shexTest` and `shex_testsuite/shexTest-contrib` submodules, pointed at shexTest-array (`rdf-sequences`) and shexTest-contrib (`main`) |
+| rudof-array | `cargo test -p shex_testsuite` (baselines in `tests/`, `tests/rdf_array_contrib.rs`) and `cargo run -p shex_testsuite -- -m <manifest> -s shexc\|shexj\|shexr`; SHACL: `cargo test -p shacl --test shacl_testsuite` (one `suite_tests!` entry per file, `shacl/tests/contrib.rs` for the contrib suite) | the `shex_testsuite/shexTest` and `shex_testsuite/shexTest-contrib` submodules, pointed at shexTest-array (`rdf-sequences`) and shexTest-contrib (`main`); `shacl/tests/data-shapes` and `shacl/tests/data-shapes-contrib`, pointed at data-shapes-array (`rdf-sequences`) and data-shapes-contrib (`main`) |
 | oxigraph-array | `cargo test -p oxigraph-testsuite` (`tests/parser.rs`, `tests/sparql.rs`, one function per manifest, each with a skip list) | the `testsuite/` submodules, pointed at the -array forks (branch `rdf-sequences`) and the contrib repositories (`main`); `src/files.rs` maps `https://w3c.github.io/` and `https://rdf-array.github.io/` onto them |
 | QLever (future) | its own end-to-end tests | — |
 
