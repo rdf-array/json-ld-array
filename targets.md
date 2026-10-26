@@ -14,9 +14,9 @@ in a data-model library, days; a parser or serializer, days; a SPARQL engine, we
 
 ## The list
 
-The targets, ticked as their forks appear and in the recommended order, are listed in the
-README under [Not yet forked](README.md#not-yet-forked); the forks that exist are the README's
-[Repositories](README.md#repositories). The table this section held, with each target's language,
+The targets, ticked as their forks appear and in the recommended order, are listed under
+[Not yet forked](https://rdf-array.github.io/rdf-array/repos.html#not-yet-forked) on repos.html, from [repos.json](repos.json); the forks that
+exist are the rest of [that page](https://rdf-array.github.io/rdf-array/repos.html). The table this section held, with each target's language,
 impact, utility, needed forks and order, was moved there on 2026-10-25. Done so far: Oxigraph
 (oxigraph-array, 2026-10-24) and rudof (rudof-array, 2026-10-25). The sections below are the
 assessment as it was written.

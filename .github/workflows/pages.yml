@@ -6,6 +6,7 @@ name: pages
 #   https://rdf-array.github.io/rdf-array/rdf-array.html
 #   https://rdf-array.github.io/rdf-array/json-ld-array.html
 #   https://rdf-array.github.io/rdf-array/shacl-array.html
+#   https://rdf-array.github.io/rdf-array/repos.html        (rendered from repos.json in the browser)
 #
 # The tracked tree is the site: each .html is generated from its .md by
 # md-to-respec.py and committed, so nothing is built here; html-index.html is
@@ -43,6 +44,8 @@ jobs:
               exit 1
             fi
           done
+      - name: check repos.json and the links into repos.html
+        run: python3 tools/manifest-check.py --offline
       - uses: actions/configure-pages@v6
         with:
           enablement: true

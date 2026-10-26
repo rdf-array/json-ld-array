@@ -8,8 +8,8 @@ description: Fork an RDF implementation into the rdf-array organisation as <proj
 rdf-array is RDF with one more kind of term, the sequence (`(1 2 3)`, `()`); see
 [rdf-array.md](../../../rdf-array.md). A fork teaches one project that term and removes the code
 that built `rdf:first`/`rdf:rest` ladders or numbered `rdf:_n` container members. The formula below
-is what every fork so far followed; the README's [Not yet forked](../../../README.md#not-yet-forked)
-list says which projects are worth it, in order, and [targets.md](../../../targets.md) what each
+is what every fork so far followed; the [Not yet forked](https://rdf-array.github.io/rdf-array/repos.html#not-yet-forked)
+list (`targets` in [repos.json](../../../repos.json)) says which projects are worth it, in order, and [targets.md](../../../targets.md) what each
 one's change list looks like.
 
 ## 1. Decide the closure first
@@ -138,10 +138,11 @@ homepage at the site.
 
 ## 7. Register the fork
 
-Add it to this repository's README manifest (the `readme-manifest` skill: a heading under its
-language, or a quoted item under the project it serves, with an anchor; tick it in "Not yet
-forked" if it was a target), to the implementations table of rdf-array.md, and to the memory note
-the session keeps; set the GitHub description.
+Add it to this repository's [repos.json](../../../repos.json) (the `repos-manifest` skill: its kind,
+language, upstream, description, anchor and `deps`, `"stack": true` if a stack is named for it, the
+target marked done if it was one), run `python3 tools/manifest-check.py`, add it to the
+implementations table of rdf-array.md and to the memory note the session keeps, and set the GitHub
+description. Name a new stack in the README's short stack list.
 
 ## 8. Issues
 
@@ -165,7 +166,11 @@ project's tracker.
    `open-question` and add a bullet with the link to the open questions of rdf-array.md
    (then regenerate `rdf-array.html`). State what each implementation does today, and what deciding
    would change (tests to add to a `*-contrib`, implementations to fix).
-3. **Repo-specific**: a gap or bug in one fork. Title it `<repo>: …` (as `shex.js-array: …`).
+3. **Repo-specific**: a gap or bug in one repository. Title it `<repo>: …` (as `shex.js-array: …`)
+   and label it `repo`; repos.html files it under that repository by the prefix.
+   **Spec**: a question about rdf-array itself, the data model or an -array specification
+   (Turtle-array, ShEx-array, SHACL-array…), rather than an implementation: label it `spec`.
+   A cross-repo issue may open its body with `Repos: a, b`, which repos.html also files it under.
 4. Name the issue in the fork's `doc/rdf-array.md` (Decisions, Not done) and, when a commit settles
    it, in the commit message (`rdf-array/rdf-array#9`).
 

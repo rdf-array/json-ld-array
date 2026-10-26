@@ -1,0 +1,731 @@
+{
+  "$comment": "The rdf-array organisation's repositories and the dependency edges between them, read by repos.html and checked by tools/manifest-check.py against GitHub and against each repository's build files. A stack is a repository with \"stack\": true plus every repository its runtime deps reach. Edit by hand; see the repos-manifest skill.",
+  "repos": [
+    {
+      "name": "rdf-tests-array",
+      "short": "rdf-tests",
+      "anchor": "rdf-tests",
+      "kind": "test-suite",
+      "upstream": "w3c/rdf-tests",
+      "description": "the RDF 1.1/1.2 syntax and semantics suites and the SPARQL 1.0/1.1/1.2 suites, expectations rewritten for sequences (40 tests changed)."
+    },
+    {
+      "name": "rdf-tests-contrib",
+      "short": "rdf-tests-contrib",
+      "anchor": "rdf-tests-contrib",
+      "kind": "contrib",
+      "contribOf": "rdf-tests-array",
+      "description": "Turtle-, TriG-, N-Triples- and N-Quads-array tests and SPARQL-array evaluation, update, syntax and results tests."
+    },
+    {
+      "name": "json-ld-api-array",
+      "short": "json-ld-api",
+      "anchor": "json-ld-api",
+      "kind": "test-suite",
+      "upstream": "w3c/json-ld-api",
+      "description": "the JSON-LD 1.1 API suite with `@list` as one sequence."
+    },
+    {
+      "name": "json-ld-api-contrib",
+      "short": "json-ld-api-contrib",
+      "anchor": "json-ld-api-contrib",
+      "kind": "contrib",
+      "contribOf": "json-ld-api-array",
+      "description": "toRdf and fromRdf tests for sequences and the JSON-LD-array tests."
+    },
+    {
+      "name": "json-ld-streaming-array",
+      "short": "json-ld-streaming",
+      "anchor": "json-ld-streaming",
+      "kind": "test-suite",
+      "upstream": "w3c/json-ld-streaming",
+      "description": "the JSON-LD streaming suite with `@list` as one sequence; its contrib tests are in json-ld-api-contrib."
+    },
+    {
+      "name": "shexTest-array",
+      "short": "shexTest",
+      "anchor": "shextest",
+      "kind": "test-suite",
+      "upstream": "shexSpec/shexTest",
+      "description": "the ShEx suite with Collection shape expressions in place of ladder shapes, ShExR.shex included."
+    },
+    {
+      "name": "shexTest-contrib",
+      "short": "shexTest-contrib",
+      "anchor": "shextest-contrib",
+      "kind": "contrib",
+      "contribOf": "shexTest-array",
+      "description": "Collection schemas (ShExC, ShExJ, ShExR), validation and negative syntax tests."
+    },
+    {
+      "name": "data-shapes-array",
+      "short": "data-shapes",
+      "anchor": "data-shapes",
+      "kind": "test-suite",
+      "upstream": "w3c/data-shapes",
+      "description": "the SHACL 1.0 and 1.2 test suites and shacl-shacl read as [SHACL-array](https://rdf-array.github.io/rdf-array/shacl-array.html), the tests that depended on ladders or on `rdf:nil` re-recorded or rejected, and shacl-shacl checking lists with `sh:memberShape`."
+    },
+    {
+      "name": "data-shapes-contrib",
+      "short": "data-shapes-contrib",
+      "anchor": "data-shapes-contrib",
+      "kind": "contrib",
+      "contribOf": "data-shapes-array",
+      "description": "SHACL-array tests: sequence paths and lists in shapes graphs, ladders and `()` where a list is expected, and SHACL 1.2's list constraints over sequence values."
+    },
+    {
+      "name": "rdf-test-suite-array",
+      "short": "rdf-test-suite",
+      "anchor": "rdf-test-suite",
+      "kind": "tool",
+      "language": "JavaScript",
+      "upstream": "rubensworks/rdf-test-suite.js",
+      "description": "the manifest runner of the JavaScript forks, reading expectations that hold `( … )` (stock rdf-test-suite drops those tests) and comparing graphs and results that hold sequences.",
+      "deps": [
+        {
+          "repo": "jsonld-streaming-parser-array"
+        },
+        {
+          "repo": "N3.js-array"
+        },
+        {
+          "repo": "rdf-data-factory-array"
+        },
+        {
+          "repo": "rdf-string-array"
+        },
+        {
+          "repo": "rdf-string-ttl-array"
+        },
+        {
+          "repo": "rdf-terms-array"
+        },
+        {
+          "repo": "rdfxml-streaming-parser-array"
+        },
+        {
+          "repo": "sparqljson-parse-array"
+        },
+        {
+          "repo": "sparqlxml-parse-array"
+        },
+        {
+          "repo": "types-array"
+        }
+      ]
+    },
+    {
+      "name": "jena-array",
+      "short": "jena",
+      "anchor": "jena",
+      "kind": "implementation",
+      "language": "Java",
+      "stack": true,
+      "upstream": "apache/jena",
+      "description": "Apache Jena with the `Node_Seq` term: Turtle-array, SPARQL-array with position patterns and functions, ShEx-array, SHACL-array, and the `jena-rdfarray` demo server.",
+      "deps": [
+        {
+          "repo": "data-shapes-array",
+          "scope": "test"
+        },
+        {
+          "repo": "data-shapes-contrib",
+          "scope": "test"
+        },
+        {
+          "repo": "rdf-tests-contrib",
+          "scope": "test"
+        },
+        {
+          "repo": "shexTest-contrib",
+          "scope": "test"
+        }
+      ]
+    },
+    {
+      "name": "shex.js-array",
+      "short": "shex.js",
+      "anchor": "shexjs",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "stack": true,
+      "upstream": "shexjs/shex.js",
+      "description": "ShEx validation and semantic actions in TypeScript, with the ShEx-array Collection shape expression `((shapeExpr))[min, max]`; site at <https://rdf-array.github.io/shex.js-array/>.",
+      "deps": [
+        {
+          "repo": "lezer-shexc-array"
+        },
+        {
+          "repo": "lezer-turtle-array"
+        },
+        {
+          "repo": "N3.js-array"
+        },
+        {
+          "repo": "n3writer-wrapper-array"
+        },
+        {
+          "repo": "types-array"
+        },
+        {
+          "repo": "shexTest-array",
+          "scope": "test"
+        },
+        {
+          "repo": "shexTest-contrib",
+          "scope": "test"
+        }
+      ]
+    },
+    {
+      "name": "N3.js-array",
+      "short": "N3.js",
+      "anchor": "n3js",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "rdfjs/N3.js",
+      "description": "Turtle, TriG, N-Triples, N-Quads and N3 with sequences as terms.",
+      "deps": [
+        {
+          "repo": "rdf-test-suite-array",
+          "scope": "test"
+        },
+        {
+          "repo": "rdf-tests-array",
+          "scope": "test",
+          "note": "cloned by scripts/fetch-rdf-array-tests.sh"
+        },
+        {
+          "repo": "rdf-tests-contrib",
+          "scope": "test",
+          "note": "cloned by scripts/fetch-rdf-array-tests.sh"
+        }
+      ]
+    },
+    {
+      "name": "types-array",
+      "short": "types",
+      "anchor": "types",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "rdfjs/types",
+      "description": "`@rdfjs/types` with the `Sequence` term in `Term`, `Quad_Subject` and `Quad_Object`."
+    },
+    {
+      "name": "lezer-turtle-array",
+      "short": "lezer-turtle",
+      "anchor": "lezer-turtle",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "ericprud/lezer-turtle",
+      "description": "the Turtle editor grammar, emitting collections as sequence terms.",
+      "deps": [
+        {
+          "repo": "N3.js-array",
+          "scope": "test"
+        }
+      ]
+    },
+    {
+      "name": "lezer-shexc-array",
+      "short": "lezer-shexc",
+      "anchor": "lezer-shexc",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "shexjs/lezer-shexc",
+      "description": "the ShExC editor grammar with the Collection shape expression."
+    },
+    {
+      "name": "n3writer-wrapper-array",
+      "short": "n3writer-wrapper",
+      "anchor": "n3writer-wrapper",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "ericprud/n3writer-wrapper",
+      "description": "readable N3.js Turtle output: nested `[ ]`, uniform indentation, long strings.",
+      "deps": [
+        {
+          "repo": "N3.js-array",
+          "scope": "test"
+        }
+      ]
+    },
+    {
+      "name": "comunica-array",
+      "short": "comunica",
+      "anchor": "comunica",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "stack": true,
+      "upstream": "comunica/comunica",
+      "description": "the SPARQL-array engine: sequence patterns with variables, ordering, CONSTRUCT, the result formats, Turtle, JSON-LD and RDF/XML sources, remote endpoints.",
+      "deps": [
+        {
+          "repo": "jsonld-streaming-parser-array"
+        },
+        {
+          "repo": "jsonld-streaming-serializer-array"
+        },
+        {
+          "repo": "N3.js-array"
+        },
+        {
+          "repo": "rdf-data-factory-array"
+        },
+        {
+          "repo": "rdf-string-array"
+        },
+        {
+          "repo": "rdf-string-ttl-array"
+        },
+        {
+          "repo": "rdf-terms-array"
+        },
+        {
+          "repo": "rdfxml-streaming-parser-array"
+        },
+        {
+          "repo": "sparqljson-parse-array"
+        },
+        {
+          "repo": "sparqlxml-parse-array"
+        },
+        {
+          "repo": "traqula-array"
+        },
+        {
+          "repo": "types-array"
+        },
+        {
+          "repo": "rdf-test-suite-array",
+          "scope": "test"
+        },
+        {
+          "repo": "rdf-tests-contrib",
+          "scope": "test"
+        }
+      ]
+    },
+    {
+      "name": "traqula-array",
+      "short": "traqula",
+      "anchor": "traqula",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "comunica/traqula",
+      "description": "the SPARQL parser, generator and algebra, with a collection as one sequence term.",
+      "deps": [
+        {
+          "repo": "rdf-data-factory-array"
+        },
+        {
+          "repo": "rdf-string-array"
+        },
+        {
+          "repo": "types-array"
+        }
+      ]
+    },
+    {
+      "name": "rdf-data-factory-array",
+      "short": "rdf-data-factory",
+      "anchor": "rdf-data-factory",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "rubensworks/rdf-data-factory.js",
+      "description": "`DataFactory.sequence()` and the `Sequence` term.",
+      "deps": [
+        {
+          "repo": "types-array"
+        }
+      ]
+    },
+    {
+      "name": "rdf-string-array",
+      "short": "rdf-string",
+      "anchor": "rdf-string",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "rubensworks/rdf-string.js",
+      "description": "spelling and reading `(e1 e2 …)`.",
+      "deps": [
+        {
+          "repo": "rdf-data-factory-array"
+        },
+        {
+          "repo": "types-array"
+        }
+      ]
+    },
+    {
+      "name": "rdf-string-ttl-array",
+      "short": "rdf-string-ttl",
+      "anchor": "rdf-string-ttl",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "rubensworks/rdf-string-ttl.js",
+      "description": "spelling and reading `(e1 e2 …)`.",
+      "deps": [
+        {
+          "repo": "rdf-data-factory-array"
+        },
+        {
+          "repo": "types-array"
+        }
+      ]
+    },
+    {
+      "name": "rdf-terms-array",
+      "short": "rdf-terms",
+      "anchor": "rdf-terms",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "rubensworks/rdf-terms.js",
+      "description": "the nested-term helpers, descending into sequences as into quoted triples.",
+      "deps": [
+        {
+          "repo": "rdf-data-factory-array"
+        },
+        {
+          "repo": "rdf-string-array"
+        },
+        {
+          "repo": "types-array"
+        }
+      ]
+    },
+    {
+      "name": "jsonld-streaming-parser-array",
+      "short": "jsonld-streaming-parser",
+      "anchor": "jsonld-streaming-parser",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "rubensworks/jsonld-streaming-parser.js",
+      "description": "a JSON-LD `@list` as one sequence.",
+      "deps": [
+        {
+          "repo": "rdf-data-factory-array"
+        },
+        {
+          "repo": "rdf-string-array"
+        },
+        {
+          "repo": "types-array"
+        }
+      ]
+    },
+    {
+      "name": "jsonld-streaming-serializer-array",
+      "short": "jsonld-streaming-serializer",
+      "anchor": "jsonld-streaming-serializer",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "rubensworks/jsonld-streaming-serializer.js",
+      "description": "a sequence as `@list`.",
+      "deps": [
+        {
+          "repo": "rdf-data-factory-array"
+        },
+        {
+          "repo": "types-array"
+        }
+      ]
+    },
+    {
+      "name": "rdfxml-streaming-parser-array",
+      "short": "rdfxml-streaming-parser",
+      "anchor": "rdfxml-streaming-parser",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "rdfjs/rdfxml-streaming-parser.js",
+      "description": "`rdf:parseType=\"Collection\"` as one sequence; `rdf:li` no longer numbered.",
+      "deps": [
+        {
+          "repo": "rdf-data-factory-array"
+        },
+        {
+          "repo": "rdf-string-array"
+        },
+        {
+          "repo": "types-array"
+        }
+      ]
+    },
+    {
+      "name": "sparqljson-parse-array",
+      "short": "sparqljson-parse",
+      "anchor": "sparqljson-parse",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "rubensworks/sparqljson-parse.js",
+      "description": "`{\"type\": \"seq\"}` and `<seq>` bindings in the results of remote endpoints.",
+      "deps": [
+        {
+          "repo": "rdf-data-factory-array"
+        },
+        {
+          "repo": "types-array"
+        }
+      ]
+    },
+    {
+      "name": "sparqlxml-parse-array",
+      "short": "sparqlxml-parse",
+      "anchor": "sparqlxml-parse",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "upstream": "rubensworks/sparqlxml-parse.js",
+      "description": "`{\"type\": \"seq\"}` and `<seq>` bindings in the results of remote endpoints.",
+      "deps": [
+        {
+          "repo": "rdf-data-factory-array"
+        },
+        {
+          "repo": "types-array"
+        }
+      ]
+    },
+    {
+      "name": "jsonld.js-array",
+      "short": "jsonld.js",
+      "anchor": "jsonldjs",
+      "kind": "implementation",
+      "language": "JavaScript",
+      "stack": true,
+      "upstream": "digitalbazaar/jsonld.js",
+      "description": "JSON-LD-array: `jsonld.arrayToRDF`, writers for N-Quads-array and Turtle-array, and the [playground](https://rdf-array.github.io/jsonld.js-array/).",
+      "deps": [
+        {
+          "repo": "json-ld-api-contrib",
+          "scope": "test"
+        }
+      ]
+    },
+    {
+      "name": "PyShEx-array",
+      "short": "PyShEx",
+      "anchor": "pyshex",
+      "kind": "implementation",
+      "language": "Python",
+      "stack": true,
+      "upstream": "linkml/PyShEx",
+      "description": "ShEx validation over RDFLib, with the Collection shape expression.",
+      "deps": [
+        {
+          "repo": "CFGraph-array"
+        },
+        {
+          "repo": "grammar-python-antlr-linkml-array"
+        },
+        {
+          "repo": "rdflib-array"
+        },
+        {
+          "repo": "ShExJSG-array"
+        },
+        {
+          "repo": "shexTest-array",
+          "scope": "test"
+        },
+        {
+          "repo": "shexTest-contrib",
+          "scope": "test"
+        }
+      ]
+    },
+    {
+      "name": "rdflib-array",
+      "short": "rdflib",
+      "anchor": "rdflib",
+      "kind": "implementation",
+      "language": "Python",
+      "upstream": "RDFLib/rdflib",
+      "description": "`rdflib.term.Sequence`; Turtle, N-Triples, N3, JSON-LD and SPARQL read and write it, RDF/XML, TriX and HexTuples refuse it.",
+      "deps": [
+        {
+          "repo": "json-ld-api-contrib",
+          "scope": "test"
+        },
+        {
+          "repo": "rdf-tests-contrib",
+          "scope": "test"
+        }
+      ]
+    },
+    {
+      "name": "grammar-python-antlr-linkml-array",
+      "short": "grammar-python-antlr-linkml",
+      "anchor": "grammar-python-antlr-linkml",
+      "kind": "implementation",
+      "language": "Python",
+      "upstream": "ericprud/grammar-python-antlr-linkml",
+      "upstreamFrom": "linkml/grammar-python-antlr-linkml",
+      "description": "the `pyshexc` ShExC parser with the Collection shape expression."
+    },
+    {
+      "name": "ShExJSG-array",
+      "short": "ShExJSG",
+      "anchor": "shexjsg",
+      "kind": "implementation",
+      "language": "Python",
+      "upstream": "linkml/ShExJSG",
+      "description": "the ShExJ schema objects with the Collection shape expression."
+    },
+    {
+      "name": "CFGraph-array",
+      "short": "CFGraph",
+      "anchor": "cfgraph",
+      "kind": "implementation",
+      "language": "Python",
+      "upstream": "linkml/CFGraph",
+      "description": "the closed-first graph wrapper, flattening sequence terms as well as `rdf:first`/`rdf:rest` ladders."
+    },
+    {
+      "name": "oxigraph-array",
+      "short": "oxigraph",
+      "anchor": "oxigraph",
+      "kind": "implementation",
+      "language": "Rust",
+      "stack": true,
+      "upstream": "oxigraph/oxigraph",
+      "description": "`oxrdf::Sequence` as a term and a subject; Turtle, TriG, N3, N-Triples, N-Quads, RDF/XML and JSON-LD read and write it; SPARQL-array with sequence and position patterns and the functions; the `seq` results; the RocksDB store; `pyoxigraph.Sequence` and the WASM package's `oxigraph.sequence()`. The whole family is one workspace.",
+      "deps": [
+        {
+          "repo": "json-ld-api-array",
+          "scope": "test"
+        },
+        {
+          "repo": "json-ld-api-contrib",
+          "scope": "test"
+        },
+        {
+          "repo": "json-ld-streaming-array",
+          "scope": "test"
+        },
+        {
+          "repo": "rdf-tests-array",
+          "scope": "test"
+        },
+        {
+          "repo": "rdf-tests-contrib",
+          "scope": "test"
+        }
+      ]
+    },
+    {
+      "name": "rudof-array",
+      "short": "rudof",
+      "anchor": "rudof",
+      "kind": "implementation",
+      "language": "Rust",
+      "stack": true,
+      "upstream": "rudof-project/rudof",
+      "description": "ShEx-array, the Collection shape expression `((shapeExpr))[min, max]` in ShExC, ShExJ and ShExR, and its validation; ShExR schemas and SHACL shapes graphs read and write their lists as sequences; runs shexTest-array and shexTest-contrib.",
+      "deps": [
+        {
+          "repo": "oxigraph-array"
+        },
+        {
+          "repo": "data-shapes-array",
+          "scope": "test"
+        },
+        {
+          "repo": "data-shapes-contrib",
+          "scope": "test"
+        },
+        {
+          "repo": "shexTest-array",
+          "scope": "test"
+        },
+        {
+          "repo": "shexTest-contrib",
+          "scope": "test"
+        }
+      ]
+    },
+    {
+      "name": "rdf-array",
+      "short": "rdf-array",
+      "anchor": "rdf-array",
+      "kind": "meta",
+      "description": "This repository: the documents, the issues of every repository, the skills and tools, and this list."
+    }
+  ],
+  "targets": [
+    {
+      "anchor": "oxigraph-target",
+      "done": true,
+      "text": "Oxigraph family (Rust): [oxigraph](#oxigraph), 2026-10-24."
+    },
+    {
+      "anchor": "rudof-target",
+      "done": true,
+      "text": "rudof (Rust): [rudof](#rudof), 2026-10-25."
+    },
+    {
+      "anchor": "shacl-array",
+      "done": true,
+      "text": "SHACL-array: [shacl-array.md](shacl-array.html), implemented in [jena](#jena)'s jena-shacl, with the suites [data-shapes](#data-shapes) and [data-shapes-contrib](#data-shapes-contrib), 2026-10-25."
+    },
+    {
+      "anchor": "rdf-canonize",
+      "done": false,
+      "text": "**rdf-canonize and rdf-isomorphic** (JavaScript; Python rdf-canon) — canonicalization and isomorphism with blank nodes inside sequences; the JavaScript forks' tests need it. Impact 2–3, utility 4. [Assessment](targets.md#canonicalization-and-isomorphism)."
+    },
+    {
+      "anchor": "fuseki-endpoint",
+      "done": false,
+      "text": "**A public Fuseki-array endpoint** — jena-array's Fuseki, deployed; any time. Impact 1, utility 3. [Assessment](targets.md#mappings-clients-and-user-interfaces)."
+    },
+    {
+      "anchor": "yasgui",
+      "done": false,
+      "text": "**[Yasgui](https://github.com/rdfjs/Yasgui)** (TypeScript: Yasqe, Yasr; TriplyDB's original is archived) — SPARQL editor and results viewer, once there is a public endpoint. Impact 2–3, utility 3."
+    },
+    {
+      "anchor": "sparqlwrapper",
+      "done": false,
+      "text": "**[SPARQLWrapper](https://github.com/RDFLib/sparqlwrapper)** (Python) — SPARQL client, once there is a public endpoint. Impact 1, utility 2."
+    },
+    {
+      "anchor": "qlever",
+      "done": false,
+      "text": "**[QLever](https://github.com/ad-freiburg/qlever)** (C++) — a compressed-index SPARQL engine for billions of triples; a project of its own. Impact 5, utility 4. [Assessment](targets.md#qlever-the-scale-showcase)."
+    },
+    {
+      "anchor": "rdf4j",
+      "done": false,
+      "text": "**[RDF4J](https://github.com/eclipse-rdf4j/rdf4j)** (Java) — the other Java stack: model, Rio, SAIL stores, ShaclSail. Impact 4–5, utility 3. [Assessment](targets.md#rdf4j)."
+    },
+    {
+      "anchor": "rdf-ext",
+      "done": false,
+      "text": "**The rdf-ext / Zazuko RDF/JS stack** (JavaScript: @rdfjs/data-model, @rdfjs/dataset, rdf-ext, @zazuko/env, clownface, rdf-validate-shacl) — the second RDF/JS ecosystem; N3.js-array and types-array exist. Impact 2 each, utility 3. [Assessment](targets.md#the-second-rdfjs-stack-and-rdflibjs)."
+    },
+    {
+      "anchor": "rdflibjs",
+      "done": false,
+      "text": "**[rdflib.js](https://github.com/linkeddata/rdflib.js)** (JavaScript) — Solid's library, which already has a `Collection` term kind. Impact 3, utility 3."
+    },
+    {
+      "anchor": "morph-kgc",
+      "done": false,
+      "text": "**[Morph-KGC](https://github.com/morph-kgc/morph-kgc)** (Python) — RML, with RML-CC's `gatherAs` producing a sequence; when JSON-LD-array settles. Impact 2, utility 3."
+    },
+    {
+      "anchor": "pyld",
+      "done": false,
+      "text": "**[pyld](https://github.com/digitalbazaar/pyld)** (Python) — a JSON-LD-array port for Python users, when JSON-LD-array settles. Impact 2, utility 2."
+    },
+    {
+      "anchor": "sophia",
+      "done": false,
+      "text": "**[Sophia](https://github.com/pchampin/sophia_rs)** (Rust) — the other Rust RDF library; not while Oxigraph serves. Impact 3, utility 2."
+    },
+    {
+      "anchor": "owl-api",
+      "done": false,
+      "text": "**[OWL API](https://github.com/owlcs/owlapi), Protégé** (Java) — OWL, whose syntax is made of lists; not before SHACL-array. Impact 5, utility 2."
+    }
+  ]
+}

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rdf-array repositories</title>
+  <style>
+    :root { --fg: #222; --bg: #fff; --muted: #666; --accent: #0b5394; --line: #ddd; --card: #f7f7f8;
+            --pill: #e8eef7; --warn: #a15c00; --ok: #2a7a2a; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) { --fg: #e8e8e8; --bg: #1e1e1e; --muted: #aaa; --accent: #8ab4f8; --line: #3a3a3a;
+               --card: #262628; --pill: #2c3747; --warn: #f0b060; --ok: #7fcf7f; }
+    }
+    :root[data-theme="dark"] { --fg: #e8e8e8; --bg: #1e1e1e; --muted: #aaa; --accent: #8ab4f8; --line: #3a3a3a;
+               --card: #262628; --pill: #2c3747; --warn: #f0b060; --ok: #7fcf7f; }
+    body { margin: 0 auto; max-width: 56em; padding: 2em 16px; font: 16px/1.5 system-ui, sans-serif;
+           color: var(--fg); background: var(--bg); }
+    h1 { font-size: 1.6em; margin-bottom: 0.2em; }
+    h2 { font-size: 1.3em; margin: 2em 0 0.6em; padding-bottom: 0.2em; border-bottom: 1px solid var(--line); }
+    h3 { font-size: 1.1em; margin: 0; }
+    a { color: var(--accent); }
+    code { font-size: 0.92em; }
+    .lede, .muted { color: var(--muted); }
+    .lede { margin-top: 0; }
+    nav { margin: 1em 0; line-height: 2; }
+    nav a { margin-right: 0.9em; white-space: nowrap; }
+    .stack { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 0.9em 1em; margin: 1em 0; }
+    .stack > p, .stack > .body { margin: 0.35em 0; }
+    .deps { list-style: none; padding: 0; margin: 0.6em 0 0; }
+    .deps > li { padding: 0.4em 0 0.4em 0.8em; border-left: 3px solid var(--line); margin: 0.3em 0; }
+    .name { font-weight: 600; }
+    .up { color: var(--muted); font-size: 0.92em; }
+    .pill { display: inline-block; font-size: 0.8em; padding: 0 0.55em; border-radius: 1em; background: var(--pill);
+            margin-left: 0.4em; vertical-align: 0.1em; }
+    .pill.zero { opacity: 0.55; }
+    .issues { margin: 0.3em 0 0; padding-left: 1.2em; font-size: 0.95em; }
+    .issues li { margin: 0.15em 0; }
+    .flag { color: var(--warn); font-size: 0.85em; margin-left: 0.4em; }
+    .tests { font-size: 0.9em; color: var(--muted); margin-top: 0.5em; }
+    .targets { list-style: none; padding: 0; }
+    .targets li { margin: 0.5em 0; padding-left: 1.6em; text-indent: -1.6em; }
+    .targets .done { color: var(--ok); }
+    #status { font-size: 0.9em; color: var(--muted); }
+    :target { scroll-margin-top: 1em; }
+    li:target, .stack:target { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+    footer { margin-top: 3em; color: var(--muted); font-size: 0.9em; }
+  </style>
+</head>
+<body>
+  <h1>rdf-array repositories</h1>
+  <p class="lede">Every repository of the <a href="https://github.com/rdf-array">rdf-array</a> organisation by
+    language and stack, the targets not yet forked, and the open issues, which all live in
+    <a href="https://github.com/rdf-array/rdf-array/issues">rdf-array/rdf-array</a>. Rendered from
+    <a href="repos.json">repos.json</a>; documents are on the <a href="html-index.html">homepage</a>.</p>
+  <nav id="nav"></nav>
+  <p id="status">Loading…</p>
+  <noscript><p>This page renders <a href="repos.json">repos.json</a> with JavaScript. Without it, read
+    repos.json itself or the stack list in the
+    <a href="https://github.com/rdf-array/rdf-array#readme">README</a>.</p></noscript>
+  <main id="main"></main>
+  <footer>A stack is the repository it is named for and every rdf-array repository its runtime
+    dependencies reach, as the forks' build files pin them (checked by <code>tools/manifest-check.py</code>);
+    a repository shared by several stacks appears in each. Issues are filed by a title prefix,
+    <code>&lt;repo&gt;: …</code>, and labelled <code>repo</code>, <code>cross-repo</code> or
+    <code>spec</code>; a cross-repo issue may open with a <code>Repos: a, b</code> line.</footer>
+<script>
+"use strict";
+const ORG = "rdf-array";
+const ISSUES_API = `https://api.github.com/repos/${ORG}/rdf-array/issues?state=open&per_page=100`;
+const LANGS = ["Java", "JavaScript", "Python", "Rust"];
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const slug = s => s.toLowerCase().replace(/ /g, "-").replace(/[^a-z0-9_-]/g, "");
+const ghRepo = name => `https://github.com/${ORG}/${name}`;
+const blob = f => `https://github.com/${ORG}/rdf-array/blob/main/${f}`;
+
+// Inline Markdown: code spans, bold, links, autolinks. Relative .md links point at GitHub.
+function md(text) {
+  const codes = [];
+  let s = esc(text).replace(/`([^`]+)`/g, (_, c) => `\u0000${codes.push(c) - 1}\u0000`);
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, u) => {
+    if (/^[\w./-]+\.md(#.*)?$/.test(u)) u = blob(u);
+    return `<a href="${u}">${t}</a>`;
+  });
+  s = s.replace(/&lt;(https?:\/\/[^&]+)&gt;/g, '<a href="$1">$1</a>');
+  return s.replace(/\u0000(\d+)\u0000/g, (_, i) => `<code>${codes[i]}</code>`);
+}
+
+function storage(key, value) {
+  try {
+    if (value === undefined) return JSON.parse(sessionStorage.getItem(key) || "null");
+    sessionStorage.setItem(key, JSON.stringify(value));
+  } catch (e) { return null; }
+}
+
+async function fetchIssues() {
+  const cached = storage("rdf-array-issues");
+  if (cached && Date.now() - cached.at < 5 * 60 * 1000) return cached.issues;
+  let url = ISSUES_API, issues = [];
+  while (url) {
+    const r = await fetch(url, {headers: {Accept: "application/vnd.github+json"}});
+    if (!r.ok) throw new Error(`GitHub answered ${r.status}${r.status === 403 ? " (rate limit: 60 requests an hour without a token)" : ""}`);
+    issues = issues.concat((await r.json()).filter(i => !i.pull_request));
+    const next = (r.headers.get("Link") || "").match(/<([^>]+)>;\s*rel="next"/);
+    url = next ? next[1] : null;
+  }
+  issues = issues.map(i => ({number: i.number, title: i.title, url: i.html_url, body: i.body || "",
+                             labels: i.labels.map(l => l.name)}));
+  storage("rdf-array-issues", {at: Date.now(), issues});
+  return issues;
+}
+
+// File each issue: under a repository by its title prefix (and a cross-repo issue's Repos: line),
+// or in the cross-repo, spec or unfiled section.
+function fileIssues(issues, byName) {
+  const lower = new Map(Object.keys(byName).map(n => [n.toLowerCase(), n]));
+  const perRepo = {}, sections = {"cross-repo": [], spec: [], unfiled: []};
+  const add = (repo, issue) => (perRepo[repo] = perRepo[repo] || []).push(issue);
+  for (const i of issues) {
+    const m = i.title.match(/^([\w.-]+):\s/);
+    const prefix = m && lower.get(m[1].toLowerCase());
+    const labels = new Set(i.labels);
+    i.flags = [];
+    if (labels.has("cross-repo")) {
+      sections["cross-repo"].push(i);
+      const line = i.body.match(/^Repos?:\s*(.+)$/mi);
+      for (const n of (line ? line[1].split(/[,\s]+/) : [])) {
+        const repo = lower.get(n.replace(/[`*]/g, "").toLowerCase());
+        if (repo) add(repo, i);
+      }
+      if (prefix) add(prefix, i);
+    } else if (labels.has("spec")) {
+      sections.spec.push(i);
+    } else if (prefix) {
+      if (!labels.has("repo")) i.flags.push("no repo label");
+      add(prefix, i);
+    } else {
+      if (labels.has("repo")) i.flags.push("repo label, but the title names no repository");
+      sections.unfiled.push(i);
+    }
+  }
+  return {perRepo, sections};
+}
+
+function issueList(list) {
+  if (!list || !list.length) return "";
+  return `<ul class="issues">${list.map(i =>
+    `<li><a href="${i.url}">#${i.number}</a> ${esc(i.title)}${i.flags && i.flags.length ?
+      `<span class="flag">${esc(i.flags.join("; "))}</span>` : ""}</li>`).join("")}</ul>`;
+}
+
+function pill(list, loaded) {
+  if (!loaded) return "";
+  const n = (list || []).length;
+  return `<span class="pill${n ? "" : " zero"}" title="open issues">${n} open</span>`;
+}
+
+function render(doc, issues, issueError) {
+  const repos = doc.repos, byName = Object.fromEntries(repos.map(r => [r.name, r]));
+  const loaded = Array.isArray(issues);
+  const {perRepo, sections} = loaded ? fileIssues(issues, byName) : {perRepo: {}, sections: {}};
+  const placed = new Set();   // anchors already used, so an id appears once
+  const anchor = r => placed.has(r.anchor) ? "" : (placed.add(r.anchor), ` id="${r.anchor}"`);
+  const upstream = r => r.upstream ? `<span class="up">fork of <a href="https://github.com/${r.upstream}">${esc(r.upstream)}</a>${
+    r.upstreamFrom ? `, from <a href="https://github.com/${r.upstreamFrom}">${esc(r.upstreamFrom)}</a>` : ""}</span>` : "";
+  const runtime = r => (r.deps || []).filter(d => d.scope !== "test").map(d => d.repo);
+  const tests = r => (r.deps || []).filter(d => d.scope === "test").map(d => byName[d.repo]);
+
+  // stacks: a root and everything its runtime deps reach (stopping at other stack roots)
+  const reach = root => {
+    const seen = [], visit = n => { for (const d of runtime(byName[n])) {
+      if (!seen.includes(d) && d !== root) { seen.push(d); if (!byName[d].stack) visit(d); } } };
+    visit(root);
+    const order = new Map(repos.map((r, i) => [r.name, i]));   // repos.json order, not traversal order
+    return seen.sort((a, b) => order.get(a) - order.get(b));
+  };
+  const stacks = repos.filter(r => r.stack).map(r => ({root: r, members: reach(r.name)}));
+  const stacksOf = name => stacks.filter(s => s.members.includes(name)).map(s => s.root);
+
+  const repoHead = r => `<span class="name"><a href="${ghRepo(r.name)}">${esc(r.short)}</a></span>${pill(perRepo[r.name], loaded)}
+      ${upstream(r)}`;
+  const repoBody = (r, inStack) => {
+    const others = stacksOf(r.name).filter(s => s.name !== inStack);
+    return `${md(r.description)}${others.length ?
+      ` <span class="muted">(also ${others.map(s => `<a href="#${s.anchor}">${esc(s.short)}</a>`).join(", ")})</span>` : ""}
+      ${issueList(perRepo[r.name])}`;
+  };
+  const repoLine = (r, inStack) => `${repoHead(r)}<br>${repoBody(r, inStack)}`;
+  const repoCard = r => `<h3>${repoHead(r)}</h3><div class="body">${repoBody(r)}</div>`;
+  const testLine = r => {
+    const t = tests(r);
+    return t.length ? `<p class="tests">Runs: ${t.map(x => `<a href="#${x.anchor}">${esc(x.short)}</a>`).join(", ")}</p>` : "";
+  };
+
+  let html = "", nav = [];
+  // Test suites
+  nav.push(["test-suites", "Test suites"]);
+  html += `<h2 id="test-suites">Test suites</h2><p class="muted">Each W3C suite fork has a <code>*-contrib</code>
+    sibling for the shared tests no W3C suite contains; contrib repositories are new, use <code>main</code> and keep their full names.</p>`;
+  for (const r of repos.filter(r => r.kind === "test-suite" || r.kind === "tool")) {
+    const contribs = repos.filter(c => c.contribOf === r.name);
+    html += `<section class="stack"${anchor(r)}>${repoCard(r)}${contribs.length ?
+      `<ul class="deps">${contribs.map(c => `<li${anchor(c)}>${repoLine(c)}</li>`).join("")}</ul>` : ""}</section>`;
+  }
+  // Languages and their stacks
+  const langs = LANGS.concat([...new Set(repos.map(r => r.language).filter(l => l && !LANGS.includes(l)))].sort());
+  for (const lang of langs) {
+    const rootsHere = stacks.filter(s => s.root.language === lang);
+    const loose = repos.filter(r => r.language === lang && r.kind === "implementation" && !r.stack
+                                    && !stacks.some(s => s.members.includes(r.name)));
+    if (!rootsHere.length && !loose.length) continue;
+    nav.push([slug(lang), lang]);
+    html += `<h2 id="${slug(lang)}">${esc(lang)}</h2>`;
+    for (const {root, members} of rootsHere) {
+      html += `<section class="stack"${anchor(root)}>${repoCard(root)}`;
+      if (!members.length) html += `<p class="muted">No forked dependencies.</p>`;
+      else html += `<ul class="deps">${members.map(n => { const r = byName[n];
+        return r.stack ? `<li><a href="#${r.anchor}">${esc(r.short)}</a> <span class="muted">— a stack of its own</span></li>`
+                       : `<li${anchor(r)}>${repoLine(r, root.name)}</li>`; }).join("")}</ul>`;
+      html += testLine(root) + `</section>`;
+    }
+    for (const r of loose) html += `<section class="stack"${anchor(r)}>${repoCard(r)}</section>`;
+  }
+  // This repository
+  const meta = repos.filter(r => r.kind === "meta");
+  if (meta.length) {
+    nav.push(["meta", "Meta"]);
+    html += `<h2 id="meta">Meta</h2>` + meta.map(r => `<section class="stack"${anchor(r)}>${repoCard(r)}</section>`).join("");
+  }
+  // Not yet forked
+  nav.push(["not-yet-forked", "Not yet forked"]);
+  html += `<h2 id="not-yet-forked">Not yet forked</h2><p class="muted">The targets assessed in
+    <a href="${blob("targets.md")}">targets.md</a>, in its recommended order; impact (what a fork must change)
+    and utility (what it buys rdf-array) are scored 1–5 there.</p><ul class="targets">${(doc.targets || []).map(t =>
+    `<li id="${t.anchor}"><span class="${t.done ? "done" : "muted"}">${t.done ? "☑" : "☐"}</span> ${md(t.text)}</li>`).join("")}</ul>`;
+  // Issues not filed under one repository
+  nav.push(["issues", "Issues"]);
+  html += `<h2 id="issues">Issues</h2>`;
+  if (!loaded) html += `<p class="flag">Could not load the issues: ${esc(issueError)}. They are at
+    <a href="https://github.com/${ORG}/rdf-array/issues">rdf-array/rdf-array/issues</a>.</p>`;
+  else {
+    const filed = Object.values(perRepo).reduce((n, l) => n + l.length, 0);
+    html += `<p class="muted">${issues.length} open; the ones about one repository are listed with it above.</p>`;
+    for (const [id, title, what] of [["cross-repo", "Across repositories", "label <code>cross-repo</code>"],
+                                     ["spec", "Specifications", "label <code>spec</code>: the data model and the -array specifications"],
+                                     ["unfiled", "Unfiled", "no <code>&lt;repo&gt;:</code> title prefix and no <code>cross-repo</code> or <code>spec</code> label"]]) {
+      const list = sections[id];
+      html += `<section id="${id}"><h3>${title}${pill(list, true)}</h3>
+        <p class="muted">${what}</p>${issueList(list) || `<p class="muted">None.</p>`}</section>`;
+    }
+  }
+  document.getElementById("main").innerHTML = html;
+  document.getElementById("nav").innerHTML = nav.map(([id, t]) => `<a href="#${id}">${t}</a>`).join("");
+  const nIssues = loaded ? `, ${issues.length} open issues` : "";
+  document.getElementById("status").textContent =
+    `${repos.length} repositories, ${stacks.length} stacks, ${(doc.targets || []).filter(t => !t.done).length} targets not yet forked${nIssues}.`;
+  // the content arrived after load, so jump to the fragment now
+  if (location.hash) { const el = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (el) el.scrollIntoView(); }
+}
+
+(async () => {
+  let doc;
+  try { doc = await (await fetch("repos.json", {cache: "no-cache"})).json(); }
+  catch (e) { document.getElementById("status").textContent = `Could not read repos.json: ${e.message}`; return; }
+  render(doc, null, "loading");
+  try { render(doc, await fetchIssues()); }
+  catch (e) { render(doc, null, e.message); }
+})();
+</script>
+</body>
+</html>
