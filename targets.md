@@ -19,14 +19,14 @@ The targets, ticked as their forks appear and in the recommended order, are list
 exist are the rest of [that page](https://rdf-array.github.io/rdf-array/repos.html). The table this section held, with each target's language,
 impact, utility, needed forks and order, was moved there on 2026-10-25. Done so far: Oxigraph
 (oxigraph-array, 2026-10-24), rudof (rudof-array, 2026-10-25) and the OWL API (owlapi-array,
-2026-10-26, for [OWL-array](owl-array.md), begun once SHACL-array existed). The sections below are the
+2026-10-26, for [OWL-array](docs/owl-array.md), begun once SHACL-array existed). The sections below are the
 assessment as it was written.
 
 Two things that are not implementations rank above most of the list: a **conformance suite**
 (impact 3, utility 5) assembled from the tests the forks already carry, so that the next port does
 not re-derive its expectations from jena-array's and comunica-array's test files; and a
 **converter** between ladders and sequences (impact 2, utility 4), without which rdf-array data
-cannot meet RDF 1.1 systems at all (the open question in [rdf-array.md](rdf-array.html)). The
+cannot meet RDF 1.1 systems at all (the open question in [rdf-array.md](docs/rdf-array.html)). The
 conformance suite now exists, as the `*-contrib` repositories, which jena, comunica, N3.js,
 shex.js, jsonld.js, rdflib, PyShEx, oxigraph and rudof run (2026-10-25); the converter does not.
 
@@ -209,7 +209,7 @@ Oxigraph gives Rust.
    the store; publish pyoxigraph-array and the WASM package.~~ Done: oxigraph-array (2026-10-24);
    the Python and WASM packages build from it but are not published.
 3. ~~Fork rudof on top of it, with ShEx-array;~~ done: rudof-array (2026-10-25). ~~Define SHACL-array
-   and implement it in jena-shacl,~~ done: [shacl-array.md](shacl-array.md) and jena-array's
+   and implement it in jena-shacl,~~ done: [shacl-array.md](docs/shacl-array.md) and jena-array's
    `jena-shacl` (2026-10-25). Then rudof's `shacl`, whose lists rudof-array already reads as
    sequences but which lacks SHACL 1.2's list constraints, and a data-shapes-array suite fork.
 4. Fork rdf-isomorphic and rdf-canonize, and switch the JavaScript forks' tests to them.

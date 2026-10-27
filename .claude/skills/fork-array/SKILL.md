@@ -6,7 +6,7 @@ description: Fork an RDF implementation into the rdf-array organisation as <proj
 # Forking a project into rdf-array
 
 rdf-array is RDF with one more kind of term, the sequence (`(1 2 3)`, `()`); see
-[rdf-array.md](../../../rdf-array.md). A fork teaches one project that term and removes the code
+[rdf-array.md](../../../docs/rdf-array.md). A fork teaches one project that term and removes the code
 that built `rdf:first`/`rdf:rest` ladders or numbered `rdf:_n` container members. The formula below
 is what every fork so far followed; the [Not yet forked](https://rdf-array.github.io/rdf-array/repos.html#not-yet-forked)
 list (`targets` in [repos.json](../../../repos.json)) says which projects are worth it, in order, and [targets.md](../../../targets.md) what each
@@ -164,7 +164,7 @@ project's tracker.
    implementations, a gap in a suite that every port meets, or a process problem across forks.
    Label it `cross-repo`. If it is a decision the model or a syntax has not made, also label it
    `open-question` and add a bullet with the link to the open questions of rdf-array.md
-   (then regenerate `rdf-array.html`). State what each implementation does today, and what deciding
+   (then regenerate `docs/rdf-array.html`). State what each implementation does today, and what deciding
    would change (tests to add to a `*-contrib`, implementations to fix).
 3. **Repo-specific**: a gap or bug in one repository. Title it `<repo>: …` (as `shex.js-array: …`)
    and label it `repo`; repos.html files it under that repository by the prefix.

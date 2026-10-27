@@ -3,7 +3,7 @@
 *Example, 2026-10-27. The process of [Semantic Representations of Clinical Care Data Leveraging HL7
 FHIR](https://www.w3.org/2016/Talks/1205-swat4ls-egp/reasoning.html) (Solbrig and Prud'hommeaux, SWAT4LS,
 4 December 2016) over the FHIR RDF of today, which writes a repeated element as a list, with
-[OWL-array](../../owl-array.html) to look into the list. Run through
+[OWL-array](../../docs/owl-array.html) to look into the list. Run through
 [owlapi-array](https://github.com/rdf-array/owlapi-array) and HermiT (every query below answers as
 expected), and in Protégé 5.6.9 with owlapi-array's bundle and the
 [protege-owl-array](https://github.com/rdf-array/protege-owl-array) reasoner plugin, whose DL Query tab
@@ -110,7 +110,7 @@ symbolic name, `org.semanticweb.owl.owlapi`, and version, 4.5.29) and
 [protege-owl-array](https://github.com/rdf-array/protege-owl-array)'s plugin added to `plugins/`. Its
 `assemble.sh` builds that from the stock zip. The walk-through was driven from inside Protégé by that
 repository's `walkthrough` bundle, which uses Protégé's own model, reasoner menu and DL Query view and
-paints the window to the PNGs below; its log is [`protege/walkthrough.txt`](protege/walkthrough.txt). [OWL-array in Protégé](../../protege.html) is the same walk-through as a demo, step by step, with
+paints the window to the PNGs below; its log is [`protege/walkthrough.txt`](protege/walkthrough.txt). [OWL-array in Protégé](../../docs/protege-array.html) is the same walk-through as a demo, step by step, with
 the inferred types of the observations and patients as Protégé shows them.
 
 **1. Open `subjects.ttl`.** The catalog resolves the nine imports; the closure is 10 ontologies and

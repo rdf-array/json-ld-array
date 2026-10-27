@@ -38,6 +38,7 @@ SPARQL-array reaches into a sequence with **position patterns** `((element))[ind
 | shexTest-contrib | [schemas-contrib/collPolygon.shex](https://github.com/rdf-array/shexTest-contrib/blob/main/schemas-contrib/collPolygon.shex) | shex | 2 |
 | shexTest-contrib | [schemas-contrib/collRef1to2.shex](https://github.com/rdf-array/shexTest-contrib/blob/main/schemas-contrib/collRef1to2.shex) | shex | 1 |
 | rdf-array | [.claude/skills/array-tests/SKILL.md](https://github.com/rdf-array/rdf-array/blob/main/.claude/skills/array-tests/SKILL.md) | doc | 5 |
-| rdf-array | [json-ld-array.md](https://github.com/rdf-array/rdf-array/blob/main/json-ld-array.md) | doc | 1 |
-| rdf-array | [rdf-array.md](https://github.com/rdf-array/rdf-array/blob/main/rdf-array.md) | doc | 14 |
+| rdf-array | [docs/json-ld-array.md](https://github.com/rdf-array/rdf-array/blob/main/docs/json-ld-array.md) | doc | 1 |
+| rdf-array | [docs/rdf-array.md](https://github.com/rdf-array/rdf-array/blob/main/docs/rdf-array.md) | doc | 14 |
+| rdf-array | [docs/shacl-array.md](https://github.com/rdf-array/rdf-array/blob/main/docs/shacl-array.md) | doc | 4 |
 | rdf-array | [targets.md](https://github.com/rdf-array/rdf-array/blob/main/targets.md) | doc | 1 |

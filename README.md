@@ -10,11 +10,11 @@ meta-repository: the documents below, the list of the forks and every repository
 
 | Document | Rendered | What it is |
 |---|---|---|
-| [rdf-array.md](rdf-array.md) | [rdf-array.html](https://rdf-array.github.io/rdf-array/rdf-array.html) | the change from RDF to rdf-array: the data model, the syntaxes, the implementations, the conventions, the open questions |
-| [json-ld-array.md](json-ld-array.md) | [json-ld-array.html](https://rdf-array.github.io/rdf-array/json-ld-array.html) | the JSON-LD-array specification: conventional JSON to rdf-array through a mapping document, with the output, the errors and the reference implementation |
-| [shacl-array.md](shacl-array.md) | [shacl-array.html](https://rdf-array.github.io/rdf-array/shacl-array.html) | SHACL-array: a SHACL list is a sequence term, and SHACL 1.2's list constraints apply to sequence values; implemented in jena-array |
-| [owl-array.md](owl-array.md) | [owl-array.html](https://rdf-array.github.io/rdf-array/owl-array.html) | OWL-array: OWL's own lists are sequences, and a sequence in the data is an individual whose members, length, first and last element the built-in `ra:member`, `ra:length`, `ra:first` and `ra:last` give, so class expressions can constrain list members in OWL 2 DL; implemented in owlapi-array |
-| [protege.html](protege.html) | [protege.html](https://rdf-array.github.io/rdf-array/protege.html) | OWL-array in Protégé, a demo: the FHIR example in Protégé 5.6.9, step by step with screenshots: every list parsed as one term, and HermiT classifying observations and patients by what is inside them |
+| [rdf-array.md](docs/rdf-array.md) | [rdf-array.html](https://rdf-array.github.io/rdf-array/docs/rdf-array.html) | the change from RDF to rdf-array: the data model, the syntaxes, the implementations, the conventions, the open questions |
+| [json-ld-array.md](docs/json-ld-array.md) | [json-ld-array.html](https://rdf-array.github.io/rdf-array/docs/json-ld-array.html) | the JSON-LD-array specification: conventional JSON to rdf-array through a mapping document, with the output, the errors and the reference implementation |
+| [shacl-array.md](docs/shacl-array.md) | [shacl-array.html](https://rdf-array.github.io/rdf-array/docs/shacl-array.html) | SHACL-array: a SHACL list is a sequence term, and SHACL 1.2's list constraints apply to sequence values; implemented in jena-array |
+| [owl-array.md](docs/owl-array.md) | [owl-array.html](https://rdf-array.github.io/rdf-array/docs/owl-array.html) | OWL-array: OWL's own lists are sequences, and a sequence in the data is an individual whose members, length, first and last element the built-in `ra:member`, `ra:length`, `ra:first` and `ra:last` give, so class expressions can constrain list members in OWL 2 DL; implemented in owlapi-array |
+| [protege-array.md](docs/protege-array.md) | [protege-array.html](https://rdf-array.github.io/rdf-array/docs/protege-array.html) | OWL-array in Protégé, a demo: the FHIR example in Protégé 5.6.9, step by step with screenshots: every list parsed as one term, and HermiT classifying observations and patients by what is inside them |
 | [examples/fhir/README.md](examples/fhir/README.md) | [examples/fhir/](https://rdf-array.github.io/rdf-array/examples/fhir/) | FHIR RDF reasoning with OWL-array: the SWAT4LS 2016 process over today's FHIR RDF (lists everywhere), run through owlapi-array and HermiT and in Protégé; the FHIR ontology's list axioms shown wrong over rdf-array |
 | [repos.json](repos.json) | [repos.html](https://rdf-array.github.io/rdf-array/repos.html) | every repository, its upstream, kind, language and forked dependencies; the stacks; the targets not yet forked; the open issues by repository |
 | [targets.md](targets.md) | — | the assessment behind the [not-yet-forked list](https://rdf-array.github.io/rdf-array/repos.html#not-yet-forked): each further target's impact, utility and change list |
@@ -23,8 +23,11 @@ meta-repository: the documents below, the list of the forks and every repository
 | [vocab/vocab.ttl](vocab/vocab.ttl), [vocab/owl-array.ttl](vocab/owl-array.ttl) | [vocab/](https://rdf-array.github.io/rdf-array/vocab/) | the `ra:` vocabulary: the features tests require (`mf:requires`), the JSON-LD-array test type, and the OWL-array vocabulary ontology (`ra:Sequence`, `ra:member`, …) |
 
 The rendered documents are listed at <https://rdf-array.github.io/rdf-array/html-index.html>, the
-repository's homepage. `python3 md-to-respec.py <doc>.md <doc>.html` regenerates a rendering
-(ReSpec, unofficial draft); the Pages workflow refuses a push whose HTML is older than its Markdown.
+repository's homepage. `python3 md-to-respec.py docs/<doc>.md docs/<doc>.html` regenerates a
+rendering (ReSpec, unofficial draft, or with `template: page` in the front matter a plain page styled
+by `docs/page.css`, as `protege-array.md` is); HTML in the Markdown passes through. The Pages workflow
+refuses a push whose HTML is older than its Markdown, and redirects the documents' addresses from
+before they moved to `docs/`.
 
 ## Repositories
 
@@ -77,7 +80,7 @@ that make the next ones:
   with GitHub and the forks, checked by [tools/manifest-check.py](tools/manifest-check.py), and
   filing issues.
 - [owl-array](.claude/skills/owl-array/SKILL.md): porting the OWL API (and then Protégé) to
-  [OWL-array](owl-array.md): the `OWLSequence` term, the parsers and renderers, the node-ID
+  [OWL-array](docs/owl-array.md): the `OWLSequence` term, the parsers and renderers, the node-ID
   stopgap for the syntaxes without a spelling, the reasoner expansion, and the tests.
 
 ## Conventions
@@ -86,4 +89,4 @@ A fork's README opens with a banner, "`<project>-array`: `<project>` for rdf-arr
 that puts the original's avatar between big `[` `]` brackets; its notes live in `doc/rdf-array.md`;
 its commit messages start with `rdf-array:` (older ones with `RDF-:`); a test that depends on
 `rdf:first`/`rdf:rest` ladders is flagged with the reason, never silently dropped. The rest is in
-[rdf-array.md](rdf-array.md).
+[rdf-array.md](docs/rdf-array.md).

@@ -37,7 +37,7 @@ FILES = [
 LIST_SHAPE = '''shsh:ListShape
 \ta sh:NodeShape ;
 \trdfs:label "List shape"@en ;
-\trdfs:comment "rdf-array: a SHACL list is a sequence term, ( ... ), and an rdf:first/rdf:rest ladder is triples, not a list (https://rdf-array.github.io/rdf-array/shacl-array.html). shsh:ListNodeShape, which described the cells of a ladder, is gone."@en ;
+\trdfs:comment "rdf-array: a SHACL list is a sequence term, ( ... ), and an rdf:first/rdf:rest ladder is triples, not a list (https://rdf-array.github.io/rdf-array/docs/shacl-array.html). shsh:ListNodeShape, which described the cells of a ladder, is gone."@en ;
 \trdfs:seeAlso <https://www.w3.org/TR/shacl/#syntax-rule-SHACL-list> ;
 \tsh:minListLength 0 .
 '''

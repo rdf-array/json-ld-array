@@ -5,7 +5,7 @@ description: Port the OWL API (and then Protégé) to OWL-array, OWL 2 over rdf-
 
 # Porting an OWL implementation to OWL-array
 
-[owl-array.md](../../../owl-array.md) is the definition and is normative here: §2 (OWL's lists are
+[owl-array.md](../../../docs/owl-array.md) is the definition and is normative here: §2 (OWL's lists are
 sequences), §3 (a data sequence is an individual with the built-in `ra:` properties), §4 (how each
 syntax writes a sequence), §5 (what is deliberately left out), §6 (the expansion that gives a stock
 reasoner the semantics), §7 (tests). Do not change its semantics from inside a fork; a question it

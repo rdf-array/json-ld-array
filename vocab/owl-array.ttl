@@ -6,14 +6,14 @@
 
 # The OWL-array vocabulary: the built-in entities of OWL-array, declared so that an editor knows
 # them, with the axioms that hold of every sequence. Their meaning does not come from this file:
-# https://rdf-array.github.io/rdf-array/owl-array.html fixes it (§3). Plain OWL 2 DL; it says the
+# https://rdf-array.github.io/rdf-array/docs/owl-array.html fixes it (§3). Plain OWL 2 DL; it says the
 # same thing read as RDF 1.1 (its lists are ladders) or as rdf-array (its lists are sequences).
 
 <https://rdf-array.github.io/rdf-array/vocab/owl-array.ttl>
     a owl:Ontology ;
     rdfs:label "OWL-array vocabulary" ;
     rdfs:comment "Declarations and axioms of the built-in entities of OWL-array: ra:Sequence, ra:member, ra:memberValue, ra:length, ra:first, ra:last, ra:firstValue, ra:lastValue, and the definable classes ra:EmptySequence, ra:ObjectSequence and ra:DataSequence. Import it so that an editor knows the entities; their meaning is fixed by the OWL-array definition." ;
-    rdfs:seeAlso <https://rdf-array.github.io/rdf-array/owl-array.html> ;
+    rdfs:seeAlso <https://rdf-array.github.io/rdf-array/docs/owl-array.html> ;
     owl:versionInfo "2026-10-26" .
 
 # Classes

@@ -21,7 +21,7 @@ implementation runs the same expectations, and how each implementation is pointe
 | JSON-LD framing and streaming | w3c/json-ld-framing `tests/`, w3c/json-ld-streaming `tests/` | `frame-manifest.jsonld`, `stream-toRdf-manifest.jsonld` | jsonld.js, jsonld-streaming-parser |
 | JSON-LD-star | json-ld/json-ld-star `tests/` | `toRdf-manifest.jsonld` | jsonld-streaming-parser |
 | ShEx | [shexSpec/shexTest](https://github.com/shexSpec/shexTest) | `validation/manifest.jsonld`, `schemas/manifest.jsonld`, `negativeSyntax/`, `negativeStructure/` | shex.js, PyShEx, Jena ShEx, rudof |
-| SHACL 1.0 and 1.2 | [w3c/data-shapes](https://github.com/w3c/data-shapes) `data-shapes-test-suite/tests/`, `shacl12-test-suite/tests/` | `core/manifest.ttl`, `sparql/manifest.ttl` | jena-shacl, rudof, pySHACL, rdf-validate-shacl — read as [SHACL-array](../../../shacl-array.md) |
+| SHACL 1.0 and 1.2 | [w3c/data-shapes](https://github.com/w3c/data-shapes) `data-shapes-test-suite/tests/`, `shacl12-test-suite/tests/` | `core/manifest.ttl`, `sparql/manifest.ttl` | jena-shacl, rudof, pySHACL, rdf-validate-shacl — read as [SHACL-array](../../../docs/shacl-array.md) |
 | RDF canonicalization (RDFC-1.0) | [w3c/rdf-canon](https://github.com/w3c/rdf-canon) `tests/` | `manifest.ttl` | rdf-canonize, Jena, Oxigraph — after sequences are canonicalized |
 | SPARQL-array, ShEx-array, JSON-LD-array additions | the `*-contrib` repositories (§4) | the W3C formats | every implementation |
 
@@ -60,7 +60,7 @@ on the ladder, the test is flagged and a counterpart added. Specifically:
   suite, the suite avoids lists) is reviewed and the Collection shape expression tests are added
   from shex.js-array's webapp manifest: the RGB colour, the too-short failure, the nested polygon,
   the playlist, `((.))` with `()` and with a non-sequence.
-- **SHACL.** Read as SHACL-array ([shacl-array.md](../../../shacl-array.md)): a SHACL list is a sequence
+- **SHACL.** Read as SHACL-array ([shacl-array.md](../../../docs/shacl-array.md)): a SHACL list is a sequence
   term, so every shapes graph written with `( … )` reads unchanged; explicit `rdf:first`/`rdf:rest`
   ladders are triples and `rdf:nil` an IRI. Tests whose point was a ladder or `rdf:nil` as the empty
   list are re-recorded when they still test something and marked `mf:status sht:rejected` otherwise

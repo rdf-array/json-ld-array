@@ -3,7 +3,7 @@
 *Definition, 2026-10-25. Implemented in [jena-array](https://github.com/rdf-array/jena-array)'s
 `jena-shacl`. This document is [shacl-array.md](https://github.com/rdf-array/rdf-array) in the
 organisation's meta-repository, rendered at
-<https://rdf-array.github.io/rdf-array/shacl-array.html>; [rdf-array.md](rdf-array.html) describes
+<https://rdf-array.github.io/rdf-array/docs/shacl-array.html>; [rdf-array.md](rdf-array.html) describes
 the change from RDF to rdf-array, and [rdf-array#9](https://github.com/rdf-array/rdf-array/issues/9)
 holds the discussion this settles.*
 

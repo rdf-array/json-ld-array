@@ -9,7 +9,7 @@
 # `fhir:coding max 1`, because a repeating element has one list. Everything else below is fhir.ttl's
 # own style, cut down to the classes and properties subject-*.ttl use.
 #
-# https://rdf-array.github.io/rdf-array/owl-array.html, and README.md beside this file.
+# https://rdf-array.github.io/rdf-array/docs/owl-array.html, and README.md beside this file.
 
 @prefix fhir: <http://hl7.org/fhir/> .
 @prefix ra:   <https://rdf-array.github.io/rdf-array/vocab#> .

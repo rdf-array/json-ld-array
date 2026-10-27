@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OWL-array in Protégé</title>
+<meta name="description" content="rdf-array&#x27;s FHIR example in Protégé 5.6.9: FHIR RDF writes every repeating element as a list ( … ); read as one term each, with OWL-array&#x27;s semantics for the term, HermiT classifies observations and patients by what is inside the lists.">
+<link rel="stylesheet" href="page.css">
+</head>
+<body>
+<!-- Generated from docs/protege-array.md by md-to-respec.py; edit that file, not this one. -->
+<main>
+
+<header class="top">
+<p class="eyebrow">rdf-array · OWL-array in Protégé · demo</p>
+<h1>Protégé reasons into FHIR's lists</h1>
+<p class="lede">FHIR RDF writes every repeating element as a Turtle list <code>( … )</code>. Read as <a href="rdf-array.html">rdf-array</a>, the list is one term; <a href="owl-array.html">OWL-array</a> gives the term a meaning; Protégé 5.6.9, with one bundle swapped and one plugin added, classifies observations and patients by what is inside the lists. Protégé itself is not modified.</p>
+</header>
+
+<p>The data is rdf-array's <a href="../examples/fhir/index.html">FHIR example</a>: the <a href="https://www.w3.org/2016/Talks/1205-swat4ls-egp/reasoning.html">SWAT4LS 2016</a> FHIR reasoning process (recognizers of codings, connective tissue to SNOMED CT, DL queries over its hierarchy) over the FHIR RDF of today. Two jars make it run. <a href="https://github.com/rdf-array/owlapi-array">owlapi-array</a> replaces Protégé's OWL API bundle under the same symbolic name and version, so every other plugin loads unchanged. <a href="https://github.com/rdf-array/protege-owl-array">protege-owl-array</a> adds <strong>HermiT 1.4.3 (OWL-array)</strong> to the Reasoner menu: the bundled HermiT behind a decorator that hands it the meaning of each list. The screenshots are Protégé's own window, painted to PNG by the walk-through harness in protege-owl-array; its log is <a href="../examples/fhir/protege/walkthrough.txt">walkthrough.txt</a>. Click a detail for the whole window.</p>
+
+<section id="one-axiom-three-readings">
+<h2><span class="n">1</span>One axiom, three readings</h2>
+<p><code>CodeableConcept.coding</code> is 0..*. FHIR RDF writes it as a list, and the FHIR ontology, <a href="https://build.fhir.org/fhir.ttl">fhir.ttl</a>, types it as it types every other element:</p>
+<pre><code>ex:cc fhir:coding <span class="l">(</span> [ fhir:system [ fhir:l &lt;http://snomed.info/sct&gt; ] ; fhir:code [ fhir:v <span class="s">"69896004"</span> ] ] [ … ] <span class="l">)</span> .
+
+fhir:CodeableConcept <span class="k">SubClassOf</span>: fhir:coding <span class="k">only</span> fhir:Coding       <span class="c"># fhir.ttl</span></code></pre>
+<ul><li><strong>OWL 2 DL over RDF 1.1, which is Protégé as shipped.</strong> <code>rdf:first</code> and <code>rdf:rest</code> are OWL's own syntax, so the OWL API's RDF parser consumes the ladder wherever it stands and keeps nothing of it. Measured with the stock OWL API 4.5.29 on <a href="../examples/fhir/subject-amy.ttl">subject-amy.ttl</a>: 189 triples, 0 reported unparsed, no warning; each <code>fhir:coding</code> points to a blank node with no other triple, and every element of a list, the 8 codings among them, is a blank node that nothing refers to. The axiom is satisfied by the empty node. This is what FHIR's <a href="https://build.fhir.org/rdf.html">RDF page</a> means by lists "cause problems for OWL 2".</li><li><strong>OWL 2 DL over rdf-array, the axiom as published.</strong> The value of <code>fhir:coding</code> is one term, the sequence. The axiom types the sequence as a Coding; no FHIR element is a sequence (<code>fhir:Base DisjointWith: ra:Sequence</code> in <a href="../examples/fhir/fhir-min.ttl">fhir-min.ttl</a>), so the data is inconsistent. That is the right answer: the axiom was written about the elements.</li><li><strong>OWL-array.</strong> The axiom says what fhir.ttl means, and adds the cardinality that the list form makes true:
+<pre><code>fhir:CodeableConcept <span class="k">SubClassOf</span>: fhir:coding <span class="k">only</span> (ra:Sequence <span class="k">and</span> ra:member <span class="k">only</span> fhir:Coding),
+                                fhir:coding <span class="k">max</span> 1</code></pre>
+Every construct here is OWL 2 DL today: Protégé's expression editor and every DL reasoner accept it, with <code>ra:member</code> an ordinary object property. What is new is the meaning of <code>ra:member</code> and of the term it reaches into.</li></ul>
+</section>
+<section id="what-owl-array-adds-to-owl-2">
+<h2><span class="n">2</span>What OWL-array adds to OWL 2</h2>
+<p>One change to the <a href="https://www.w3.org/TR/owl2-direct-semantics/">Direct Semantics</a>. The object domain of an interpretation holds, beside the ordinary individuals, the <em>sequences</em>: finite tuples whose elements are individuals, data values or sequences. A sequence term denotes the tuple of its elements' denotations, <code>( t<sub>1</sub> … t<sub>n</sub> )<sup>I</sup> = ( t<sub>1</sub><sup>I</sup> … t<sub>n</sub><sup>I</sup> )</code>, and <code>()</code> the empty tuple. Nothing else changes: no new class expression, no new axiom type, no change to <code>OWLReasoner</code>. Three things follow.</p>
+<ul><li><strong>Identity is by elements.</strong> <code>( ex:a )</code> and <code>( ex:b )</code> are the same individual exactly when <code>ex:a owl:sameAs ex:b</code>. No IRI or blank node stands for a sequence, and no triple is about one.</li><li><strong>A sort of its own.</strong> No IRI, blank node or literal denotes a tuple, so <code>ra:Sequence</code> is disjoint from every class of ordinary individuals, as the literals are.</li><li><strong>Closed.</strong> A sequence's members are its elements, in order. There is nothing more to learn about them from other triples.</li></ul>
+<p>The built-ins have a fixed extension in every interpretation, as <code>owl:Thing</code> and <code>owl:topObjectProperty</code> do. An ontology uses them; it does not define them.</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Built-in</th><th>In every interpretation, for a sequence <code>s</code></th></tr></thead>
+<tbody>
+<tr><td><code>ra:Sequence</code></td><td>the sequences, and nothing else</td></tr>
+<tr><td><code>ra:member</code>, <code>ra:memberValue</code></td><td><code>s ra:member e</code> for each element <code>e</code> that is an individual or a sequence; <code>ra:memberValue</code> for each literal element</td></tr>
+<tr><td><code>ra:length</code></td><td>functional: the number of elements, an <code>xsd:nonNegativeInteger</code></td></tr>
+<tr><td><code>ra:first</code>, <code>ra:last</code></td><td>functional: the first and the last element (<code>ra:firstValue</code>, <code>ra:lastValue</code> when it is a literal)</td></tr>
+</tbody></table>
+</div>
+<p><code>ra:member</code> is a set view of the tuple: <code>( ex:a ex:a )</code> has one member, and OWL does not assume distinct names denote distinct things. Positions are counted by <code>ra:length</code>, so a bound on the length is one datatype facet, not a nested restriction per element. The rest of the fine print, including the OWL 2 EL and RL profiles, is <a href="owl-array.html#sequences-in-the-data">owl-array.md §3</a>.</p>
+<section id="how-a-stock-reasoner-decides-it">
+<h3>How a stock reasoner decides it</h3>
+<p>owlapi-array's <code>SequenceAwareReasonerFactory</code> wraps any <code>OWLReasonerFactory</code>. For each sequence term <code>s = ( e<sub>1</sub> … e<sub>n</sub> )</code> in the imports closure it gives the reasoner, and only the reasoner, an individual for <code>s</code> and ordinary assertions:</p>
+<pre><code>s <span class="k">a</span> ra:Sequence .   s ra:length n .
+s ra:member e<sub>1</sub> , … , e<sub>n</sub> .   s ra:first e<sub>1</sub> .   s ra:last e<sub>n</sub> .
+s <span class="k">a</span> [ ra:member <span class="k">only</span> { e<sub>1</sub> … e<sub>n</sub> } ]     <span class="c"># the closure, when the elements are named</span></code></pre>
+<p>Nested sequences expand recursively, and equal terms get the same individual. The expansion is linear in the number of elements, its output is OWL 2 DL, and HermiT runs it unchanged. A result that mentions an expansion individual is mapped back to its term on the way out. The ontology you edit and save never sees any of this.</p>
+<p>What a ladder cannot give. Over <code>rdf:first</code>/<code>rdf:rest</code>, nothing: OWL 2 DL reserves them. Over a ladder rebuilt from individuals (<a href="https://research.manchester.ac.uk/en/publications/putting-owl-in-order-patterns-for-sequences-in-owl/">Drummond et al. 2006</a>, the <a href="https://www.semantic-web-journal.net/content/collections-ontology-creating-and-handling-collections-owl-2-dl-frameworks">Collections Ontology</a>), a list is open, since nothing says a cell has no other successor, so <code>only</code> over its members is not decided from the data; "last" needs a transitive property that no cardinality may use; a length is one nested restriction per element; and classification of 450-element lists took minutes. Each limit comes from deriving a list's structure from triples. Here the term is the structure, and the reasoner is told it.</p>
+</section>
+</section>
+<section id="set-it-up">
+<h2><span class="n">3</span>Set it up</h2>
+<p>Git, Maven and a JDK 11 or newer. <code>assemble.sh</code> starts from the stock Protégé 5.6.9 zip and swaps in the two jars, built from source on the first run:</p>
+<pre><code>git clone https://github.com/rdf-array/protege-owl-array.git
+git clone https://github.com/rdf-array/rdf-array.git
+cd protege-owl-array
+./assemble.sh Protege-5.6.9-owl-array
+JAVA_HOME=$(/usr/libexec/java_home -v 21) \
+  Protege-5.6.9-owl-array/run.sh ../rdf-array/examples/fhir/subjects.ttl</code></pre>
+<p>The <code>java_home</code> line is macOS; elsewhere set <code>JAVA_HOME</code> to any JDK 11 or newer. <code>subjects.ttl</code> imports Amy's, Bob's and Sue's records, the arthritis and blood-pressure definitions, the 2016 talk's SNOMED CT extract, the part of the FHIR ontology they use, and the OWL-array vocabulary; its <code>catalog-v001.xml</code> maps each import to the file beside it.</p>
+</section>
+<section id="fhir-rdf-lists-everywhere">
+<h2><span class="n">4</span>FHIR/RDF, lists everywhere</h2>
+<p>Amy's rheumatoid-arthritis observation, from <a href="../examples/fhir/subject-amy.ttl">subject-amy.ttl</a>: two codings, SNOMED CT first and ICD-10 second, and the SNOMED CT concept IRI that FHIR's generator adds as a type when the code system has an IRI stem. ICD-10 has none, so that coding is reachable only through the list.</p>
+<pre><code>amy:Obs1 <span class="k">a</span> fhir:Observation ;
+  fhir:code [
+     <span class="k">a</span> sct:69896004 ;
+     fhir:coding <span class="l">(</span> [
+       fhir:system [ fhir:v <span class="s">"http://snomed.info/sct"</span>^^xsd:anyURI ; fhir:l &lt;http://snomed.info/sct&gt; ] ;
+       fhir:code [ fhir:v <span class="s">"69896004"</span> ] ;
+       fhir:display [ fhir:v <span class="s">"Rheumatoid arthritis"</span> ]
+     ] [
+       fhir:system [ fhir:v <span class="s">"http://hl7.org/fhir/sid/icd-10"</span>^^xsd:anyURI ; fhir:l &lt;http://hl7.org/fhir/sid/icd-10&gt; ] ;
+       fhir:code [ fhir:v <span class="s">"M06.9"</span> ] ;
+       fhir:display [ fhir:v <span class="s">"Rheumatoid arthritis, unspecified"</span> ]
+     ] <span class="l">)</span> ;
+     fhir:text [ fhir:v <span class="s">"Rheumatoid arthritis"</span> ]
+  ] ;
+  fhir:subject [ fhir:reference [ fhir:v <span class="s">"Patient/amy"</span> ] ; fhir:l amy:asPatient ] .</code></pre>
+<p>Sue's observation has one ICD-10 coding and no concept IRI. Everything a reasoner learns about it comes from inside the list:</p>
+<pre><code>sue:Obs1 <span class="k">a</span> fhir:Observation ;
+  fhir:code [
+     fhir:coding <span class="l">(</span> [
+       fhir:system [ fhir:v <span class="s">"http://hl7.org/fhir/sid/icd-10"</span>^^xsd:anyURI ; fhir:l &lt;http://hl7.org/fhir/sid/icd-10&gt; ] ;
+       fhir:code [ fhir:v <span class="s">"M05.9"</span> ] ;
+       fhir:display [ fhir:v <span class="s">"Seropositive rheumatoid arthritis, unspecified"</span> ]
+     ] <span class="l">)</span> ] ;
+  fhir:subject [ fhir:reference [ fhir:v <span class="s">"Patient/sue"</span> ] ; fhir:l sue:asPatient ] .</code></pre>
+<p>Lists nest. Sue's names are a list, and the one name holds a list of two given names:</p>
+<pre><code>sue:asPatient <span class="k">a</span> fhir:Patient ;
+  fhir:name <span class="l">(</span> [
+     fhir:family [ fhir:v <span class="s">"Jones"</span> ] ;
+     fhir:given <span class="l">(</span> [ fhir:v <span class="s">"Sue"</span> ] [ fhir:v <span class="s">"Ann"</span> ] <span class="l">)</span>
+  ] <span class="l">)</span> .</code></pre>
+<p>The domain logic is the 2016 talk's, in <a href="../examples/fhir/arthritis.ttl">arthritis.ttl</a>: a recognizer per code (a Coding whose system is SNOMED CT and whose code is "69896004"), and one general class inclusion per concept that reaches into the list at any position:</p>
+<pre><code>:Coding-of-sct-69896004 <span class="k">EquivalentTo</span>: :Coding-in-SNOMED <span class="k">and</span> fhir:code <span class="k">some</span> (fhir:v <span class="k">value</span> <span class="s">"69896004"</span>)
+
+fhir:coding <span class="k">some</span> (ra:member <span class="k">some</span> (:Coding-of-sct-69896004 <span class="k">or</span> :Coding-of-icd10-M06.9))
+    <span class="k">SubClassOf</span> sct:69896004              <span class="c"># the type arc FHIR's generator adds when it can</span></code></pre>
+</section>
+<section id="open-it-every-list-is-parsed">
+<h2><span class="n">5</span>Open it; every list is parsed</h2>
+<p>Protégé opens <code>subjects.ttl</code> and follows the nine imports: 10 ontologies, 1,171 axioms, no triple unparsed, <code>rdf:first</code> in no signature, and the 16 lists in the data are 16 sequence terms.</p>
+<figure>
+<a href="../examples/fhir/protege/loaded.png"><img src="../examples/fhir/protege/loaded.png" width="1500" height="592" loading="lazy" alt="Protégé&#x27;s Active ontology tab for subjects.ttl, with the ontology metrics: 1,171 axioms, 488 logical axioms, 160 classes, 42 object properties, 13 individuals."></a>
+<figcaption>The Active ontology tab after opening <code>subjects.ttl</code>.</figcaption>
+</figure>
+<p>In the Individuals tab a sequence shows where a blank node would, by its node ID: Sue's <code>fhir:identifier</code> and <code>fhir:name</code> are <code>_:seq_…</code>, the base64url of the list's spelling, until owlapi-array's Manchester renderer, which Protégé's renderer extends, writes <code>( … )</code>.</p>
+<figure>
+<a href="../examples/fhir/protege/sue-patient.png"><img src="../examples/fhir/protege/detail-sue-patient.png" width="1045" height="180" loading="lazy" alt="sue:asPatient in the Individuals tab. Its property assertions include fhir:identifier and fhir:name, each pointing to a term whose name begins with _:seq_."></a>
+<figcaption>sue:asPatient before reasoning: <code>fhir:identifier</code> and <code>fhir:name</code> are sequence terms. <a class="full" href="../examples/fhir/protege/sue-patient.png">Whole window</a></figcaption>
+</figure>
+</section>
+<section id="start-the-reasoner">
+<h2><span class="n">6</span>Start the reasoner</h2>
+<p>Pick <strong>HermiT 1.4.3 (OWL-array)</strong> in the Reasoner menu and start it. The closure is consistent. Sue is now a "Patient with an observation of rheumatoid arthritis", in yellow:</p>
+<figure>
+<a href="../examples/fhir/protege/sue-patient-inferred.png"><img src="../examples/fhir/protege/detail-sue-patient-inferred.png" width="1045" height="180" loading="lazy" alt="sue:asPatient with the reasoner running. Under Types, fhir:Patient is asserted and &#x27;Patient with an observation of rheumatoid arthritis&#x27; is inferred, highlighted in yellow."></a>
+<figcaption>sue:asPatient with HermiT (OWL-array) running. <a class="full" href="../examples/fhir/protege/sue-patient-inferred.png">Whole window</a></figcaption>
+</figure>
+<p>The only evidence is the ICD-10 code M05.9 inside the coding list of Sue's observation. The class inclusion of §4 makes her CodeableConcept an instance of <code>sct:239791005</code>, SNOMED CT's hierarchy makes the observation one of rheumatoid arthritis, and <code>fhir:subject</code> leads to Sue:</p>
+<figure>
+<a href="../examples/fhir/protege/sue-obs1-inferred.png"><img src="../examples/fhir/protege/detail-sue-obs1-inferred.png" width="1045" height="180" loading="lazy" alt="sue:Obs1 with the reasoner running. Under Types, fhir:Observation is asserted and &#x27;Observation of Seropositive rheumatoid arthritis&#x27; is inferred."></a>
+<figcaption>sue:Obs1, classified from a coding found inside its list. <a class="full" href="../examples/fhir/protege/sue-obs1-inferred.png">Whole window</a></figcaption>
+</figure>
+<p>Amy's observation gets three types. Two depend on the shape of the list, not on any one coding:</p>
+<figure>
+<a href="../examples/fhir/protege/amy-obs1-inferred.png"><img src="../examples/fhir/protege/detail-amy-obs1-inferred.png" width="1045" height="180" loading="lazy" alt="amy:Obs1 with the reasoner running. Under Types, fhir:Observation is asserted, and &#x27;Observation coded in more than one system&#x27;, &#x27;Observation of Rheumatoid arthritis&#x27; and &#x27;Observation whose primary coding is SNOMED CT&#x27; are inferred."></a>
+<figcaption>amy:Obs1: one type from the concept, two from the list's first element and length. <a class="full" href="../examples/fhir/protege/amy-obs1-inferred.png">Whole window</a></figcaption>
+</figure>
+<pre><code><span class="c"># 'Observation whose primary coding is SNOMED CT'</span>
+fhir:Observation <span class="k">and</span> fhir:code <span class="k">some</span> (fhir:coding <span class="k">some</span> (ra:first <span class="k">some</span> :Coding-in-SNOMED))
+
+<span class="c"># 'Observation coded in more than one system'</span>
+fhir:Observation <span class="k">and</span> fhir:code <span class="k">some</span> (fhir:coding <span class="k">some</span> (ra:length <span class="k">some</span> xsd:integer[&gt;= 2]))</code></pre>
+</section>
+<section id="ask-the-dl-query-tab">
+<h2><span class="n">7</span>Ask the DL Query tab</h2>
+<p>Tick <strong>Instances</strong> and type a class expression. Protégé names an entity by its <code>rdfs:label</code> and parses the names it displays, so a SNOMED CT class is typed <code>'sct:Rheumatoid arthritis (disorder)'</code>, not <code>sct:Rheumatoid_arthritis-disorder</code>.</p>
+<section id="a-coding-at-any-position-ra-member">
+<h3>A coding at any position: <code>ra:member</code></h3>
+<figure>
+<a href="../examples/fhir/protege/query-10-ra-member.png"><img src="../examples/fhir/protege/detail-query-10-ra-member.png" width="1040" height="320" loading="lazy" alt="The DL Query tab with the query fhir:Observation and fhir:code some (fhir:coding some (ra:member some &#x27;Coding: ICD-10 M05.9, Seropositive rheumatoid arthritis, unspecified&#x27;)). Instances: sue:Obs1."></a>
+<figcaption>Observations with an ICD-10 M05.9 coding anywhere in the list: sue:Obs1. <a class="full" href="../examples/fhir/protege/query-10-ra-member.png">Whole window</a></figcaption>
+</figure>
+</section>
+<section id="the-first-or-the-last-coding-ra-first-ra-last">
+<h3>The first or the last coding: <code>ra:first</code>, <code>ra:last</code></h3>
+<figure>
+<a href="../examples/fhir/protege/query-14-ra-first.png"><img src="../examples/fhir/protege/detail-query-14-ra-first.png" width="822" height="320" loading="lazy" alt="The DL Query tab with the query fhir:Observation and fhir:code some (fhir:coding some (ra:first some &#x27;Coding in SNOMED CT&#x27;)). Instances: amy:Obs1."></a>
+<figcaption>First coding in SNOMED CT: amy:Obs1 only. Bob's SNOMED CT coding is second. <a class="full" href="../examples/fhir/protege/query-14-ra-first.png">Whole window</a></figcaption>
+</figure>
+<figure>
+<a href="../examples/fhir/protege/query-15-ra-last.png"><img src="../examples/fhir/protege/detail-query-15-ra-last.png" width="822" height="320" loading="lazy" alt="The DL Query tab with the query fhir:Observation and fhir:code some (fhir:coding some (ra:last some &#x27;Coding in SNOMED CT&#x27;)). Instances: amy:Obs2 and bob:Obs1."></a>
+<figcaption>Last coding in SNOMED CT: amy:Obs2 (LOINC, then SNOMED CT) and bob:Obs1 (ICD-10, then SNOMED CT). <a class="full" href="../examples/fhir/protege/query-15-ra-last.png">Whole window</a></figcaption>
+</figure>
+</section>
+<section id="the-length-of-the-list-ra-length">
+<h3>The length of the list: <code>ra:length</code></h3>
+<figure>
+<a href="../examples/fhir/protege/query-16-several-codings.png"><img src="../examples/fhir/protege/detail-query-16-several-codings.png" width="822" height="320" loading="lazy" alt="The DL Query tab with the query &#x27;Observation coded in more than one system&#x27;. Instances: amy:Obs1, amy:Obs2 and bob:Obs1."></a>
+<figcaption>"Observation coded in more than one system", a coding list of length ≥ 2: every observation but Sue's. <a class="full" href="../examples/fhir/protege/query-16-several-codings.png">Whole window</a></figcaption>
+</figure>
+</section>
+<section id="a-list-inside-a-list">
+<h3>A list inside a list</h3>
+<figure>
+<a href="../examples/fhir/protege/query-23-ra-length.png"><img src="../examples/fhir/protege/detail-query-23-ra-length.png" width="822" height="320" loading="lazy" alt="The DL Query tab with the query fhir:Patient and fhir:name some (ra:member some (fhir:given some (ra:length some xsd:integer[&gt;= 2]))). Instances: sue:asPatient."></a>
+<figcaption>Patients with a name of at least two given names: sue:asPatient ("Sue", "Ann"). <a class="full" href="../examples/fhir/protege/query-23-ra-length.png">Whole window</a></figcaption>
+</figure>
+<p>All 24 queries of the example list in the tab the instances that the OWL API run, <a href="../examples/fhir/FhirReasoning.java">FhirReasoning.java</a>, finds. A selection; the full table is <a href="../examples/fhir/index.html#in-prot-g">§4 of the example</a>.</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Typed in the DL Query tab</th><th>Instances</th></tr></thead>
+<tbody>
+<tr><td><code>'Observation of Rheumatoid arthritis'</code></td><td class="ans">amy:Obs1 bob:Obs1 sue:Obs1</td></tr>
+<tr><td><code>'Observation of Seronegative rheumatoid arthritis'</code></td><td class="ans">bob:Obs1</td></tr>
+<tr><td><code>fhir:Observation and fhir:code some (fhir:coding some (ra:member some 'Coding in ICD-10'))</code></td><td class="ans">amy:Obs1 bob:Obs1 sue:Obs1</td></tr>
+<tr><td><code>'Patient with an observation of rheumatoid arthritis'</code></td><td class="ans">amy:asPatient bob:asPatient sue:asPatient</td></tr>
+<tr><td><code>fhir:Observation and fhir:code some (fhir:coding some (ra:length value 1))</code></td><td class="ans">sue:Obs1</td></tr>
+<tr><td><code>'bp:Observation of blood pressure with a systolic reading of 140 mm[Hg] or more'</code></td><td class="ans">amy:Obs2</td></tr>
+<tr><td><code>'bp:Observation of blood pressure with exactly two components'</code></td><td class="ans">amy:Obs2</td></tr>
+<tr><td><code>fhir:Observation and fhir:code some (fhir:coding some ra:EmptySequence)</code></td><td class="ans">(none)</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+</section>
+<section id="limits-as-found">
+<h2><span class="n">8</span>Limits, as found</h2>
+<ul><li><strong>No closure over blank nodes.</strong> The closure of §2 is an <code>ObjectOneOf</code>, which OWL 2 DL allows over named individuals only. Every FHIR element is a blank node, so no FHIR list gets one: <code>some</code> over members is unaffected, <code>only</code> holds where an axiom gives it, but "observations all of whose codings are ICD-10" finds nothing where it should find sue:Obs1. Naming the elements inside the reasoner's view only would settle it (<a href="https://github.com/rdf-array/rdf-array/issues/20">rdf-array#20</a>).</li><li><strong>ELK sees no FHIR data.</strong> <strong>ELK 0.6.0 (OWL-array)</strong>, the expansion without the closure that OWL 2 EL cannot express, answers only the 2 queries whose answer is empty: ELK skips anonymous individuals, and every FHIR element is one. The same fix.</li><li><strong>A sequence is never an answer.</strong> Protégé's query results list named individuals; the observations and patients appear, their codings and lists do not (<a href="https://github.com/rdf-array/rdf-array/issues/21">rdf-array#21</a>).</li><li><strong><code>xsd:date</code> stops HermiT.</strong> FHIR writes dates as <code>xsd:date</code>, outside the OWL 2 datatype map, and HermiT refuses the literal at load time. The example leaves birth dates out; real FHIR data needs them retyped or a reasoner that takes them.</li><li><strong>Saving round-trips.</strong> arthritis.ttl (OWL's own <code>owl:unionOf</code> lists) and subject-sue.ttl (lists of blank nodes, nested) save as Turtle and RDF/XML and read back with the same axioms. RDF/XML has no spelling for a list holding a literal (<a href="https://github.com/rdf-array/rdf-array/issues/18">rdf-array#18</a>); FHIR has none, since every element is a node.</li><li><strong>The FHIR ontology's generator.</strong> fhir.ttl's <code>allValuesFrom</code> on a repeating element types the list (§1). The fix is mechanical, <code>ra:member only</code> for every element whose maximum cardinality is *, and belongs in kindling's <code>FhirTurtleGenerator</code>, a <a href="../repos.html#not-yet-forked">target</a>.</li></ul>
+</section>
+
+<footer>
+<p>Run on 2026-10-27: Protégé 5.6.9 (platform-independent zip) on Java 21, macOS, with owlapi-array <code>1200076f9</code> and protege-owl-array 0.1.0, both built from source by <code>assemble.sh</code>. The stock-parser measurement of §1: OWL API 4.5.29 from Maven Central, <code>subject-amy.ttl</code> loaded through the catalog. Sources: <a href="https://github.com/rdf-array/rdf-array/tree/main/examples/fhir">examples/fhir</a> · the example's <a href="../examples/fhir/index.html">write-up</a> · <a href="owl-array.html">OWL-array</a> · <a href="https://github.com/rdf-array/protege-owl-array">protege-owl-array</a> · <a href="https://github.com/rdf-array/owlapi-array">owlapi-array</a>.</p>
+</footer>
+
+</main>
+</body>
+</html>

@@ -68,7 +68,7 @@ cannot run the page's script in a README, which is why the full list is not ther
    - Set its GitHub description (`gh repo edit rdf-array/<name> --description "rdf-array: …"`) and
      its default branch.
    - A new stack also gets a line in the README's stack list, deep-linked to `repos.html#<anchor>`,
-     and a row in rdf-array.md's implementations table (regenerate `rdf-array.html`).
+     and a row in rdf-array.md's implementations table (regenerate `docs/rdf-array.html`).
    - Leave issues off on a fork (`fork-array` §8).
 2. **Pins a new fork:** add the edge. `manifest-check.py` reports any edge the build files show that
    repos.json lacks.

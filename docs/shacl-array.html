@@ -9,7 +9,7 @@
       specStatus: "unofficial",
       shortName: "shacl-array",
       editors: [{ name: "Eric Prud'hommeaux" }],
-      edDraftURI: "https://rdf-array.github.io/rdf-array/shacl-array.html",
+      edDraftURI: "https://rdf-array.github.io/rdf-array/docs/shacl-array.html",
       latestVersion: null,
       overrideCopyright: "<p class='copyright'>Copyright &copy; 2026 the rdf-array project. This document is licensed under a <a href='https://creativecommons.org/licenses/by/4.0/'>Creative Commons Attribution 4.0 License</a>.</p>",
       lint: { "no-unused-dfns": false },
@@ -44,11 +44,11 @@
     <p>SHACL-array is SHACL (<a href="https://www.w3.org/TR/shacl/">SHACL</a>, with the list constraints of <a href="https://www.w3.org/TR/shacl12-core/">SHACL 1.2 Core</a>) over the rdf-array data model, in which <code>( … )</code> is one term, a <em>sequence</em>, and <code>()</code> is the empty sequence. It changes two things and adds no vocabulary:</p>
   </section>
   <section id="sotd">
-    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/shacl-array.md">shacl-array.md</a> by <code>md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
+    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/docs/shacl-array.md">docs/shacl-array.md</a> by <code>md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
   </section>
   <section class="introductory" id="introduction">
     <h2>Introduction</h2>
-    <p><em>Definition, 2026-10-25. Implemented in <a href="https://github.com/rdf-array/jena-array">jena-array</a>'s <code>jena-shacl</code>. This document is <a href="https://github.com/rdf-array/rdf-array">shacl-array.md</a> in the organisation's meta-repository, rendered at &lt;https://rdf-array.github.io/rdf-array/shacl-array.html&gt;; <a href="rdf-array.html">rdf-array.md</a> describes the change from RDF to rdf-array, and <a href="https://github.com/rdf-array/rdf-array/issues/9">rdf-array#9</a> holds the discussion this settles.</em></p>
+    <p><em>Definition, 2026-10-25. Implemented in <a href="https://github.com/rdf-array/jena-array">jena-array</a>'s <code>jena-shacl</code>. This document is <a href="https://github.com/rdf-array/rdf-array">shacl-array.md</a> in the organisation's meta-repository, rendered at &lt;https://rdf-array.github.io/rdf-array/docs/shacl-array.html&gt;; <a href="rdf-array.html">rdf-array.md</a> describes the change from RDF to rdf-array, and <a href="https://github.com/rdf-array/rdf-array/issues/9">rdf-array#9</a> holds the discussion this settles.</em></p>
     <ol><li><strong>A SHACL list is a sequence term.</strong> Everywhere SHACL reads a list from the shapes graph, it reads a sequence. An <code>rdf:first</code>/<code>rdf:rest</code> ladder spelled out in triples is triples, not a list, and <code>rdf:nil</code> is an IRI like any other.</li><li><strong>SHACL 1.2's list constraints apply to sequence values.</strong> <code>sh:memberShape</code>, <code>sh:minListLength</code>, <code>sh:maxListLength</code> and <code>sh:uniqueMembers</code> constrain a value node that is a sequence. They are the counterpart of ShEx-array's Collection shape expression, <code>((shapeExpr))[min, max]</code>.</li></ol>
   </section>
   <section id="lists-in-the-shapes-graph">

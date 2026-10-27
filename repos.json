@@ -69,7 +69,7 @@
       "anchor": "data-shapes",
       "kind": "test-suite",
       "upstream": "w3c/data-shapes",
-      "description": "the SHACL 1.0 and 1.2 test suites and shacl-shacl read as [SHACL-array](https://rdf-array.github.io/rdf-array/shacl-array.html), the tests that depended on ladders or on `rdf:nil` re-recorded or rejected, and shacl-shacl checking lists with `sh:memberShape`."
+      "description": "the SHACL 1.0 and 1.2 test suites and shacl-shacl read as [SHACL-array](https://rdf-array.github.io/rdf-array/docs/shacl-array.html), the tests that depended on ladders or on `rdf:nil` re-recorded or rejected, and shacl-shacl checking lists with `sh:memberShape`."
     },
     {
       "name": "data-shapes-contrib",
@@ -156,7 +156,7 @@
       "language": "Java",
       "stack": true,
       "upstream": "owlcs/owlapi",
-      "description": "the OWL API 4.5.29, the line Protégé 5.6 loads, for [OWL-array](https://rdf-array.github.io/rdf-array/owl-array.html): OWL's own lists read and written as sequences, a data sequence as an `OWLSequence` individual with the built-in `ra:member`, `ra:length`, `ra:first` and `ra:last`, and a reasoner decorator that expands them for a stock reasoner (HermiT tested). Done 2026-10-26 through the `owl-array` skill's §1; the Rio formats, the proper Functional-style, OWL/XML and Manchester spellings and Protégé are not.",
+      "description": "the OWL API 4.5.29, the line Protégé 5.6 loads, for [OWL-array](https://rdf-array.github.io/rdf-array/docs/owl-array.html): OWL's own lists read and written as sequences, a data sequence as an `OWLSequence` individual with the built-in `ra:member`, `ra:length`, `ra:first` and `ra:last`, and a reasoner decorator that expands them for a stock reasoner (HermiT tested). Done 2026-10-26 through the `owl-array` skill's §1; the Rio formats, the proper Functional-style, OWL/XML and Manchester spellings and Protégé are not.",
       "deps": []
     },
     {
@@ -703,7 +703,7 @@
     {
       "anchor": "shacl-array",
       "done": true,
-      "text": "SHACL-array: [shacl-array.md](shacl-array.html), implemented in [jena](#jena)'s jena-shacl, with the suites [data-shapes](#data-shapes) and [data-shapes-contrib](#data-shapes-contrib), 2026-10-25."
+      "text": "SHACL-array: [shacl-array.md](docs/shacl-array.html), implemented in [jena](#jena)'s jena-shacl, with the suites [data-shapes](#data-shapes) and [data-shapes-contrib](#data-shapes-contrib), 2026-10-25."
     },
     {
       "anchor": "rdf-canonize",
@@ -763,7 +763,7 @@
     {
       "anchor": "owl-api",
       "done": true,
-      "text": "**[OWL API](https://github.com/owlcs/owlapi), Protégé** (Java) — OWL, whose syntax is made of lists, and whose DL could not look into a list in the data. Done: [owlapi-array](https://rdf-array.github.io/rdf-array/repos.html#owlapi) for [OWL-array](https://rdf-array.github.io/rdf-array/owl-array.html) (2026-10-26); Protégé is the next target below."
+      "text": "**[OWL API](https://github.com/owlcs/owlapi), Protégé** (Java) — OWL, whose syntax is made of lists, and whose DL could not look into a list in the data. Done: [owlapi-array](https://rdf-array.github.io/rdf-array/repos.html#owlapi) for [OWL-array](https://rdf-array.github.io/rdf-array/docs/owl-array.html) (2026-10-26); Protégé is the next target below."
     },
     {
       "anchor": "protege",
