@@ -169,7 +169,7 @@
       "deps": [
         {
           "repo": "owlapi-array",
-          "note": "pom.xml names net.sourceforge.owlapi:owlapi-apibinding 4.5.29, upstream's coordinates, built from owlapi-array; assemble.sh fetches owlapi-array's bundle"
+          "note": "pom.xml names net.sourceforge.owlapi:owlapi-apibinding 4.5.29, upstream's coordinates, built from owlapi-array; assemble.sh builds owlapi-array's bundle at a pinned commit"
         }
       ]
     },
