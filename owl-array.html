@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>OWL-array: OWL over rdf-array</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus: "unofficial",
+      shortName: "owl-array",
+      editors: [{ name: "Eric Prud'hommeaux" }],
+      edDraftURI: "https://rdf-array.github.io/rdf-array/owl-array.html",
+      latestVersion: null,
+      overrideCopyright: "<p class='copyright'>Copyright &copy; 2026 the rdf-array project. This document is licensed under a <a href='https://creativecommons.org/licenses/by/4.0/'>Creative Commons Attribution 4.0 License</a>.</p>",
+      lint: { "no-unused-dfns": false },
+      localBiblio: {
+        "RML-CORE": { title: "RML-Core: Generic Mapping Language for RDF", href: "https://w3id.org/rml/core/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-CC": { title: "RML-CC: RML Collections and Containers", href: "https://w3id.org/rml/cc/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-LV": { title: "RML-LV: RML Logical Views", href: "https://w3id.org/rml/lv/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-FNML": { title: "RML-FNML: RML Functions", href: "https://w3id.org/rml/fnml/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "YARRRML": { title: "YARRRML", href: "https://rml.io/yarrrml/spec/", publisher: "IDLab, Ghent University" }
+      }
+    };
+  </script>
+  <style>
+    table.simple { font-size: 0.9em; }
+    table.simple td, table.simple th { vertical-align: top; }
+    pre.example { font-size: 0.9em; line-height: 1.35; }
+    .hljs-iri { color: #0b5394; }
+    .hljs-pname { color: #38761d; }
+    .hljs-lit { color: #a61c00; }
+    .hljs-kw { color: #741b47; font-weight: bold; }
+    .hljs-var { color: #b45f06; }
+    .hljs-cmt { color: #777; font-style: italic; }
+    .hljs-bnode { color: #666; }
+    .hljs-num, .hljs-number { color: #a61c00; }
+    .hljs-attr { color: #0b5394; }
+    .hljs-string { color: #38761d; }
+    .hljs-literal { color: #741b47; }
+  </style>
+</head>
+<body>
+  <section id="abstract">
+    <p>OWL-array is OWL 2 (<a href="https://www.w3.org/TR/owl2-direct-semantics/">OWL 2 Direct Semantics</a>, <a href="https://www.w3.org/TR/owl2-mapping-to-rdf/">OWL 2 Mapping to RDF Graphs</a>) over the rdf-array data model, in which <code>( … )</code> is one term, a <em>sequence</em>, and <code>()</code> is the empty sequence. It changes two things and adds one small vocabulary:</p>
+  </section>
+  <section id="sotd">
+    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/owl-array.md">owl-array.md</a> by <code>md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
+  </section>
+  <section class="introductory" id="introduction">
+    <h2>Introduction</h2>
+    <p><em>Definition, 2026-10-26; implementation begun in <a href="https://github.com/rdf-array/owlapi-array">owlapi-array</a> (OWL API 4.5.29, the 4.5 line that Protégé 5.6 loads). This document is <a href="https://github.com/rdf-array/rdf-array">owl-array.md</a> in the organisation's meta-repository, rendered at &lt;https://rdf-array.github.io/rdf-array/owl-array.html&gt;; <a href="rdf-array.html">rdf-array.md</a> describes the change from RDF to rdf-array, and <a href="shacl-array.html">shacl-array.md</a> settles the same questions for SHACL. The <code>.claude/skills/owl-array</code> skill in the same repository carries the implementation plan.</em></p>
+    <ol><li><strong>OWL's own lists are sequences.</strong> The RDF mapping of OWL 2 spells the arguments of <code>owl:unionOf</code>, <code>owl:intersectionOf</code>, <code>owl:oneOf</code>, <code>owl:members</code>, <code>owl:propertyChainAxiom</code>, <code>owl:hasKey</code>, <code>owl:disjointUnionOf</code>, <code>owl:withRestrictions</code> and SWRL's <code>swrl:body</code> and <code>swrl:head</code> as RDF lists. Read with Turtle-array they are sequences, and a sequence is the only list: an <code>rdf:first</code>/<code>rdf:rest</code> ladder is triples (§2).</li><li><strong>A sequence in the data is an individual with built-in structure.</strong> <code>ex:paper bibo:authorList ( ex:ada ex:alan )</code> holds one term. OWL-array reads that term as an individual of the class <code>ra:Sequence</code> whose members, length, first and last element are given by properties with a meaning the semantics fixes: <code>ra:member</code>, <code>ra:memberValue</code>, <code>ra:length</code>, <code>ra:first</code>, <code>ra:last</code>. Nothing about the term is asserted in triples, nothing is reserved vocabulary, and a class expression can constrain the members of a list-valued property while staying in OWL 2 DL (§3).</li></ol>
+    <p>The second is the reason to do it. FHIR RDF writes a repeated element as a list, and its ontology could not say what the list holds; in OWL-array it says so with a restriction on a restriction:</p>
+    <pre class="example turtle nohighlight">PREFIX fhir: &lt;http://hl7.org/fhir/&gt;
+PREFIX owl:  &lt;http://www.w3.org/2002/07/owl#&gt;
+PREFIX ra:   &lt;https://rdf-array.github.io/rdf-array/vocab#&gt;
+
+fhir:CodeableConcept rdfs:subClassOf
+  [ a owl:Restriction ; owl:onProperty fhir:coding ;
+    owl:allValuesFrom [ a owl:Restriction ; owl:onProperty ra:member ; owl:allValuesFrom fhir:Coding ] ] .
+
+ex:cc fhir:coding ( [ fhir:system [ fhir:v "http://loinc.org"^^xsd:anyURI ] ; fhir:code [ fhir:v "8480-6" ] ] ) .</pre>
+    <p>In Manchester syntax, <code>fhir:coding only (ra:member only fhir:Coding)</code>. No construct in that axiom is new: the OWL API, Protégé's expression editor and every OWL 2 DL reasoner accept it today, treating <code>ra:member</code> as an ordinary object property. What is new is the meaning of <code>ra:member</code>, and of the <code>( … )</code> term in the data it constrains; from the two, a reasoner concludes that the blank node inside the list is a <code>fhir:Coding</code>.</p>
+  </section>
+  <section id="why">
+  <h2>Why</h2>
+  <p>OWL 2 DL reserves <code>rdf:List</code>, <code>rdf:first</code>, <code>rdf:rest</code> and <code>rdf:nil</code> for its own syntax. An ontology document whose data holds an RDF list leaves <code>rdf:first</code> triples unconsumed and is not OWL 2 DL, so BIBO's <code>bibo:authorList</code> and SKOS's <code>skos:memberList</code> push their users into OWL Full, and no DL class expression can look into a list at all. The workaround, since <a href="https://research.manchester.ac.uk/en/publications/putting-owl-in-order-patterns-for-sequences-in-owl/">Drummond et al. 2006</a>, has been to rebuild the ladder out of individuals under new names (a cell class, functional "contents" and "next" properties, a transitive "followed by"), as OWL-S's <code>ObjectList</code> and the <a href="https://www.semantic-web-journal.net/content/collections-ontology-creating-and-handling-collections-owl-2-dl-frameworks">Collections Ontology</a> did. Its limits are well documented: the structure is open (nothing says a cell has no other successor), a fixed length cannot be stated without nesting one restriction per element, the "last" element needs a transitive property that no cardinality may use, and classification of 450-element lists took minutes. Every one of those limits comes from deriving a list's structure from triples. rdf-array makes the list a term; OWL-array gives the term a meaning.</p>
+  <table class="simple">
+  <thead><tr><th>Use case</th><th>Data</th><th>What an OWL-array ontology can say</th></tr></thead>
+  <tbody>
+  <tr><td>Bibliographic author order (<code>bibo:authorList</code>)</td><td><code>ex:p bibo:authorList ( ex:ada ex:alan ex:grace )</code></td><td>every author is a <code>foaf:Agent</code>; the first author has an affiliation; a paper has at least three authors</td></tr>
+  <tr><td>SKOS ordered collections (<code>skos:memberList</code>)</td><td><code>ex:c skos:memberList ( ex:low ex:mid ex:high )</code></td><td>every member is a <code>skos:Concept</code>; the list is not empty</td></tr>
+  <tr><td>Steps of a protocol, recipe or workflow</td><td><code>ex:recipe ex:steps ( ex:chop ex:fry ex:serve )</code></td><td>every step is a <code>Step</code>; the last step is a <code>Serving</code>; the first step needs no input</td></tr>
+  <tr><td>Geometry and measurements</td><td><code>ex:ring ex:points ( ( 0 0 ) ( 0 1 ) ( 1 1 ) ( 0 0 ) )</code></td><td>a ring has at least four points; each point is a pair of decimals</td></tr>
+  <tr><td>FHIR RDF (R5 writes repeated elements as lists)</td><td><code>ex:cc fhir:coding ( [ fhir:system … ] )</code></td><td>every coding is a <code>fhir:Coding</code> with a system and a code</td></tr>
+  <tr><td>Tuples and n-ary values</td><td><code>ex:alice ex:salaryHistory ( ( 2019 50000 ) ( 2020 52000 ) )</code></td><td>every entry is a pair; the pairs' members are numbers</td></tr>
+  <tr><td>Colours and other fixed-length values</td><td><code>ex:red ex:rgb ( 255 0 0 )</code></td><td>an <code>ex:rgb</code> value has three integer members; the class of things whose colour is <code>( 255 0 0 )</code></td></tr>
+  </tbody></table>
+  </section>
+  <section id="lists-in-owl-s-syntax">
+  <h2>Lists in OWL's syntax</h2>
+  <p>Everywhere the RDF mapping of OWL 2 reads a list, OWL-array reads a sequence term:</p>
+  <table class="simple">
+  <thead><tr><th>Vocabulary</th><th>In Turtle-array</th></tr></thead>
+  <tbody>
+  <tr><td><code>owl:unionOf</code>, <code>owl:intersectionOf</code> (classes and data ranges)</td><td><code>[ owl:unionOf ( ex:Cat ex:Dog ) ]</code></td></tr>
+  <tr><td><code>owl:oneOf</code> (individuals, or literals in a data range)</td><td><code>[ owl:oneOf ( ex:red ex:green ) ]</code>, <code>[ owl:oneOf ( "a" "b" ) ]</code></td></tr>
+  <tr><td><code>owl:members</code>, <code>owl:distinctMembers</code> (AllDisjointClasses, AllDisjointProperties, AllDifferent)</td><td><code>[ a owl:AllDifferent ; owl:members ( ex:a ex:b ex:c ) ]</code></td></tr>
+  <tr><td><code>owl:propertyChainAxiom</code></td><td><code>ex:uncle owl:propertyChainAxiom ( ex:parent ex:brother )</code></td></tr>
+  <tr><td><code>owl:hasKey</code></td><td><code>ex:Person owl:hasKey ( ex:ssn )</code></td></tr>
+  <tr><td><code>owl:disjointUnionOf</code></td><td><code>ex:Animal owl:disjointUnionOf ( ex:Cat ex:Dog )</code></td></tr>
+  <tr><td><code>owl:withRestrictions</code></td><td><code>[ owl:onDatatype xsd:integer ; owl:withRestrictions ( [ xsd:minInclusive 0 ] ) ]</code></td></tr>
+  <tr><td><code>owl:onProperties</code> (n-ary data ranges, not in OWL 2 DL)</td><td><code>[ owl:onProperties ( ex:x ex:y ) ]</code></td></tr>
+  <tr><td>SWRL <code>swrl:body</code>, <code>swrl:head</code>, <code>swrl:arguments</code></td><td><code>[ a swrl:Imp ; swrl:body ( … ) ; swrl:head ( … ) ]</code></td></tr>
+  </tbody></table>
+  <p>Written in Turtle-array these are sequences already, so an OWL ontology written in Turtle reads unchanged. As in SHACL-array, three consequences follow:</p>
+  <ul><li><strong>A ladder is not a list.</strong> An ontology document that spells a list as <code>rdf:first</code>/<code>rdf:rest</code> triples (N-Triples written by an RDF 1.1 tool, say) leaves those triples unconsumed, exactly as a list in the data did before: the document is not OWL 2 DL and a parser reports the triples. Convert it first.</li><li><strong><code>()</code> is the empty list; <code>rdf:nil</code> is not.</strong> A SWRL rule with no body writes <code>swrl:body ()</code>. <code>owl:unionOf ()</code> is as ill-formed as it was.</li><li><strong>Lists hold no blank-node structure.</strong> <code>owl:unionOf ( [ a owl:Restriction ; … ] )</code> is a sequence holding a blank node whose own triples are ordinary triples of the document.</li></ul>
+  <p>What a processor writes follows: the RDF renderers spell every OWL list as <code>( … )</code> in Turtle and as <code>rdf:parseType="Collection"</code> in RDF/XML, and never as a ladder. The Functional-style, OWL/XML and Manchester syntaxes have no RDF lists and are unchanged by this part.</p>
+  </section>
+  <section id="sequences-in-the-data">
+  <h2>Sequences in the data</h2>
+    <section id="semantics">
+    <h3>Semantics</h3>
+    <p>The direct semantics changes in one place. The object domain of an interpretation contains, beside the ordinary individuals, the <em>sequences</em>: finite tuples whose elements are individuals, data values or sequences. A sequence term <code>( t1 … tn )</code> denotes the tuple of its elements' denotations, <code>( t1^I … tn^I )</code>; <code>()</code> denotes the empty tuple. Consequently:</p>
+    <ul><li><strong>Identity is by elements.</strong> Two sequence terms denote the same individual exactly when their elements denote the same things, pairwise: <code>( ex:a )</code> and <code>( ex:b )</code> are the same individual in every interpretation in which <code>ex:a owl:sameAs ex:b</code>, and <code>( 1 2 )</code> is the same term in every document, as <code>"1"^^xsd:integer</code> is.</li><li><strong>Sequences are a sort of their own.</strong> No IRI, blank node or literal denotes a tuple, so a sequence is never <code>owl:sameAs</code> an IRI-named individual, as a literal is not, and <code>ra:Sequence</code> is disjoint from every class of ordinary individuals.</li><li><strong>A sequence is closed.</strong> Its members are exactly its elements, in order; there is nothing more to learn about them from other triples.</li></ul>
+    <p>Where a sequence may stand in an ontology: wherever the structural specification allows an <em>individual</em>, with one restriction. It may be the subject or object of a property assertion, the individual of a class assertion, an element of another sequence, a nominal in <code>owl:hasValue</code> and <code>owl:oneOf</code>, a party to <code>owl:sameAs</code> and <code>owl:differentFrom</code>, and an annotation value or subject. A sequence holding an anonymous individual anywhere inside is itself anonymous, and goes only where OWL 2 DL lets an anonymous individual go: not into <code>owl:hasValue</code>, <code>owl:oneOf</code>, <code>owl:sameAs</code>, <code>owl:differentFrom</code> or a negative property assertion. A sequence is never a class, a property, a datatype or an ontology IRI. The RDF-based semantics (OWL 2 Full) is not addressed here.</p>
+    </section>
+    <section id="the-vocabulary">
+    <h3>The vocabulary</h3>
+    <p>The <code>ra:</code> namespace, <code>https://rdf-array.github.io/rdf-array/vocab#</code>, holds the built-in entities of OWL-array. Like <code>owl:Thing</code> and <code>owl:topObjectProperty</code>, each has an extension the semantics fixes in every interpretation. An ontology uses them in class expressions and property axioms; it does not define them, and an axiom <em>about</em> one of them (a range on <code>ra:member</code>, say) constrains every sequence in the world, as an axiom about <code>owl:topObjectProperty</code> would.</p>
+    <table class="simple">
+    <thead><tr><th>Term</th><th>Kind</th><th>In every interpretation, for a sequence <code>s</code></th></tr></thead>
+    <tbody>
+    <tr><td><code>ra:Sequence</code></td><td>class</td><td>the sequences, and nothing else</td></tr>
+    <tr><td><code>ra:member</code></td><td>object property</td><td><code>s ra:member e</code> for each element <code>e</code> of <code>s</code> that is an individual or a sequence</td></tr>
+    <tr><td><code>ra:memberValue</code></td><td>data property</td><td><code>s ra:memberValue v</code> for each element <code>v</code> of <code>s</code> that is a literal</td></tr>
+    <tr><td><code>ra:length</code></td><td>functional data property</td><td><code>s ra:length n</code>, <code>n</code> the number of elements of <code>s</code>, an <code>xsd:nonNegativeInteger</code></td></tr>
+    <tr><td><code>ra:first</code>, <code>ra:last</code></td><td>functional object properties</td><td>the first and the last element of <code>s</code>, when it is an individual or a sequence</td></tr>
+    <tr><td><code>ra:firstValue</code>, <code>ra:lastValue</code></td><td>functional data properties</td><td>the first and the last element of <code>s</code>, when it is a literal</td></tr>
+    </tbody></table>
+    <p><code>ra:first ⊑ ra:member</code>, <code>ra:last ⊑ ra:member</code>, <code>ra:firstValue ⊑ ra:memberValue</code> and <code>ra:lastValue ⊑ ra:memberValue</code> hold by construction; so does <code>∃ra:member.⊤ ⊑ ra:Sequence</code> and the like for every property above. Three classes are definable and are defined, with the declarations and these axioms, in the vocabulary ontology <a href="vocab/owl-array.ttl">vocab/owl-array.ttl</a>, which an ontology may import so that an editor knows the entities:</p>
+    <table class="simple">
+    <thead><tr><th>Class</th><th>Definition</th></tr></thead>
+    <tbody>
+    <tr><td><code>ra:EmptySequence</code></td><td><code>ra:Sequence and ra:length value 0</code>, the class of <code>()</code></td></tr>
+    <tr><td><code>ra:ObjectSequence</code></td><td><code>ra:Sequence and not (ra:memberValue some rdfs:Literal)</code>: no literal members</td></tr>
+    <tr><td><code>ra:DataSequence</code></td><td><code>ra:Sequence and not (ra:member some owl:Thing)</code>: no individual members</td></tr>
+    </tbody></table>
+    <p>The vocabulary ontology is plain OWL 2 DL and says the same thing read as RDF 1.1 or as rdf-array. Importing it is a convenience, not a requirement: the meaning of the built-ins does not come from its axioms.</p>
+    </section>
+    <section id="what-an-ontology-can-say">
+    <h3>What an ontology can say</h3>
+    <p>The use cases of §1, in Manchester syntax, with the Turtle-array of the first:</p>
+    <pre class="example nohighlight">Class: ex:Paper
+      SubClassOf: bibo:authorList only (ra:member only foaf:Agent)        # every author is an agent
+      SubClassOf: bibo:authorList only (ra:first some (foaf:Person and ex:affiliation some ex:Org))
+    Class: ex:BigPaper
+      EquivalentTo: ex:Paper and bibo:authorList some (ra:length some xsd:integer[&gt;= 3])
+    Class: skos:OrderedCollection
+      SubClassOf: skos:memberList only (ra:member only skos:Concept)
+      SubClassOf: skos:memberList only (not ra:EmptySequence)
+    Class: ex:Recipe
+      SubClassOf: ex:steps only (ra:member only ex:Step), ex:steps only (ra:last some ex:Serving)
+    Class: ex:Ring
+      SubClassOf: ex:points only (ra:length some xsd:integer[&gt;= 4]
+                                  and ra:member only (ra:length value 2 and ra:memberValue only xsd:decimal))
+    Class: ex:Swatch
+      SubClassOf: ex:rgb only (ra:length value 3 and ra:memberValue only xsd:integer[&gt;= 0, &lt;= 255])
+    Class: ex:RedThing
+      EquivalentTo: ex:rgb value ( 255 0 0 )                               # a sequence as a nominal
+    ObjectProperty: dc:creator
+      SubPropertyChain: bibo:authorList o ra:member                        # flattens the list by axiom
+    ObjectProperty: ex:firstAuthor
+      SubPropertyChain: bibo:authorList o ra:first</pre>
+    <pre class="example turtle nohighlight">PREFIX bibo: &lt;http://purl.org/ontology/bibo/&gt;
+    PREFIX foaf: &lt;http://xmlns.com/foaf/0.1/&gt;
+    PREFIX ra:   &lt;https://rdf-array.github.io/rdf-array/vocab#&gt;
+    
+    ex:Paper rdfs:subClassOf
+      [ a owl:Restriction ; owl:onProperty bibo:authorList ;
+        owl:allValuesFrom [ a owl:Restriction ; owl:onProperty ra:member ; owl:allValuesFrom foaf:Agent ] ] .
+    
+    ex:p a ex:Paper ; bibo:authorList ( ex:ada ex:alan ex:grace ) .</pre>
+    <p>The two quantifiers stay separate: <code>bibo:authorList only (ra:member only C)</code> says every author of every author list is a <code>C</code>; <code>bibo:authorList some (ra:member some C)</code> says some list has some <code>C</code>; <code>bibo:authorList only (ra:member some C)</code> says every list has one. A property chain through <code>ra:member</code> or <code>ra:first</code> gives an existing vocabulary a view of the list: with the chain above, <code>ex:p dc:creator ex:ada</code> is entailed, and every class expression ever written over <code>dc:creator</code> applies to list members. Such a chain makes its super-property non-simple, so <code>dc:creator</code> can no longer appear in a cardinality restriction; that is OWL 2's usual rule.</p>
+    </section>
+    <section id="entailments">
+    <h3>Entailments</h3>
+    <p>From the ontology above, a reasoner that implements OWL-array (§6) concludes:</p>
+    <ul><li><code>ex:ada a foaf:Agent</code>, <code>ex:alan a foaf:Agent</code>, <code>ex:grace a foaf:Agent</code>;</li><li><code>ex:p a ex:BigPaper</code>, since <code>( ex:ada ex:alan ex:grace ) ra:length 3</code>;</li><li><code>ex:p dc:creator ex:ada</code>, <code>ex:p ex:firstAuthor ex:ada</code>;</li><li><code>( ex:ada ex:alan ex:grace ) a ra:Sequence</code>, <code>ra:ObjectSequence</code>, and <code>not ra:EmptySequence</code>;</li><li>if <code>ex:ada owl:sameAs ex:adaL</code>, then <code>ex:p bibo:authorList ( ex:adaL ex:alan ex:grace )</code>;</li><li><code>ex:ring a ex:Ring</code> with three points is inconsistent, and <code>ex:red ex:rgb ( 255 0 )</code> with <code>ex:red a ex:Swatch</code> is inconsistent;</li><li><code>ex:x ex:rgb ( 255 0 0 )</code> entails <code>ex:x a ex:RedThing</code>; <code>( 255 0 0 ) owl:differentFrom ( 0 0 255 )</code> holds in every interpretation.</li></ul>
+    <p>Nothing follows about the members of a list from the list alone: <code>( ex:ada ex:alan )</code> says that <code>ex:ada</code> is a member of it and nothing more, as a triple says nothing more than itself.</p>
+    </section>
+    <section id="counting-and-literal-members">
+    <h3>Counting, and literal members</h3>
+    <p>Two consequences of OWL 2's semantics are worth knowing before writing cardinalities:</p>
+    <ul><li><strong><code>ra:member</code> counts distinct individuals, not positions.</strong> <code>( ex:a ex:a ex:a )</code> has one member, and <code>( ex:a ex:b ex:c )</code> has three only in interpretations where the three are different, which OWL does not assume. "At least three authors" is <code>ra:length some xsd:integer[&gt;= 3]</code>, which is crisp; "three different authors" adds <code>ra:member min 3 foaf:Person</code> to it. The same holds for <code>ra:memberValue</code> and repeated literals.</li><li><strong><code>ra:member only C</code> says nothing about literal members.</strong> It is vacuously true of <code>( 1 2 3 )</code>. To require that every element is an individual in <code>C</code>, write <code>ra:ObjectSequence and ra:member only C</code>; for literals, <code>ra:DataSequence and ra:memberValue only D</code>.</li></ul>
+    </section>
+    <section id="profiles">
+    <h3>Profiles</h3>
+    <p>OWL 2 EL has no <code>only</code>, so an EL ontology constrains members through a property chain and a range: <code>bibo:authorList o ra:member SubPropertyOf: ex:author</code>, <code>ex:author Range: foaf:Agent</code>. OWL 2 RL keeps <code>only</code> over members in superclass position, which is where the examples above use it, and has no datatype facets, so length bounds are outside RL. The vocabulary ontology uses functional object properties, complements and unions, which EL and QL lack; an EL or QL ontology relies on the built-in meaning without importing it.</p>
+    </section>
+  </section>
+  <section id="writing-a-sequence-in-each-owl-syntax">
+  <h2>Writing a sequence in each OWL syntax</h2>
+  <table class="simple">
+  <thead><tr><th>Syntax</th><th>A sequence</th><th>Notes</th></tr></thead>
+  <tbody>
+  <tr><td>Turtle-array, TriG-array, N-Triples-array</td><td><code>( ex:a "x" ( 1 2 ) )</code>, <code>()</code></td><td>as rdf-array.md</td></tr>
+  <tr><td>RDF/XML</td><td><code>&lt;ex:p rdf:parseType="Collection"&gt;…&lt;/ex:p&gt;</code></td><td>one term, <code>()</code> when empty; a literal element needs a nested description, so RDF/XML cannot write every sequence</td></tr>
+  <tr><td>Functional-style syntax</td><td><code>Sequence( ex:a "x"^^xsd:string Sequence( "1"^^xsd:integer "2"^^xsd:integer ) )</code>, <code>Sequence( )</code></td><td>a new production under <code>Individual</code></td></tr>
+  <tr><td>OWL/XML</td><td><code>&lt;Sequence&gt; &lt;NamedIndividual IRI="…"/&gt; &lt;Literal&gt;…&lt;/Literal&gt; &lt;Sequence/&gt; &lt;/Sequence&gt;</code></td><td>likewise</td></tr>
+  <tr><td>Manchester syntax</td><td><code>( ex:a "x" ( 1 2 ) )</code>, <code>( )</code></td><td>in individual positions only: <code>Facts:</code>, <code>value</code>, <code>{ … }</code>, <code>SameAs:</code>, <code>DifferentFrom:</code>, <code>Individual:</code></td></tr>
+  </tbody></table>
+  <p>Until a syntax's grammar is taught the spelling, an implementation may round-trip a sequence as an anonymous individual whose node ID encodes the sequence reversibly, so that the same document read back gives the same term; owlapi-array does so for the Functional-style, OWL/XML and Manchester syntaxes in its first cut, and labels such a node ID <code>_:seq…</code>. A sequence never has an IRI.</p>
+  </section>
+  <section id="what-owl-array-does-not-add">
+  <h2>What OWL-array does not add</h2>
+  <ul><li><strong>No ladder reading.</strong> <code>rdf:first</code>/<code>rdf:rest</code> triples are triples in OWL's syntax and in the data, and leave an ontology outside OWL 2 DL as they always did. OWL-array does not fold them.</li><li><strong>No <code>ra:rest</code>.</strong> A property to the sequence of the remaining elements would rebuild the ladder as individuals, with every limit of §1: it is left out on purpose. <code>ra:first</code> and <code>ra:last</code> cover the positions ontologies ask for; the remaining ones are reached, for now, by SPARQL-array's position patterns rather than by class expressions.</li><li><strong>No positional class constructor.</strong> A tuple type, <code>ra:tupleOf ( C1 … Cn )</code>, meaning "exactly n members, the i-th in Ci", and a regular content model over members are the natural next layer, as they are for SHACL-array and ShEx-array. The name <code>ra:tupleOf</code> is reserved and not defined.</li><li><strong>No datatype reading.</strong> A literal-only sequence is still an individual with <code>ra:memberValue</code>s, not a value of a sequence datatype. OWL 2 DL keeps individuals and data values apart, and a datatype could never say "every author is a Person"; one reading is simpler than two.</li><li><strong>No counting by position</strong> through <code>ra:member</code> (§3.5), and no uniqueness constraint: SHACL 1.2's <code>sh:uniqueMembers</code> has no OWL-array counterpart, since OWL cannot say that two positions differ.</li><li><strong>No identity for sequences beyond their elements.</strong> A sequence has no IRI and no label; an editor displays it by its spelling.</li></ul>
+  </section>
+  <section id="reasoning-with-a-reasoner-that-does-not-know-sequences">
+  <h2>Reasoning with a reasoner that does not know sequences</h2>
+  <p>The semantics of §3 is normative; how a reasoner meets it is not. The first implementations give an existing OWL 2 DL reasoner (HermiT, JFact, ELK for EL) the meaning of the built-ins by <em>expansion</em>: a decorator around the reasoner rewrites the ontology it sees, and nothing is added to the ontology the user edits or saves. For each sequence term <code>s</code> in the imports closure, with elements <code>e1 … en</code>:</p>
+  <ul><li><code>s</code> becomes an individual: a named one, with a canonical IRI derived from the term's spelling, when <code>s</code> holds no anonymous individual, so that it can stand in <code>owl:hasValue</code> and <code>owl:oneOf</code>; an anonymous one otherwise. The IRI is an artefact of the expansion and never leaves it.</li><li><code>ClassAssertion( ra:Sequence s )</code> and <code>DataPropertyAssertion( ra:length s n )</code>.</li><li><code>ObjectPropertyAssertion( ra:member s ei )</code> for each individual element and <code>DataPropertyAssertion( ra:memberValue s vi )</code> for each literal element, with <code>ra:first</code>, <code>ra:last</code>, <code>ra:firstValue</code> and <code>ra:lastValue</code> for the ends.</li><li><strong>Closure:</strong> <code>ClassAssertion( ra:member only { the individual elements } s )</code>, or <code>ra:member max 0</code> when there are none, and the same for <code>ra:memberValue</code> with a <code>DataOneOf</code>. Closure is what makes <code>ra:member only C</code> decidable on <code>s</code> and what no ladder could supply; it is omitted for an EL reasoner, which cannot express it and cannot ask the questions that need it.</li><li>Nested sequences are expanded recursively; equal terms get the same individual, which gives identity by elements for ground sequences. Identity under <code>owl:sameAs</code> of elements (§3.1) is a key on positions; an expansion may add <code>HasKey</code> axioms per length for it, which OWL 2 restricts to named individuals, exactly the sequences that are named here.</li></ul>
+  <p>The expansion is linear in the number of elements, complete for the sequences spelled in the ontology, and sound for the rest: of a sequence that a class expression merely asserts to exist, a reasoner knows what the vocabulary ontology's axioms say. The vocabulary ontology is added to the closure the reasoner sees. Reasoner results that mention expansion individuals are mapped back to sequence terms on the way out.</p>
+  </section>
+  <section id="tests">
+  <h2>Tests</h2>
+  <ul><li><strong>owlapi-array's own tests</strong>, from the OWL API's <code>contract</code> module: every round-trip test whose RDF spells a list reads it as a sequence, and a test that depended on a ladder is flagged with the reason, never dropped, as the <code>array-tests</code> skill prescribes.</li><li><strong>New tests</strong>, in the fork: parsing <code>( … )</code> nested, empty and holding a blank node property list, in Turtle and RDF/XML; equality of sequence terms by elements; rendering and round trips through every syntax, with the node-ID stopgap where a grammar lacks the spelling; §2's lists as sequences; the examples of §3.3 checked against a DL reasoner through the expansion of §6, as entailments and as inconsistencies; the two caveats of §3.5 as tests that the naive reading does not hold.</li><li><strong>owl-tests-contrib</strong>, if a second implementation follows: the same cases in a manifest, with a requirement term <code>ra:OwlArray</code> added to the test vocabulary with it.</li></ul>
+  </section>
+  <section id="implementations">
+  <h2>Implementations</h2>
+  <table class="simple">
+  <thead><tr><th>Implementation</th><th>OWL's lists as sequences</th><th>Data sequences</th><th>Reasoning</th><th>Status</th></tr></thead>
+  <tbody>
+  <tr><td><a href="https://github.com/rdf-array/owlapi-array">owlapi-array</a> (OWL API 4.5.29)</td><td>Turtle and RDF/XML parsers and renderers; RDF/XML refuses a sequence holding a literal (<a href="https://github.com/rdf-array/rdf-array/issues/18">#18</a>); the Rio formats still use ladders (<a href="https://github.com/rdf-array/rdf-array/issues/19">#19</a>); Functional-style, OWL/XML and Manchester carry a sequence as a <code>_:seq_…</code> node ID</td><td>an <code>OWLSequence</code> individual, equal by elements</td><td>the expansion of §6 as <code>SequenceAwareReasonerFactory</code>, tested with HermiT 1.4.5; no closure when a sequence holds an anonymous individual (<a href="https://github.com/rdf-array/rdf-array/issues/20">#20</a>)</td><td>the term, parsers, renderers and decorator done 2026-10-26: 4673 tests, 0 failures, 316 flagged; see its <code>doc/rdf-array.md</code></td></tr>
+  <tr><td>Protégé 5.6 against owlapi-array</td><td>—</td><td>display by spelling</td><td>the decorator in the reasoner menu</td><td>not started</td></tr>
+  </tbody></table>
+  </section>
+  <section id="decisions-and-precedent">
+  <h2>Decisions and precedent</h2>
+  <ul><li><strong>An individual, not a data value, and not syntax only.</strong> The datatype alternative (§5) could not reach IRI or blank-node members; leaving data sequences unread would have left the motivating cases out. The individual reading is the only one that lets a class expression say "every author is a Person".</li><li><strong>Built-in properties, not a new restriction kind.</strong> <code>owl:onPropertyMembers</code>, a restriction whose <code>allValuesFrom</code> applied to the members of a property's values, was considered. It fuses two quantifiers (every value, every member) and would need new class expressions in every syntax, parser, renderer and reasoner interface. Nesting an ordinary restriction on <code>ra:member</code> needs none of that, composes with property chains, and matches SHACL 1.2's <code>sh:memberShape</code> plus <code>sh:minListLength</code>, ShEx-array's <code>((S))[m, n]</code>, JSON Schema's <code>items</code> plus <code>minItems</code>, and the array types of property-graph schemas (Neo4j's <code>LIST&lt;INTEGER NOT NULL&gt;</code> constraints, PG-Schema's <code>STRING ARRAY {1,2}</code>): a constraint on members and bounds on length.</li><li><strong>Identity by elements, no IRI.</strong> An earlier draft named each sequence with a reversible URN and an <code>rdfs:label</code>. That makes <code>( ex:a )</code> and <code>( ex:b )</code> different individuals when <code>ex:a owl:sameAs ex:b</code>, and no other rdf-array implementation gives a sequence an identity beyond its elements. The canonical IRI survives only inside the expansion (§6).</li><li><strong>No companion ontology.</strong> The same draft materialised the <code>ra:</code> assertions into an ontology imported beside the source. The length of <code>( 1 2 3 )</code> is a fact about the term, as the value of <code>"3"^^xsd:integer</code> is; it is computed where it is needed, not stored.</li><li><strong>No <code>ra:rest</code></strong>, for the reasons of §5.</li><li>Precedent for description logic over sequences is thin and all of it builds proxies: <a href="https://research.manchester.ac.uk/en/publications/putting-owl-in-order-patterns-for-sequences-in-owl/">Drummond et al.</a> (2006), who also showed regular-expression-like matching over classes of lists by nesting; the <a href="https://www.semantic-web-journal.net/content/collections-ontology-creating-and-handling-collections-owl-2-dl-frameworks">Collections Ontology</a> with indexed <code>co:ListItem</code>s; the ontology design patterns' Sequence pattern. The theory that bears on OWL-array is Baader and Sattler's on <a href="https://iccl.inf.tu-dresden.de/web/LATPub267">aggregates</a> (a built-in <code>ra:length</code> on a closed term avoids the undecidability of counting over open chains), Lutz, Areces, Horrocks and Sattler's on <a href="https://jair.org/index.php/jair/article/view/10412">keys</a> (identity by elements is a key on positions, decidable over named individuals), and temporal description logics over <a href="https://bia.unibz.it/esploro/outputs/conferenceProceeding/Temporal-description-logics-over-finite-traces/991005772379101241">finite traces</a> for the content-model layer to come. Property graphs have arrays only of primitive values and constrain them by element type and count; none lets an array hold a node, which is the case that matters here.</li></ul>
+  </section>
+  <script>
+  // Turtle-array and SPARQL-array highlighting: a few token classes are enough for these examples.
+  (function () {
+    var token = /(<[^>\s]*>)|("""[\s\S]*?"""|"(?:[^"\\]|\\.)*")(@[A-Za-z0-9-]+|\^\^[^\s;,.()\]]+)?|(#[^\n]*)|(\?[A-Za-z_][\w]*)|(_:[A-Za-z0-9_-]+)|(\b(?:PREFIX|BASE|SELECT|CONSTRUCT|ASK|DESCRIBE|WHERE|DELETE|INSERT|DATA|FILTER|OPTIONAL|UNION|ORDER|BY|GROUP|LIMIT|OFFSET|BIND|VALUES|GRAPH|a)\b)|(\b-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|([A-Za-z][\w-]*:[\w#./-]*|[A-Za-z][\w-]*:)/g;
+    function paint(pre) {
+      var src = pre.textContent, out = '', last = 0, m;
+      token.lastIndex = 0;
+      while ((m = token.exec(src))) {
+        out += esc(src.slice(last, m.index));
+        var cls = m[1] ? 'hljs-iri' : m[2] ? 'hljs-lit' : m[4] ? 'hljs-cmt' : m[5] ? 'hljs-var' : m[6] ? 'hljs-bnode' : m[7] ? 'hljs-kw' : m[8] ? 'hljs-num' : 'hljs-pname';
+        out += '<span class="' + cls + '">' + esc(m[0]) + '</span>';
+        last = token.lastIndex;
+      }
+      out += esc(src.slice(last));
+      pre.innerHTML = out;
+    }
+    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    var jsonToken = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(true|false|null)\b/g;
+    function paintJson(pre) {
+      var src = pre.textContent, out = '', last = 0, m;
+      jsonToken.lastIndex = 0;
+      while ((m = jsonToken.exec(src))) {
+        out += esc(src.slice(last, m.index));
+        if (m[1]) { out += '<span class="' + (m[2] ? 'hljs-attr' : 'hljs-string') + '">' + esc(m[1]) + '</span>' + esc(m[2] || ''); }
+        else if (m[3]) { out += '<span class="hljs-number">' + esc(m[3]) + '</span>'; }
+        else { out += '<span class="hljs-literal">' + esc(m[4]) + '</span>'; }
+        last = jsonToken.lastIndex;
+      }
+      out += esc(src.slice(last));
+      pre.innerHTML = out;
+    }
+    function tidyHeader() {
+      // An unofficial draft has no published version; ReSpec prints the line anyway.
+      document.querySelectorAll('.head dt').forEach(function (dt) {
+        if (/^Latest published version/.test(dt.textContent)) { var dd = dt.nextElementSibling; dt.remove(); if (dd && dd.tagName === 'DD') dd.remove(); }
+      });
+    }
+    function run() { tidyHeader(); document.querySelectorAll('pre.turtle, pre.sparql').forEach(paint); document.querySelectorAll('pre.json').forEach(paintJson); }
+    if (document.respec && document.respec.ready) { document.respec.ready.then(run); } else { document.addEventListener('DOMContentLoaded', run); }
+  })();
+  </script>
+</body>
+</html>

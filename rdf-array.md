@@ -159,6 +159,7 @@ graph with no sequences is an RDF graph.
 | JavaScript | [comunica-array](https://github.com/rdf-array/comunica-array) with [traqula-array](https://github.com/rdf-array/traqula-array), [rdf-data-factory-array](https://github.com/rdf-array/rdf-data-factory-array), [rdf-string-array](https://github.com/rdf-array/rdf-string-array), [rdf-string-ttl-array](https://github.com/rdf-array/rdf-string-ttl-array), [rdf-terms-array](https://github.com/rdf-array/rdf-terms-array), [jsonld-streaming-parser-array](https://github.com/rdf-array/jsonld-streaming-parser-array), [jsonld-streaming-serializer-array](https://github.com/rdf-array/jsonld-streaming-serializer-array), [rdfxml-streaming-parser-array](https://github.com/rdf-array/rdfxml-streaming-parser-array), [sparqljson-parse-array](https://github.com/rdf-array/sparqljson-parse-array), [sparqlxml-parse-array](https://github.com/rdf-array/sparqlxml-parse-array) | the SPARQL-array engine over Turtle, JSON-LD and RDF/XML sources and remote endpoints, with the result formats; comunica-array's `doc/rdf-array.md` has the stack table |
 | JavaScript | [jsonld.js-array](https://github.com/rdf-array/jsonld.js-array) | JSON-LD-array: `jsonld.arrayToRDF`, writers for N-Quads-array and Turtle-array, the [playground](https://rdf-array.github.io/jsonld.js-array/) |
 | Python | [PyShEx-array](https://github.com/rdf-array/PyShEx-array) with [rdflib-array](https://github.com/rdf-array/rdflib-array), [grammar-python-antlr-linkml-array](https://github.com/rdf-array/grammar-python-antlr-linkml-array) (the `pyshexc` parser), [ShExJSG-array](https://github.com/rdf-array/ShExJSG-array), [CFGraph-array](https://github.com/rdf-array/CFGraph-array) | ShEx-array validation over RDFLib with `rdflib.term.Sequence`; RDFLib's Turtle, N-Triples, N3, JSON-LD and SPARQL read and write sequences |
+| Java | [owlapi-array](https://github.com/rdf-array/owlapi-array) | the OWL API 4.5.29, the line Protégé 5.6 loads, for [OWL-array](owl-array.html): OWL's own lists read and written as sequences, a data sequence as an `OWLSequence` individual with the built-in `ra:member`, `ra:length`, `ra:first` and `ra:last`, and a reasoner decorator that expands them for a stock reasoner (HermiT tested); the Rio formats and the proper Functional-style, OWL/XML and Manchester spellings not yet |
 | Rust, Python, WASM | [oxigraph-array](https://github.com/rdf-array/oxigraph-array) | Oxigraph with `oxrdf::Sequence`: every syntax it reads and writes, SPARQL-array (patterns, position patterns, functions, results) and the store, in Rust, Python (`pyoxigraph`) and JavaScript; runs the W3C -array and the contrib suites |
 | Rust | [rudof-array](https://github.com/rdf-array/rudof-array) with [oxigraph-array](https://github.com/rdf-array/oxigraph-array) | ShEx-array (ShExC, ShExJ, ShExR and validation) in rudof's library and CLI; ShExR and SHACL lists read as sequences; runs shexTest-array and shexTest-contrib |
 | Specification | [rdf-array](https://github.com/rdf-array/rdf-array) | this overview, the JSON-LD-array specification, the assessment of further targets, and the skills for making forks |
@@ -189,10 +190,15 @@ graph with no sequences is an RDF graph.
 - **Containers.** `rdf:Seq`, `rdf:Bag` and `rdf:Alt` keep their vocabulary but lose the only syntax
   that produced them (`rdf:li`); whether a sequence should ever be read as a bag or an alternative is
   open.
-- **OWL, SKOS.** Each reads collections as ladders; their rdf-array readings are not written. SHACL's
-  is [SHACL-array](shacl-array.html) (sequences only, as rudof-array and jena-array read them;
-  [#9](https://github.com/rdf-array/rdf-array/issues/9)); positional constraints on a sequence's
-  members are open for SHACL-array and ShEx-array alike.
+- **SKOS** reads collections as ladders; its rdf-array reading is not written. SHACL's is
+  [SHACL-array](shacl-array.html) (sequences only, as rudof-array and jena-array read them;
+  [#9](https://github.com/rdf-array/rdf-array/issues/9)) and OWL's is [OWL-array](owl-array.html)
+  (OWL's lists as sequences; a data sequence an individual with the built-in `ra:member`, `ra:length`,
+  `ra:first` and `ra:last`; implemented in owlapi-array). How OWL-array closes a sequence that holds an
+  anonymous individual is open ([#20](https://github.com/rdf-array/rdf-array/issues/20)), and so is
+  RDF/XML-array's spelling of a sequence holding a literal, which RDF/XML's Collection cannot
+  write ([#18](https://github.com/rdf-array/rdf-array/issues/18)). Positional constraints on a sequence's members
+  are open for SHACL-array, ShEx-array and OWL-array alike.
 - **Specification test suites.** The W3C suites are forked with their expectations rewritten
   (rdf-tests-array, json-ld-api-array, json-ld-streaming-array, shexTest-array), and the tests no W3C
   suite has live in rdf-tests-contrib, json-ld-api-contrib and shexTest-contrib; the implementations do

@@ -212,16 +212,7 @@
     <section id="output">
     <h3>Output</h3>
     <p>Processing yields rdf-array triples, all in the default graph. Their terms are IRIs, blank nodes, literals and sequences; a sequence holds the converted elements of one JSON array, in order.</p>
-    <ul><li><strong>In an API</strong>, a sequence is the term of the host's rdf-array data model. In the RDF/JS data model</li></ul>
-    <p>of the rdf-array forks (types-array, rdf-data-factory-array) it is <code>{ termType: "Sequence", elements: [ …terms… ], value }</code>, where <code>value</code> is the N-Triples-style spelling <code>(e1 e2 …)</code> and <code>DataFactory.sequence(elements)</code> makes one; jena-array's is <code>Node_Seq</code>, rdflib-array's <code>rdflib.term.Sequence</code>.</p>
-    <ul><li><strong>As text</strong>, the output is N-Quads-array or Turtle-array: a sequence is written <code>( e1 e2 … )</code>,</li></ul>
-    <p>nested freely, <code>()</code> when empty.</p>
-    <ul><li><strong>Blank node labels.</strong> A fresh blank node's label is the processor's choice. A stable one,</li></ul>
-    <p>from <code>termType: "blankNode"</code> and a template, is labelled with the expansion; a mapping whose expansions use characters outside those N-Triples allows in a blank node label produces output that a writer must relabel.</p>
-    <ul><li><strong>Numbers.</strong> The lexical form of a literal from a JSON number is the number as written in the</li></ul>
-    <p>JSON text (<code>1.70</code> stays <code>1.70</code> in an <code>xsd:decimal</code>) when the processor's JSON parser exposes it, and otherwise the shortest spelling of the parsed number; an exponent is expanded for <code>xsd:decimal</code>, and <code>xsd:double</code> takes JSON-LD's canonical form (<code>1.5E0</code>).</p>
-    <ul><li><strong>IRIs</strong> are resolved against the base in force by RFC 3986 §5.2, after template values have been</li></ul>
-    <p>percent-encoded (§3.5).</p>
+    <ul><li><strong>In an API</strong>, a sequence is the term of the host's rdf-array data model. In the RDF/JS data model of the rdf-array forks (types-array, rdf-data-factory-array) it is <code>{ termType: "Sequence", elements: [ …terms… ], value }</code>, where <code>value</code> is the N-Triples-style spelling <code>(e1 e2 …)</code> and <code>DataFactory.sequence(elements)</code> makes one; jena-array's is <code>Node_Seq</code>, rdflib-array's <code>rdflib.term.Sequence</code>.</li><li><strong>As text</strong>, the output is N-Quads-array or Turtle-array: a sequence is written <code>( e1 e2 … )</code>, nested freely, <code>()</code> when empty.</li><li><strong>Blank node labels.</strong> A fresh blank node's label is the processor's choice. A stable one, from <code>termType: "blankNode"</code> and a template, is labelled with the expansion; a mapping whose expansions use characters outside those N-Triples allows in a blank node label produces output that a writer must relabel.</li><li><strong>Numbers.</strong> The lexical form of a literal from a JSON number is the number as written in the JSON text (<code>1.70</code> stays <code>1.70</code> in an <code>xsd:decimal</code>) when the processor's JSON parser exposes it, and otherwise the shortest spelling of the parsed number; an exponent is expanded for <code>xsd:decimal</code>, and <code>xsd:double</code> takes JSON-LD's canonical form (<code>1.5E0</code>).</li><li><strong>IRIs</strong> are resolved against the base in force by RFC 3986 §5.2, after template values have been percent-encoded (§3.5).</li></ul>
     </section>
     <section id="errors">
     <h3>Errors</h3>
@@ -413,20 +404,7 @@
   </section>
   <section id="decisions-to-confirm">
   <h2>Decisions to confirm</h2>
-  <ul><li><strong><code>null</code> inside an array</strong> leaves no element, which shifts the positions after it. The</li></ul>
-  <p>alternative is an explicit placeholder term; rdf-array has none today.</p>
-  <ul><li><strong>Fractional numbers default to <code>xsd:decimal</code></strong>, not JSON-LD's <code>xsd:double</code>; <code>datatype</code> gives</li></ul>
-  <p>the double back.</p>
-  <ul><li><strong>An inverse property and the type role spread an array</strong> instead of making a sequence the</li></ul>
-  <p>subject or the class. Every other array is a sequence, <code>knows</code> in §1 included: a mapping that wants repeated <code>schema:knows</code> triples spreads them afterwards (§2.1).</p>
-  <ul><li><strong><code>valueType: "identifier"</code>, not <code>"iri"</code>.</strong> A value that identifies a node may name a blank node</li></ul>
-  <p>as well as an IRI once <code>termType: "blankNode"</code> exists, so "iri" would be a misnomer; "identifier" also mirrors <code>role: "identifier"</code>: the role says the value identifies <em>this</em> node, the value type says it identifies <em>another</em>.</p>
-  <ul><li><strong>Strict by default.</strong> <code>unmappedKeys</code> defaults to <code>{ "scope": "none", "otherwise": "error" }</code>,</li></ul>
-  <p>the grammar reading; §11 argues for <code>"otherwise": "ignore"</code> as the friendlier default for data from APIs that grow.</p>
-  <ul><li><strong>Named maps are root-only</strong>, like the rules of a grammar (§4.1).</li><li><strong><code>prefixes</code> are root-only</strong>, so a prefixed name means the same thing everywhere in the mapping;</li></ul>
-  <p><code>base</code> is lexically scoped (§3.5).</p>
-  <ul><li><strong>The embedded form</strong> reserves two member names in the data, <code>propertyMap</code> and <code>mapping</code>.</li><li><strong>Templates</strong> take any member of the object they describe, the enclosing object's members and the</li></ul>
-  <p>position; composing an identifier from the values of a <em>different</em> object still needs the structure of the JSON to put them in reach.</p>
+  <ul><li><strong><code>null</code> inside an array</strong> leaves no element, which shifts the positions after it. The alternative is an explicit placeholder term; rdf-array has none today.</li><li><strong>Fractional numbers default to <code>xsd:decimal</code></strong>, not JSON-LD's <code>xsd:double</code>; <code>datatype</code> gives the double back.</li><li><strong>An inverse property and the type role spread an array</strong> instead of making a sequence the subject or the class. Every other array is a sequence, <code>knows</code> in §1 included: a mapping that wants repeated <code>schema:knows</code> triples spreads them afterwards (§2.1).</li><li><strong><code>valueType: "identifier"</code>, not <code>"iri"</code>.</strong> A value that identifies a node may name a blank node as well as an IRI once <code>termType: "blankNode"</code> exists, so "iri" would be a misnomer; "identifier" also mirrors <code>role: "identifier"</code>: the role says the value identifies <em>this</em> node, the value type says it identifies <em>another</em>.</li><li><strong>Strict by default.</strong> <code>unmappedKeys</code> defaults to <code>{ "scope": "none", "otherwise": "error" }</code>, the grammar reading; §11 argues for <code>"otherwise": "ignore"</code> as the friendlier default for data from APIs that grow.</li><li><strong>Named maps are root-only</strong>, like the rules of a grammar (§4.1).</li><li><strong><code>prefixes</code> are root-only</strong>, so a prefixed name means the same thing everywhere in the mapping; <code>base</code> is lexically scoped (§3.5).</li><li><strong>The embedded form</strong> reserves two member names in the data, <code>propertyMap</code> and <code>mapping</code>.</li><li><strong>Templates</strong> take any member of the object they describe, the enclosing object's members and the position; composing an identifier from the values of a <em>different</em> object still needs the structure of the JSON to put them in reach.</li></ul>
   </section>
   <section id="names-for-these-things">
   <h2>Names for these things</h2>

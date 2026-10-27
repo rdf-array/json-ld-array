@@ -18,7 +18,8 @@ The targets, ticked as their forks appear and in the recommended order, are list
 [Not yet forked](https://rdf-array.github.io/rdf-array/repos.html#not-yet-forked) on repos.html, from [repos.json](repos.json); the forks that
 exist are the rest of [that page](https://rdf-array.github.io/rdf-array/repos.html). The table this section held, with each target's language,
 impact, utility, needed forks and order, was moved there on 2026-10-25. Done so far: Oxigraph
-(oxigraph-array, 2026-10-24) and rudof (rudof-array, 2026-10-25). The sections below are the
+(oxigraph-array, 2026-10-24), rudof (rudof-array, 2026-10-25) and the OWL API (owlapi-array,
+2026-10-26, for [OWL-array](owl-array.md), begun once SHACL-array existed). The sections below are the
 assessment as it was written.
 
 Two things that are not implementations rank above most of the list: a **conformance suite**

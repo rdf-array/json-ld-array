@@ -25,4 +25,19 @@ syntax proposed today. See the <a href="../html-index.html">rdf-array documents<
 <tr id="JsonLdArrayToRdfTest"><td><code>ra:JsonLdArrayToRdfTest</code></td><td>class</td><td>A JSON-LD-array test: plain JSON (input) and a mapping document (ra:mapping) to N-Quads-array (expect) or an error code (expectErrorCode).</td></tr>
 <tr id="mapping"><td><code>ra:mapping</code></td><td>property</td><td>The JSON-LD-array mapping document of a ra:JsonLdArrayToRdfTest.</td></tr>
 </table>
+<h2>OWL-array vocabulary</h2>
+<p class="muted">The built-in entities of <a href="../owl-array.html">OWL-array</a>, in the same namespace; their meaning is fixed by its semantics (§3), and <a href="owl-array.ttl">owl-array.ttl</a> is the OWL 2 DL ontology that declares them, with the axioms that hold of every sequence, for ontologies to import.</p>
+<table><tr><th>Term</th><th>Kind</th><th>Meaning</th></tr>
+<tr id="Sequence"><td><code>ra:Sequence</code></td><td>class, built-in</td><td>The sequences, the denotations of ( … ) terms, and nothing else.</td></tr>
+<tr id="EmptySequence"><td><code>ra:EmptySequence</code></td><td>class</td><td>The empty sequence, (): ra:Sequence and ra:length value 0.</td></tr>
+<tr id="ObjectSequence"><td><code>ra:ObjectSequence</code></td><td>class</td><td>A sequence with no literal element: ra:Sequence and not (ra:memberValue some rdfs:Literal).</td></tr>
+<tr id="DataSequence"><td><code>ra:DataSequence</code></td><td>class</td><td>A sequence with no individual element: ra:Sequence and not (ra:member some owl:Thing).</td></tr>
+<tr id="member"><td><code>ra:member</code></td><td>object property, built-in</td><td>Each element of a sequence that is an individual or a sequence. Counts distinct individuals, not positions.</td></tr>
+<tr id="memberValue"><td><code>ra:memberValue</code></td><td>data property, built-in</td><td>Each element of a sequence that is a literal.</td></tr>
+<tr id="length"><td><code>ra:length</code></td><td>functional data property, built-in</td><td>The number of elements, an xsd:nonNegativeInteger.</td></tr>
+<tr id="first"><td><code>ra:first</code></td><td>functional object property, built-in</td><td>The first element, when it is an individual or a sequence; a sub-property of ra:member.</td></tr>
+<tr id="last"><td><code>ra:last</code></td><td>functional object property, built-in</td><td>The last element, when it is an individual or a sequence; a sub-property of ra:member.</td></tr>
+<tr id="firstValue"><td><code>ra:firstValue</code></td><td>functional data property, built-in</td><td>The first element, when it is a literal; a sub-property of ra:memberValue.</td></tr>
+<tr id="lastValue"><td><code>ra:lastValue</code></td><td>functional data property, built-in</td><td>The last element, when it is a literal; a sub-property of ra:memberValue.</td></tr>
+</table>
 </body></html>

@@ -41,7 +41,7 @@
 </head>
 <body>
   <section id="abstract">
-    <p>SHACL-array is SHACL ([SHACL], with the list constraints of [SHACL 1.2 Core]) over the rdf-array data model, in which <code>( … )</code> is one term, a <em>sequence</em>, and <code>()</code> is the empty sequence. It changes two things and adds no vocabulary:</p>
+    <p>SHACL-array is SHACL (<a href="https://www.w3.org/TR/shacl/">SHACL</a>, with the list constraints of <a href="https://www.w3.org/TR/shacl12-core/">SHACL 1.2 Core</a>) over the rdf-array data model, in which <code>( … )</code> is one term, a <em>sequence</em>, and <code>()</code> is the empty sequence. It changes two things and adds no vocabulary:</p>
   </section>
   <section id="sotd">
     <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/shacl-array.md">shacl-array.md</a> by <code>md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
@@ -66,12 +66,7 @@
   <tr><td>SHACL 1.2 list node expressions</td><td><code>( ex:a ex:b )</code>, and <code>()</code> the empty list</td></tr>
   </tbody></table>
   <p>Written in Turtle-array these are sequences already: the syntax is unchanged, and a shapes graph written for SHACL reads the same under SHACL-array. Three consequences:</p>
-  <ul><li><strong>A ladder is not a list.</strong> A shapes graph that spells a list as <code>rdf:first</code>/<code>rdf:rest</code> triples</li></ul>
-  <p>(in N-Triples written by an RDF 1.1 tool, say) is ill-formed where a list is expected, and a processor reports a shapes-graph error. Convert it first. A ladder read as triples is no longer special anywhere in rdf-array.</p>
-  <ul><li><strong><code>()</code> is the empty list; <code>rdf:nil</code> is not.</strong> <code>sh:path ()</code> is an error, as an empty sequence path</li></ul>
-  <p>was before. <code>sh:path rdf:nil</code> is the predicate path of the IRI <code>rdf:nil</code>.</p>
-  <ul><li><strong>Lists hold no blank-node structure.</strong> A shape inside a list, <code>sh:or ( [ … ] )</code>, is a blank node</li></ul>
-  <p>that is an element of the sequence; its own triples are ordinary triples of the shapes graph.</p>
+  <ul><li><strong>A ladder is not a list.</strong> A shapes graph that spells a list as <code>rdf:first</code>/<code>rdf:rest</code> triples (in N-Triples written by an RDF 1.1 tool, say) is ill-formed where a list is expected, and a processor reports a shapes-graph error. Convert it first. A ladder read as triples is no longer special anywhere in rdf-array.</li><li><strong><code>()</code> is the empty list; <code>rdf:nil</code> is not.</strong> <code>sh:path ()</code> is an error, as an empty sequence path was before. <code>sh:path rdf:nil</code> is the predicate path of the IRI <code>rdf:nil</code>.</li><li><strong>Lists hold no blank-node structure.</strong> A shape inside a list, <code>sh:or ( [ … ] )</code>, is a blank node that is an element of the sequence; its own triples are ordinary triples of the shapes graph.</li></ul>
   <p>The same holds for what a processor writes: <code>sh:resultPath</code> of a sequence path is a sequence term, and SHACL compact syntax arrays (<code>in=[ 1 2 ]</code>, <code>|</code> alternatives) produce sequences.</p>
   </section>
   <section id="sequence-valued-data">
@@ -117,11 +112,7 @@
   </section>
   <section id="what-shacl-array-does-not-add">
   <h2>What SHACL-array does not add</h2>
-  <ul><li><strong>No path into a sequence.</strong> SHACL property paths reach value nodes through triples, and a</li></ul>
-  <p>sequence's members are not reached through triples. <code>sh:memberShape</code> is the way to constrain them. SPARQL-array's position patterns (<code>((?e))[2]</code>, <code>[*]</code>) have no SHACL path counterpart, and SHACL-SPARQL constraints can use them where the engine has them.</p>
-  <ul><li><strong>No positional constraints.</strong> Neither SHACL 1.2 nor SHACL-array can say "the first member is a</li></ul>
-  <p>string, the rest are integers". ShEx-array cannot say it either; it is an open question for both.</p>
-  <ul><li><strong>No new results vocabulary.</strong> A sequence value appears in a report as itself: <code>sh:value ( 255 192 )</code>.</li></ul>
+  <ul><li><strong>No path into a sequence.</strong> SHACL property paths reach value nodes through triples, and a sequence's members are not reached through triples. <code>sh:memberShape</code> is the way to constrain them. SPARQL-array's position patterns (<code>((?e))[2]</code>, <code>[*]</code>) have no SHACL path counterpart, and SHACL-SPARQL constraints can use them where the engine has them.</li><li><strong>No positional constraints.</strong> Neither SHACL 1.2 nor SHACL-array can say "the first member is a string, the rest are integers". ShEx-array cannot say it either; it is an open question for both.</li><li><strong>No new results vocabulary.</strong> A sequence value appears in a report as itself: <code>sh:value ( 255 192 )</code>.</li></ul>
   </section>
   <section id="tests">
   <h2>Tests</h2>
@@ -148,7 +139,6 @@
   <tr><td><a href="https://github.com/rdf-array/rudof-array">rudof-array</a> <code>shacl</code></td><td>yes, sequences only</td><td>not yet (rudof's own TODO)</td><td>data-shapes-array: path-strange-001 and node-expr <code>list</code> pass, <code>shacl-shacl</code> and <code>path-strange-002</code> ignored; data-shapes-contrib: 6 pass, 15 ignored. Divergences: <a href="https://github.com/rdf-array/rdf-array/issues/17">rdf-array#17</a></td></tr>
   <tr><td>pySHACL over rdflib-array, rdf-validate-shacl over the RDF/JS forks</td><td>not forked</td><td>—</td><td><a href="https://github.com/rdf-array/rdf-array/blob/main/targets.md">targets.md</a></td></tr>
   </tbody></table>
-  <p>[SHACL]: https://www.w3.org/TR/shacl/ [SHACL 1.2 Core]: https://www.w3.org/TR/shacl12-core/</p>
   </section>
   <script>
   // Turtle-array and SPARQL-array highlighting: a few token classes are enough for these examples.

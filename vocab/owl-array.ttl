@@ -1,0 +1,97 @@
+@prefix ra:   <https://rdf-array.github.io/rdf-array/vocab#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+# The OWL-array vocabulary: the built-in entities of OWL-array, declared so that an editor knows
+# them, with the axioms that hold of every sequence. Their meaning does not come from this file:
+# https://rdf-array.github.io/rdf-array/owl-array.html fixes it (§3). Plain OWL 2 DL; it says the
+# same thing read as RDF 1.1 (its lists are ladders) or as rdf-array (its lists are sequences).
+
+<https://rdf-array.github.io/rdf-array/vocab/owl-array.ttl>
+    a owl:Ontology ;
+    rdfs:label "OWL-array vocabulary" ;
+    rdfs:comment "Declarations and axioms of the built-in entities of OWL-array: ra:Sequence, ra:member, ra:memberValue, ra:length, ra:first, ra:last, ra:firstValue, ra:lastValue, and the definable classes ra:EmptySequence, ra:ObjectSequence and ra:DataSequence. Import it so that an editor knows the entities; their meaning is fixed by the OWL-array definition." ;
+    rdfs:seeAlso <https://rdf-array.github.io/rdf-array/owl-array.html> ;
+    owl:versionInfo "2026-10-26" .
+
+# Classes
+
+ra:Sequence a owl:Class ;
+    rdfs:label "Sequence" ;
+    rdfs:comment "Built-in: the class of the sequences, the denotations of ( … ) terms, and of nothing else. Every sequence has exactly one ra:length." ;
+    rdfs:subClassOf [ a owl:Restriction ; owl:onProperty ra:length ; owl:someValuesFrom xsd:nonNegativeInteger ] .
+
+ra:EmptySequence a owl:Class ;
+    rdfs:label "EmptySequence" ;
+    rdfs:comment "The class of the empty sequence, (): a sequence of length 0, which has no members." ;
+    owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( ra:Sequence
+        [ a owl:Restriction ; owl:onProperty ra:length ; owl:hasValue "0"^^xsd:nonNegativeInteger ] ) ] ;
+    rdfs:subClassOf
+        [ a owl:Restriction ; owl:onProperty ra:member ; owl:maxCardinality "0"^^xsd:nonNegativeInteger ] ,
+        [ a owl:Restriction ; owl:onProperty ra:memberValue ; owl:maxCardinality "0"^^xsd:nonNegativeInteger ] .
+
+ra:ObjectSequence a owl:Class ;
+    rdfs:label "ObjectSequence" ;
+    rdfs:comment "A sequence none of whose elements is a literal: ra:member only C then constrains every element." ;
+    owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( ra:Sequence
+        [ a owl:Class ; owl:complementOf [ a owl:Restriction ; owl:onProperty ra:memberValue ; owl:someValuesFrom rdfs:Literal ] ] ) ] .
+
+ra:DataSequence a owl:Class ;
+    rdfs:label "DataSequence" ;
+    rdfs:comment "A sequence none of whose elements is an individual or a sequence: ra:memberValue only D then constrains every element." ;
+    owl:equivalentClass [ a owl:Class ; owl:intersectionOf ( ra:Sequence
+        [ a owl:Class ; owl:complementOf [ a owl:Restriction ; owl:onProperty ra:member ; owl:someValuesFrom owl:Thing ] ] ) ] .
+
+# A non-empty sequence has a first and a last element, one of them an individual or a literal.
+
+[] a owl:Class ;
+    owl:intersectionOf ( ra:Sequence [ a owl:Class ; owl:complementOf ra:EmptySequence ] ) ;
+    rdfs:subClassOf
+        [ a owl:Class ; owl:unionOf (
+            [ a owl:Restriction ; owl:onProperty ra:first ; owl:someValuesFrom owl:Thing ]
+            [ a owl:Restriction ; owl:onProperty ra:firstValue ; owl:someValuesFrom rdfs:Literal ] ) ] ,
+        [ a owl:Class ; owl:unionOf (
+            [ a owl:Restriction ; owl:onProperty ra:last ; owl:someValuesFrom owl:Thing ]
+            [ a owl:Restriction ; owl:onProperty ra:lastValue ; owl:someValuesFrom rdfs:Literal ] ) ] .
+
+# Object properties: the elements that are individuals or sequences
+
+ra:member a owl:ObjectProperty ;
+    rdfs:label "member" ;
+    rdfs:comment "Built-in: relates a sequence to each of its elements that is an individual or a sequence. It counts distinct individuals, not positions; use ra:length to count elements." ;
+    rdfs:domain ra:Sequence .
+
+ra:first a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "first" ;
+    rdfs:comment "Built-in: the first element of a sequence, when it is an individual or a sequence." ;
+    rdfs:subPropertyOf ra:member .
+
+ra:last a owl:ObjectProperty , owl:FunctionalProperty ;
+    rdfs:label "last" ;
+    rdfs:comment "Built-in: the last element of a sequence, when it is an individual or a sequence." ;
+    rdfs:subPropertyOf ra:member .
+
+# Data properties: the elements that are literals, and the length
+
+ra:memberValue a owl:DatatypeProperty ;
+    rdfs:label "memberValue" ;
+    rdfs:comment "Built-in: relates a sequence to each of its elements that is a literal." ;
+    rdfs:domain ra:Sequence .
+
+ra:firstValue a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "firstValue" ;
+    rdfs:comment "Built-in: the first element of a sequence, when it is a literal." ;
+    rdfs:subPropertyOf ra:memberValue .
+
+ra:lastValue a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "lastValue" ;
+    rdfs:comment "Built-in: the last element of a sequence, when it is a literal." ;
+    rdfs:subPropertyOf ra:memberValue .
+
+ra:length a owl:DatatypeProperty , owl:FunctionalProperty ;
+    rdfs:label "length" ;
+    rdfs:comment "Built-in: the number of elements of a sequence, an xsd:nonNegativeInteger." ;
+    rdfs:domain ra:Sequence ;
+    rdfs:range xsd:nonNegativeInteger .

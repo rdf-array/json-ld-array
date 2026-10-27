@@ -5,9 +5,10 @@ HTML page.
     python3 md-to-respec.py json-ld-array.md json-ld-array.html
     python3 md-to-respec.py rdf-array.md rdf-array.html
 
-Handles: the leading H1 (becomes the title), paragraphs, bullet lists with continuation lines,
-fenced code blocks (```json / ```turtle / ```sparql), pipe tables with a header row, inline code,
-bold, italics and links. Sections come from `##` and `###` headings; a leading "N." / "N.M" is
+Handles: the leading H1 (becomes the title), paragraphs, bullet lists with continuation lines
+(indented two or more spaces), fenced code blocks (```json / ```turtle / ```sparql), pipe tables
+with a header row, inline code, bold, italics, links and reference-style link definitions
+(`[Name]: url` on a line of its own; `[Name]` in the text becomes the link). Sections come from `##` and `###` headings; a leading "N." / "N.M" is
 dropped, ReSpec numbers them, and the text before the first `##` becomes the abstract and an
 unnumbered introduction, so "§3.4" references in the prose keep pointing at the right section.
 JSON is highlighted by ReSpec's highlight.js; Turtle and SPARQL by a small script of their own.
@@ -21,6 +22,9 @@ INLINE_CODE = re.compile(r'`([^`]+)`')
 BOLD = re.compile(r'\*\*(.+?)\*\*')
 ITALIC = re.compile(r'(?<![\w*])\*(?!\*)(.+?)(?<!\*)\*(?![\w*])')
 LINK = re.compile(r'\[([^\]]+)\]\(([^)\s]+)\)')
+REF = re.compile(r'\[([^\]\[]+)\](?![\(\[\]])')
+REF_DEF = re.compile(r'^\[([^\]]+)\]:\s+(\S+)\s*$')
+refs = {}   # reference-style link definitions of the document being converted
 CITE = re.compile(r'\[(RFC) (\d+)( §[^\]]*)?\]')
 
 
@@ -35,6 +39,7 @@ def inline(text):
     text = INLINE_CODE.sub(stash, text)
     text = html.escape(text, quote=False).replace('&lt;br&gt;', '<br>')
     text = LINK.sub(r'<a href="\2">\1</a>', text)
+    text = REF.sub(lambda m: '<a href="%s">%s</a>' % (refs[m.group(1)], m.group(1)) if m.group(1) in refs else m.group(0), text)
     text = CITE.sub(lambda m: '[[%s%s]]%s' % (m.group(1), m.group(2), m.group(3) or ''), text)
     text = text.replace('[INFRA]', '[[INFRA]]')
     text = BOLD.sub(r'<strong>\1</strong>', text)
@@ -63,7 +68,13 @@ def split_row(line):
 
 
 def convert(md):
-    lines = md.split('\n')
+    lines = []
+    for line in md.split('\n'):
+        ref = REF_DEF.match(line)
+        if ref:
+            refs[ref.group(1)] = ref.group(2)
+        else:
+            lines.append(line)
     title = None
     out = []            # list of (depth, html) for the body; depth 0 = top
     blocks = []         # the current block list being filled
@@ -135,7 +146,7 @@ def convert(md):
             flush_para(para)
             ordered = line[0].isdigit()
             items = []
-            while i < len(lines) and (re.match(r'^(\d+\.|-) ', lines[i]) or (lines[i].startswith('   ') and lines[i].strip())):
+            while i < len(lines) and (re.match(r'^(\d+\.|-) ', lines[i]) or (lines[i].startswith('  ') and lines[i].strip())):
                 if re.match(r'^(\d+\.|-) ', lines[i]):
                     items.append(re.sub(r'^(\d+\.|-) ', '', lines[i]))
                 else:
