@@ -223,7 +223,7 @@ And the axiom fhir.ttl publishes for the repeating element, `fhir:CodeableConcep
 fhir:coding only fhir:Coding`, added to the closure makes it inconsistent: the value of `fhir:coding` is
 the list, `fhir-min.ttl` says a list is no FHIR element (`fhir:Base DisjointWith: ra:Sequence`), and the
 contradiction is the point. Over rdf-array the FHIR ontology has to say `ra:member only`; its generator,
-kindling's `FhirTurtleGenerator`, is a target in [repos.html](../../repos.html#not-yet-forked).
+kindling's `FhirTurtleGenerator`, is a target in [repos.html](../../management/repos.html#not-yet-forked).
 
 To run the check against owlapi-array's jars (built with `mvn install -Dmaven.repo.local=…`, as its
 `doc/rdf-array.md` says), from this directory:

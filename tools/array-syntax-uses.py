@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write array-syntax-uses.md: every file of the rdf-array suites that uses the proposed array syntax.
+"""Write management/array-syntax-uses.md: every file of the rdf-array suites that uses the proposed array syntax.
 
     python3 tools/array-syntax-uses.py [--check]
 
@@ -64,7 +64,7 @@ def main():
              '| Repository | File | Language | Uses |', '|---|---|---|---|']
     lines += [f'| {r} | [{p}](https://github.com/rdf-array/{r}/blob/{"main" if r.endswith("contrib") or r == "rdf-array" else "rdf-sequences"}/{p}) | {k} | {n} |' for r, p, k, n in rows]
     text = '\n'.join(lines) + '\n'
-    out = HERE / 'array-syntax-uses.md'
+    out = HERE / 'management' / 'array-syntax-uses.md'
     if '--check' in sys.argv:
         sys.exit(0 if out.exists() and out.read_text() == text else 'array-syntax-uses.md is out of date')
     out.write_text(text)

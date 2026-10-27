@@ -5,8 +5,8 @@ description: Keep repos.json, the rdf-array organisation's manifest of repositor
 
 # Maintaining repos.json
 
-[repos.json](../../../repos.json) is the organisation's manifest. [repos.html](../../../repos.html),
-published at <https://rdf-array.github.io/rdf-array/repos.html>, renders it with the open issues.
+[repos.json](../../../management/repos.json) is the organisation's manifest. [repos.html](../../../management/repos.html),
+published at <https://rdf-array.github.io/rdf-array/management/repos.html>, renders it with the open issues.
 The README keeps only a short hand-written list of the stacks, deep-linked into that page. GitHub
 cannot run the page's script in a README, which is why the full list is not there.
 
@@ -18,7 +18,7 @@ cannot run the page's script in a README, which is why the full list is not ther
   with every repository its runtime `deps` reach. A dependency shared by several stacks belongs to
   each; repos.html lists it under each and gives it its anchor at the first.
 - **target**: a project in `targets`, not forked yet (`"done": true` once it is). The assessment
-  stays in [targets.md](../../../targets.md).
+  stays in [targets.md](../../../management/targets.md).
 
 ## An entry
 
@@ -91,7 +91,7 @@ python3 tools/manifest-check.py --upstreams  # print the upstream of each reposi
 It needs `gh` logged in with the `read:org` scope for the GitHub part, and the checkouts beside this
 one (`--root DIR` otherwise; a missing checkout is noted, not an error). Errors:
 - duplicate names or anchors, unknown kinds or repositories, a runtime dependency cycle;
-- a `repos.html#…` link in README.md, targets.md or html-index.html that resolves to nothing;
+- a `repos.html#…` link in README.md, management/targets.md or docs/html-index.html that resolves to nothing;
 - a repository missing from repos.json or extra in it;
 - an edge a build file shows that repos.json lacks.
 
@@ -122,5 +122,5 @@ All issues live in rdf-array/rdf-array; repos.html files them as follows:
 - The README's stack list (one line per stack) and its documents table.
 - rdf-array.md's implementations table (one row per stack), and `targets.md` when a target becomes a
   fork.
-- `html-index.html` and the `pages.yml` check loop when a rendered document is added.
+- `docs/html-index.html` and the `pages.yml` check loop when a rendered document is added.
 - The fork's own README banner and `doc/rdf-array.md` stack table when it gains a dependency fork.

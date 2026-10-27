@@ -8,7 +8,7 @@ rdf-array is RDF whose data model has one more kind of term, the **sequence**: `
 is one term holding three literals in order, `()` is the empty sequence, and a sequence may hold
 terms of any kind, sequences included. Nothing else about RDF changes. This page says what changes
 and what does not, how each syntax spells it, what the implementations do, and what is still open.
-[repos.html](https://rdf-array.github.io/rdf-array/repos.html) lists the organisation's repositories; each
+[repos.html](https://rdf-array.github.io/rdf-array/management/repos.html) lists the organisation's repositories; each
 fork has its own `doc/rdf-array.md` with the detail.
 
 ## Why
@@ -202,7 +202,7 @@ graph with no sequences is an RDF graph.
 - **Specification test suites.** The W3C suites are forked with their expectations rewritten
   (rdf-tests-array, json-ld-api-array, json-ld-streaming-array, shexTest-array), and the tests no W3C
   suite has live in rdf-tests-contrib, json-ld-api-contrib and shexTest-contrib; the implementations do
-  not all walk them yet ([#3](https://github.com/rdf-array/rdf-array/issues/3); see [repos.html](https://rdf-array.github.io/rdf-array/repos.html#test-suites) for the repositories and contrib-duplicates.md for the
+  not all walk them yet ([#3](https://github.com/rdf-array/rdf-array/issues/3); see [repos.html](https://rdf-array.github.io/rdf-array/management/repos.html#test-suites) for the repositories and contrib-duplicates.md for the
   overlap). The suite forks are newer than the suites the implementations pin, so a port must tell
   upstream drift from rdf-array failures ([#11](https://github.com/rdf-array/rdf-array/issues/11)).
   SHACL's suite waits for a data-shapes-array fork (shacl-array.md §4), and RDF canonicalization's
@@ -217,7 +217,7 @@ graph with no sequences is an RDF graph.
   focus node and does not say whether a value set may hold a sequence ([#10](https://github.com/rdf-array/rdf-array/issues/10)).
 - **The array syntax itself.** Position patterns `((x))[i]` and the Collection shape expression
   `((shapeExpr))[m, n]` are the syntax proposed today and are expected to change; their alikeness in SPARQL
-  and ShEx is convenient rather than required. [array-syntax-uses.md](../array-syntax-uses.md) lists every file
+  and ShEx is convenient rather than required. [array-syntax-uses.md](../management/array-syntax-uses.md) lists every file
   a change would rewrite.
 - **Test manifests.** A W3C manifest's `mf:entries ( … )` is one sequence term when an rdf-array parser
   reads it; test runners of rdf-array implementations must accept a sequence there as well as a ladder.

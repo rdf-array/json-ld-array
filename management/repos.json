@@ -703,7 +703,7 @@
     {
       "anchor": "shacl-array",
       "done": true,
-      "text": "SHACL-array: [shacl-array.md](docs/shacl-array.html), implemented in [jena](#jena)'s jena-shacl, with the suites [data-shapes](#data-shapes) and [data-shapes-contrib](#data-shapes-contrib), 2026-10-25."
+      "text": "SHACL-array: [shacl-array.md](../docs/shacl-array.html), implemented in [jena](#jena)'s jena-shacl, with the suites [data-shapes](#data-shapes) and [data-shapes-contrib](#data-shapes-contrib), 2026-10-25."
     },
     {
       "anchor": "rdf-canonize",
@@ -763,17 +763,17 @@
     {
       "anchor": "owl-api",
       "done": true,
-      "text": "**[OWL API](https://github.com/owlcs/owlapi), Protégé** (Java) — OWL, whose syntax is made of lists, and whose DL could not look into a list in the data. Done: [owlapi-array](https://rdf-array.github.io/rdf-array/repos.html#owlapi) for [OWL-array](https://rdf-array.github.io/rdf-array/docs/owl-array.html) (2026-10-26); Protégé is the next target below."
+      "text": "**[OWL API](https://github.com/owlcs/owlapi), Protégé** (Java) — OWL, whose syntax is made of lists, and whose DL could not look into a list in the data. Done: [owlapi-array](https://rdf-array.github.io/rdf-array/management/repos.html#owlapi) for [OWL-array](https://rdf-array.github.io/rdf-array/docs/owl-array.html) (2026-10-26); Protégé is the next target below."
     },
     {
       "anchor": "protege",
       "done": true,
-      "text": "**[Protégé](https://github.com/protegeproject/protege) 5.6.9** (Java) — without a fork first: owlapi-array's OSGi bundle in place of `bundles/owlapi-osgidistribution.jar`, and a reasoner plugin, `protege-owl-array`, that wraps HermiT in `SequenceAwareReasonerFactory`; `protege-array` only when the editor must change ([#21](https://github.com/rdf-array/rdf-array/issues/21)). Done without a fork: [protege-owl-array](https://rdf-array.github.io/rdf-array/repos.html#protege-owl) (2026-10-27), and the walk-through of [examples/fhir](examples/fhir/index.html) §4 in Protégé. Impact 1 (swap and plugin) to 3 (fork), utility 4. [Assessment](targets.md#protégé)."
+      "text": "**[Protégé](https://github.com/protegeproject/protege) 5.6.9** (Java) — without a fork first: owlapi-array's OSGi bundle in place of `bundles/owlapi-osgidistribution.jar`, and a reasoner plugin, `protege-owl-array`, that wraps HermiT in `SequenceAwareReasonerFactory`; `protege-array` only when the editor must change ([#21](https://github.com/rdf-array/rdf-array/issues/21)). Done without a fork: [protege-owl-array](https://rdf-array.github.io/rdf-array/management/repos.html#protege-owl) (2026-10-27), and the walk-through of [examples/fhir](../examples/fhir/index.html) §4 in Protégé. Impact 1 (swap and plugin) to 3 (fork), utility 4. [Assessment](targets.md#protégé)."
     },
     {
       "anchor": "fhir-ttl",
       "done": false,
-      "text": "**The FHIR ontology's generator** ([kindling](https://github.com/HL7/kindling)'s `FhirTurtleGenerator`, Java) — fhir.ttl types a repeating element with `allValuesFrom` on the element type, which over rdf-array types the list; `ra:member only` is the fix, and [examples/fhir](examples/fhir/index.html) shows the published axiom inconsistent with list data. Impact 1, utility 3. [Assessment](targets.md#the-fhir-ontology)."
+      "text": "**The FHIR ontology's generator** ([kindling](https://github.com/HL7/kindling)'s `FhirTurtleGenerator`, Java) — fhir.ttl types a repeating element with `allValuesFrom` on the element type, which over rdf-array types the list; `ra:member only` is the fix, and [examples/fhir](../examples/fhir/index.html) shows the published axiom inconsistent with list data. Impact 1, utility 3. [Assessment](targets.md#the-fhir-ontology)."
     }
   ]
 }

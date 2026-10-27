@@ -148,7 +148,7 @@ for tests that need the list constraints.
 |---|---|---|---|
 | [jena-array](https://github.com/rdf-array/jena-array) `jena-shacl` | yes, sequences only | `sh:memberShape`, `sh:minListLength`, `sh:maxListLength`, `sh:uniqueMembers`; no `sh:detail` | data-shapes-array's SHACL 1.0 core suite and SHACL 1.2's list tests, and data-shapes-contrib: TC_SHACL 272 pass, 5 skipped (the rejected tests); compact syntax builds sequences |
 | [rudof-array](https://github.com/rdf-array/rudof-array) `shacl` | yes, sequences only | not yet (rudof's own TODO) | data-shapes-array: path-strange-001 and node-expr `list` pass, `shacl-shacl` and `path-strange-002` ignored; data-shapes-contrib: 6 pass, 15 ignored. Divergences: [rdf-array#17](https://github.com/rdf-array/rdf-array/issues/17) |
-| pySHACL over rdflib-array, rdf-validate-shacl over the RDF/JS forks | not forked | — | [targets.md](https://github.com/rdf-array/rdf-array/blob/main/targets.md) |
+| pySHACL over rdflib-array, rdf-validate-shacl over the RDF/JS forks | not forked | — | [targets.md](https://github.com/rdf-array/rdf-array/blob/main/management/targets.md) |
 
 [SHACL]: https://www.w3.org/TR/shacl/
 [SHACL 1.2 Core]: https://www.w3.org/TR/shacl12-core/

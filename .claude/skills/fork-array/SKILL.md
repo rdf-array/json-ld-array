@@ -8,8 +8,8 @@ description: Fork an RDF implementation into the rdf-array organisation as <proj
 rdf-array is RDF with one more kind of term, the sequence (`(1 2 3)`, `()`); see
 [rdf-array.md](../../../docs/rdf-array.md). A fork teaches one project that term and removes the code
 that built `rdf:first`/`rdf:rest` ladders or numbered `rdf:_n` container members. The formula below
-is what every fork so far followed; the [Not yet forked](https://rdf-array.github.io/rdf-array/repos.html#not-yet-forked)
-list (`targets` in [repos.json](../../../repos.json)) says which projects are worth it, in order, and [targets.md](../../../targets.md) what each
+is what every fork so far followed; the [Not yet forked](https://rdf-array.github.io/rdf-array/management/repos.html#not-yet-forked)
+list (`targets` in [repos.json](../../../management/repos.json)) says which projects are worth it, in order, and [targets.md](../../../management/targets.md) what each
 one's change list looks like.
 
 ## 1. Decide the closure first
@@ -138,7 +138,7 @@ homepage at the site.
 
 ## 7. Register the fork
 
-Add it to this repository's [repos.json](../../../repos.json) (the `repos-manifest` skill: its kind,
+Add it to this repository's [repos.json](../../../management/repos.json) (the `repos-manifest` skill: its kind,
 language, upstream, description, anchor and `deps`, `"stack": true` if a stack is named for it, the
 target marked done if it was one), run `python3 tools/manifest-check.py`, add it to the
 implementations table of rdf-array.md and to the memory note the session keeps, and set the GitHub

@@ -2,19 +2,19 @@ name: pages
 
 # Deploy the documents to GitHub Pages:
 #
-#   https://rdf-array.github.io/rdf-array/html-index.html   (the repository's homepage)
+#   https://rdf-array.github.io/rdf-array/docs/html-index.html   (the repository's homepage)
 #   https://rdf-array.github.io/rdf-array/docs/rdf-array.html
 #   https://rdf-array.github.io/rdf-array/docs/json-ld-array.html
 #   https://rdf-array.github.io/rdf-array/docs/shacl-array.html
 #   https://rdf-array.github.io/rdf-array/docs/owl-array.html
 #   https://rdf-array.github.io/rdf-array/docs/protege-array.html  (a plain page, not ReSpec)
 #   https://rdf-array.github.io/rdf-array/examples/fhir/     (README.md rendered as index.html)
-#   https://rdf-array.github.io/rdf-array/repos.html        (rendered from repos.json in the browser)
+#   https://rdf-array.github.io/rdf-array/management/repos.html  (rendered from repos.json in the browser)
 #
 # The tracked tree is the site: each .html in docs/ is generated from its .md
-# by md-to-respec.py and committed, so nothing is built here beyond the
-# redirects from the documents' addresses before docs/; html-index.html is
-# hand-written, and there is no index.html, the README being the front page
+# by tools/md-to-respec.py and committed, so nothing is built here beyond
+# the redirects from the pages' addresses before docs/ and management/;
+# docs/html-index.html is hand-written, and there is no index.html, the README being the front page
 # on GitHub. Modelled on shex.js-array's pages.yml.
 #
 # One-time setup: Settings -> Pages -> Source: "GitHub Actions" (configure-pages
@@ -43,20 +43,22 @@ jobs:
         run: |
           for pair in docs/rdf-array.md:docs/rdf-array.html docs/json-ld-array.md:docs/json-ld-array.html docs/shacl-array.md:docs/shacl-array.html docs/owl-array.md:docs/owl-array.html docs/protege-array.md:docs/protege-array.html examples/fhir/README.md:examples/fhir/index.html; do
             src="${pair%%:*}"; dst="${pair##*:}"
-            if ! python3 md-to-respec.py --check "$src" "$dst"; then
-              echo "$dst is out of date: run python3 md-to-respec.py $src $dst" >&2
+            if ! python3 tools/md-to-respec.py --check "$src" "$dst"; then
+              echo "$dst is out of date: run python3 tools/md-to-respec.py $src $dst" >&2
               exit 1
             fi
           done
       - name: check repos.json and the links into repos.html
         run: python3 tools/manifest-check.py --offline
-      - name: redirect the documents' addresses from before docs/ (2026-10-27)
+      - name: redirect the pages' addresses from before docs/ and management/ (2026-10-27)
         run: |
           redirect() {
             printf '<!DOCTYPE html>\n<meta charset="utf-8">\n<title>Moved to %s</title>\n<link rel="canonical" href="%s">\n<meta http-equiv="refresh" content="0; url=%s">\n<script>location.replace("%s" + location.hash)</script>\n<p>Moved to <a href="%s">%s</a>.</p>\n' "$2" "$2" "$2" "$2" "$2" "$2" > "$1"
           }
           for d in rdf-array json-ld-array shacl-array owl-array; do redirect "$d.html" "docs/$d.html"; done
           redirect protege.html docs/protege-array.html
+          redirect html-index.html docs/html-index.html
+          redirect repos.html management/repos.html
       - uses: actions/configure-pages@v6
         with:
           enablement: true

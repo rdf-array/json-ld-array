@@ -41,4 +41,4 @@ SPARQL-array reaches into a sequence with **position patterns** `((element))[ind
 | rdf-array | [docs/json-ld-array.md](https://github.com/rdf-array/rdf-array/blob/main/docs/json-ld-array.md) | doc | 1 |
 | rdf-array | [docs/rdf-array.md](https://github.com/rdf-array/rdf-array/blob/main/docs/rdf-array.md) | doc | 14 |
 | rdf-array | [docs/shacl-array.md](https://github.com/rdf-array/rdf-array/blob/main/docs/shacl-array.md) | doc | 4 |
-| rdf-array | [targets.md](https://github.com/rdf-array/rdf-array/blob/main/targets.md) | doc | 1 |
+| rdf-array | [management/targets.md](https://github.com/rdf-array/rdf-array/blob/main/management/targets.md) | doc | 1 |

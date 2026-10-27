@@ -121,10 +121,10 @@ expectation against at least two implementations where two exist (jena-array and
 jena-array and comunica-array for SPARQL, jsonld-streaming-parser-array and rdflib-array for JSON-LD,
 shex.js-array and jena-array for ShEx); `--check` fails if a rebuild would change anything. To add a test,
 add a row to the table there and rebuild; give it its `duplicates` (the implementation tests it reproduces)
-and run `tools/contrib-duplicates.py` here, which regenerates [contrib-duplicates.md](../../../contrib-duplicates.md).
+and run `tools/contrib-duplicates.py` here, which regenerates [contrib-duplicates.md](../../../management/contrib-duplicates.md).
 Every test that uses the proposed array syntax says so with `mf:requires` (`ra:PositionPatterns`,
 `ra:SequenceFunctions`, `ra:CollectionShapeExpression`, from [vocab/vocab.ttl](../../../vocab/vocab.ttl)), and
-`tools/array-syntax-uses.py` regenerates [array-syntax-uses.md](../../../array-syntax-uses.md), the list a
+`tools/array-syntax-uses.py` regenerates [array-syntax-uses.md](../../../management/array-syntax-uses.md), the list a
 change of syntax has to rewrite.
 
 ## 5. Running a suite against each implementation

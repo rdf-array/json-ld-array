@@ -319,7 +319,7 @@ All 24 queries of the example list in the tab the instances that the OWL API run
   element is a node.
 - **The FHIR ontology's generator.** fhir.ttl's `allValuesFrom` on a repeating element types the
   list (§1). The fix is mechanical, `ra:member only` for every element whose maximum cardinality is
-  *, and belongs in kindling's `FhirTurtleGenerator`, a [target](../repos.html#not-yet-forked).
+  *, and belongs in kindling's `FhirTurtleGenerator`, a [target](../management/repos.html#not-yet-forked).
 
 ---
 

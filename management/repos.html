@@ -51,7 +51,7 @@
   <p class="lede">Every repository of the <a href="https://github.com/rdf-array">rdf-array</a> organisation by
     language and stack, the targets not yet forked, and the open issues, which all live in
     <a href="https://github.com/rdf-array/rdf-array/issues">rdf-array/rdf-array</a>. Rendered from
-    <a href="repos.json">repos.json</a>; documents are on the <a href="html-index.html">homepage</a>.</p>
+    <a href="repos.json">repos.json</a>; documents are on the <a href="../docs/html-index.html">homepage</a>.</p>
   <nav id="nav"></nav>
   <p id="status">Loading…</p>
   <noscript><p>This page renders <a href="repos.json">repos.json</a> with JavaScript. Without it, read
@@ -74,13 +74,13 @@ const slug = s => s.toLowerCase().replace(/ /g, "-").replace(/[^a-z0-9_-]/g, "")
 const ghRepo = name => `https://github.com/${ORG}/${name}`;
 const blob = f => `https://github.com/${ORG}/rdf-array/blob/main/${f}`;
 
-// Inline Markdown: code spans, bold, links, autolinks. Relative .md links point at GitHub.
+// Inline Markdown: code spans, bold, links, autolinks. Relative .md links point at GitHub, from management/.
 function md(text) {
   const codes = [];
   let s = esc(text).replace(/`([^`]+)`/g, (_, c) => `\u0000${codes.push(c) - 1}\u0000`);
   s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
   s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, u) => {
-    if (/^[\w./-]+\.md(#.*)?$/.test(u)) u = blob(u);
+    if (/^[\w./-]+\.md(#.*)?$/.test(u)) u = new URL(u, blob("management/")).href;
     return `<a href="${u}">${t}</a>`;
   });
   s = s.replace(/&lt;(https?:\/\/[^&]+)&gt;/g, '<a href="$1">$1</a>');
@@ -231,7 +231,7 @@ function render(doc, issues, issueError) {
   // Not yet forked
   nav.push(["not-yet-forked", "Not yet forked"]);
   html += `<h2 id="not-yet-forked">Not yet forked</h2><p class="muted">The targets assessed in
-    <a href="${blob("targets.md")}">targets.md</a>, in its recommended order; impact (what a fork must change)
+    <a href="${blob("management/targets.md")}">targets.md</a>, in its recommended order; impact (what a fork must change)
     and utility (what it buys rdf-array) are scored 1–5 there.</p><ul class="targets">${(doc.targets || []).map(t =>
     `<li id="${t.anchor}"><span class="${t.done ? "done" : "muted"}">${t.done ? "☑" : "☐"}</span> ${md(t.text)}</li>`).join("")}</ul>`;
   // Issues not filed under one repository

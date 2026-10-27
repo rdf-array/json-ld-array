@@ -2,8 +2,8 @@
 """Turn a Markdown document of this repository (a small, regular subset of Markdown) into an HTML
 page: a ReSpec specification by default, or a plain page for a demo.
 
-    python3 md-to-respec.py docs/json-ld-array.md docs/json-ld-array.html
-    python3 md-to-respec.py --check docs/owl-array.md docs/owl-array.html   # exit 1 when the HTML is out of date
+    python3 tools/md-to-respec.py docs/json-ld-array.md docs/json-ld-array.html
+    python3 tools/md-to-respec.py --check docs/owl-array.md docs/owl-array.html   # exit 1 when the HTML is out of date
 
 Handles: the leading H1 (becomes the title), paragraphs, bullet lists with continuation lines
 (indented two or more spaces) and fenced code blocks inside them, fenced code blocks (```json /
@@ -345,7 +345,7 @@ TEMPLATE = '''<!DOCTYPE html>
 %(abstract)s
   </section>
   <section id="sotd">
-    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/%(source)s">%(source)s</a> by <code>md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
+    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/%(source)s">%(source)s</a> by <code>tools/md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
   </section>
   <section class="introductory" id="introduction">
     <h2>Introduction</h2>
@@ -408,7 +408,7 @@ PAGE_TEMPLATE = """<!DOCTYPE html>
 <link rel="stylesheet" href="page.css">
 </head>
 <body>
-<!-- Generated from %(source)s by md-to-respec.py; edit that file, not this one. -->
+<!-- Generated from %(source)s by tools/md-to-respec.py; edit that file, not this one. -->
 <main>
 
 <header class="top">

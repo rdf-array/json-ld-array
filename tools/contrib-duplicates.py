@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Write contrib-duplicates.md: which implementation tests each rdf-array contrib test duplicates.
+"""Write management/contrib-duplicates.md: which implementation tests each rdf-array contrib test duplicates.
 
     python3 tools/contrib-duplicates.py [--check]
 
@@ -47,7 +47,7 @@ def main():
         for where, suite, test in sorted(by_impl[impl]):
             lines.append(f'| {where.replace("|", "/")} | {suite} `{test}` |')
     text = '\n'.join(lines) + '\n'
-    out = HERE / 'contrib-duplicates.md'
+    out = HERE / 'management' / 'contrib-duplicates.md'
     if '--check' in sys.argv:
         sys.exit(0 if out.exists() and out.read_text() == text else 'contrib-duplicates.md is out of date')
     out.write_text(text)

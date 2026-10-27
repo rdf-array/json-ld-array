@@ -11,8 +11,8 @@ repositories it depends on ("deps", "scope": "test" for test-only ones); "stack"
 repositories a stack is named for. repos.html renders it. This checks:
 
 - repos.json itself: unique names and anchors, known kinds, deps and contribOf naming known
-  repositories, no cycle among runtime deps, and the repos.html#<anchor> links in README.md and
-  targets.md resolving to a repository, a stack, a language section or a target;
+  repositories, no cycle among runtime deps, and the repos.html#<anchor> links in README.md,
+  management/targets.md and docs/html-index.html resolving to a repository, a stack, a language section or a target;
 - GitHub (`gh repo list`): repositories missing from or extra in repos.json, missing descriptions,
   descriptions with the old "RDF-:" prefix, and upstreams that differ from the fork's parent;
 - the build files of the checkouts in ~/checkouts/rdf-array (or --root DIR): edges a package.json
@@ -30,7 +30,7 @@ import subprocess
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent.parent
-MANIFEST = HERE / 'repos.json'
+MANIFEST = HERE / 'management' / 'repos.json'
 ORG = 'rdf-array'
 KINDS = {'implementation', 'test-suite', 'contrib', 'tool', 'meta'}
 SECTIONS = {'test-suites', 'java', 'javascript', 'python', 'rust', 'meta', 'not-yet-forked',
@@ -84,7 +84,7 @@ def check_manifest(doc, errors):
 
 def check_links(doc, errors):
     ids = {r['anchor'] for r in doc['repos']} | {t['anchor'] for t in doc.get('targets', [])} | SECTIONS
-    for f in ('README.md', 'targets.md', 'html-index.html'):
+    for f in ('README.md', 'management/targets.md', 'docs/html-index.html'):
         p = HERE / f
         if p.exists():
             for a in re.findall(r'repos\.html#([A-Za-z0-9_-]+)', p.read_text(encoding='utf-8')):

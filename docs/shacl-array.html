@@ -44,7 +44,7 @@
     <p>SHACL-array is SHACL (<a href="https://www.w3.org/TR/shacl/">SHACL</a>, with the list constraints of <a href="https://www.w3.org/TR/shacl12-core/">SHACL 1.2 Core</a>) over the rdf-array data model, in which <code>( … )</code> is one term, a <em>sequence</em>, and <code>()</code> is the empty sequence. It changes two things and adds no vocabulary:</p>
   </section>
   <section id="sotd">
-    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/docs/shacl-array.md">docs/shacl-array.md</a> by <code>md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
+    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/docs/shacl-array.md">docs/shacl-array.md</a> by <code>tools/md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
   </section>
   <section class="introductory" id="introduction">
     <h2>Introduction</h2>
@@ -137,7 +137,7 @@
   <tbody>
   <tr><td><a href="https://github.com/rdf-array/jena-array">jena-array</a> <code>jena-shacl</code></td><td>yes, sequences only</td><td><code>sh:memberShape</code>, <code>sh:minListLength</code>, <code>sh:maxListLength</code>, <code>sh:uniqueMembers</code>; no <code>sh:detail</code></td><td>data-shapes-array's SHACL 1.0 core suite and SHACL 1.2's list tests, and data-shapes-contrib: TC_SHACL 272 pass, 5 skipped (the rejected tests); compact syntax builds sequences</td></tr>
   <tr><td><a href="https://github.com/rdf-array/rudof-array">rudof-array</a> <code>shacl</code></td><td>yes, sequences only</td><td>not yet (rudof's own TODO)</td><td>data-shapes-array: path-strange-001 and node-expr <code>list</code> pass, <code>shacl-shacl</code> and <code>path-strange-002</code> ignored; data-shapes-contrib: 6 pass, 15 ignored. Divergences: <a href="https://github.com/rdf-array/rdf-array/issues/17">rdf-array#17</a></td></tr>
-  <tr><td>pySHACL over rdflib-array, rdf-validate-shacl over the RDF/JS forks</td><td>not forked</td><td>—</td><td><a href="https://github.com/rdf-array/rdf-array/blob/main/targets.md">targets.md</a></td></tr>
+  <tr><td>pySHACL over rdflib-array, rdf-validate-shacl over the RDF/JS forks</td><td>not forked</td><td>—</td><td><a href="https://github.com/rdf-array/rdf-array/blob/main/management/targets.md">targets.md</a></td></tr>
   </tbody></table>
   </section>
   <script>
