@@ -4,6 +4,7 @@ HTML page.
 
     python3 md-to-respec.py json-ld-array.md json-ld-array.html
     python3 md-to-respec.py rdf-array.md rdf-array.html
+    python3 md-to-respec.py --check owl-array.md owl-array.html   # exit 1 when the HTML is out of date
 
 Handles: the leading H1 (becomes the title), paragraphs, bullet lists with continuation lines
 (indented two or more spaces), fenced code blocks (```json / ```turtle / ```sparql), pipe tables
@@ -22,6 +23,7 @@ INLINE_CODE = re.compile(r'`([^`]+)`')
 BOLD = re.compile(r'\*\*(.+?)\*\*')
 ITALIC = re.compile(r'(?<![\w*])\*(?!\*)(.+?)(?<!\*)\*(?![\w*])')
 LINK = re.compile(r'\[([^\]]+)\]\(([^)\s]+)\)')
+IMAGE = re.compile(r'!\[([^\]]*)\]\(([^)\s]+)\)')
 REF = re.compile(r'\[([^\]\[]+)\](?![\(\[\]])')
 REF_DEF = re.compile(r'^\[([^\]]+)\]:\s+(\S+)\s*$')
 refs = {}   # reference-style link definitions of the document being converted
@@ -38,6 +40,7 @@ def inline(text):
 
     text = INLINE_CODE.sub(stash, text)
     text = html.escape(text, quote=False).replace('&lt;br&gt;', '<br>')
+    text = IMAGE.sub(r'<img src="\2" alt="\1" style="max-width: 100%">', text)
     text = LINK.sub(r'<a href="\2">\1</a>', text)
     text = REF.sub(lambda m: '<a href="%s">%s</a>' % (refs[m.group(1)], m.group(1)) if m.group(1) in refs else m.group(0), text)
     text = CITE.sub(lambda m: '[[%s%s]]%s' % (m.group(1), m.group(2), m.group(3) or ''), text)
@@ -193,7 +196,7 @@ TEMPLATE = '''<!DOCTYPE html>
       specStatus: "unofficial",
       shortName: "%(short_name)s",
       editors: [{ name: "Eric Prud'hommeaux" }],
-      edDraftURI: "https://rdf-array.github.io/rdf-array/%(short_name)s.html",
+      edDraftURI: "https://rdf-array.github.io/rdf-array/%(page_path)s",
       latestVersion: null,
       overrideCopyright: "<p class='copyright'>Copyright &copy; 2026 the rdf-array project. This document is licensed under a <a href='https://creativecommons.org/licenses/by/4.0/'>Creative Commons Attribution 4.0 License</a>.</p>",
       lint: { "no-unused-dfns": false },
@@ -281,7 +284,7 @@ TEMPLATE = '''<!DOCTYPE html>
 '''
 
 
-def main(src, dst):
+def render(src, dst):
     md = open(src, encoding='utf-8').read()
     title, pre, tops = convert(md)
     # The abstract is the first real paragraph after the italic status note; the rest is the introduction.
@@ -291,17 +294,33 @@ def main(src, dst):
     intro = ([status] if status else []) + rest[1:]
     title_text = re.sub(r'<[^>]+>', '', title or 'JSON-LD-array')
     short_name = os.path.splitext(os.path.basename(dst))[0]
+    # Paths are relative to the repository root, where the Pages check runs: examples/fhir/index.html
+    page_path = os.path.relpath(dst).replace(os.sep, '/')
+    source_path = os.path.relpath(src).replace(os.sep, '/')
     page = TEMPLATE % {
         'title_text': html.escape(title_text, quote=False),
         'short_name': short_name,
-        'source': html.escape(os.path.basename(src), quote=False),
+        'page_path': html.escape(page_path, quote=False),
+        'source': html.escape(source_path, quote=False),
         'abstract': '    ' + abstract,
         'intro': '\n'.join('    ' + b for b in intro),
         'sections': render_sections(tops),
     }
+    return page
+
+
+def main(src, dst, check=False):
+    page = render(src, dst)
+    if check:
+        # The Pages workflow: is the committed rendering what this source gives?
+        current = os.path.exists(dst) and open(dst, encoding='utf-8').read() == page
+        print(('current:' if current else 'out of date:'), dst)
+        return 0 if current else 1
     open(dst, 'w', encoding='utf-8').write(page)
     print('wrote', dst, 'with', sum(1 for _ in re.finditer('<section ', page)), 'sections')
+    return 0
 
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    args = [a for a in sys.argv[1:] if a != '--check']
+    sys.exit(main(args[0], args[1], check='--check' in sys.argv[1:]))

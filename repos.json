@@ -160,6 +160,20 @@
       "deps": []
     },
     {
+      "name": "protege-owl-array",
+      "short": "protege-owl",
+      "anchor": "protege-owl",
+      "kind": "tool",
+      "language": "Java",
+      "description": "the OWL-array reasoners for Protégé 5.6: HermiT and ELK behind owlapi-array's `SequenceAwareReasonerFactory` in the Reasoner menu, `assemble.sh` to make Protégé 5.6.9 with owlapi-array's bundle and the plugin from the stock zip, and the walk-through bundle that ran [examples/fhir](https://rdf-array.github.io/rdf-array/examples/fhir/) in Protégé.",
+      "deps": [
+        {
+          "repo": "owlapi-array",
+          "note": "pom.xml names net.sourceforge.owlapi:owlapi-apibinding 4.5.29, upstream's coordinates, built from owlapi-array; assemble.sh fetches owlapi-array's bundle"
+        }
+      ]
+    },
+    {
       "name": "shex.js-array",
       "short": "shex.js",
       "anchor": "shexjs",
@@ -749,7 +763,17 @@
     {
       "anchor": "owl-api",
       "done": true,
-      "text": "**[OWL API](https://github.com/owlcs/owlapi), Protégé** (Java) — OWL, whose syntax is made of lists, and whose DL could not look into a list in the data. Done: [owlapi-array](https://rdf-array.github.io/rdf-array/repos.html#owlapi) for [OWL-array](https://rdf-array.github.io/rdf-array/owl-array.html) (2026-10-26); Protégé follows."
+      "text": "**[OWL API](https://github.com/owlcs/owlapi), Protégé** (Java) — OWL, whose syntax is made of lists, and whose DL could not look into a list in the data. Done: [owlapi-array](https://rdf-array.github.io/rdf-array/repos.html#owlapi) for [OWL-array](https://rdf-array.github.io/rdf-array/owl-array.html) (2026-10-26); Protégé is the next target below."
+    },
+    {
+      "anchor": "protege",
+      "done": true,
+      "text": "**[Protégé](https://github.com/protegeproject/protege) 5.6.9** (Java) — without a fork first: owlapi-array's OSGi bundle in place of `bundles/owlapi-osgidistribution.jar`, and a reasoner plugin, `protege-owl-array`, that wraps HermiT in `SequenceAwareReasonerFactory`; `protege-array` only when the editor must change ([#21](https://github.com/rdf-array/rdf-array/issues/21)). Done without a fork: [protege-owl-array](https://rdf-array.github.io/rdf-array/repos.html#protege-owl) (2026-10-27), and the walk-through of [examples/fhir](examples/fhir/index.html) §4 in Protégé. Impact 1 (swap and plugin) to 3 (fork), utility 4. [Assessment](targets.md#protégé)."
+    },
+    {
+      "anchor": "fhir-ttl",
+      "done": false,
+      "text": "**The FHIR ontology's generator** ([kindling](https://github.com/HL7/kindling)'s `FhirTurtleGenerator`, Java) — fhir.ttl types a repeating element with `allValuesFrom` on the element type, which over rdf-array types the list; `ra:member only` is the fix, and [examples/fhir](examples/fhir/index.html) shows the published axiom inconsistent with list data. Impact 1, utility 3. [Assessment](targets.md#the-fhir-ontology)."
     }
   ]
 }

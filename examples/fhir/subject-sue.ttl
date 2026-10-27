@@ -1,0 +1,42 @@
+# subject-sue.ttl: Sue, whom the 2016 talk left commented out. Her observation is coded in ICD-10 only,
+# a code system without concept IRIs, so nothing but the coding in the list says what it is.
+
+@prefix fhir: <http://hl7.org/fhir/> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix sue:  <https://rdf-array.github.io/rdf-array/examples/fhir/subject-sue.ttl#> .
+
+<https://rdf-array.github.io/rdf-array/examples/fhir/subject-sue.ttl> a owl:Ontology ;
+    owl:imports <https://rdf-array.github.io/rdf-array/examples/fhir/arthritis.ttl> ,
+                <https://rdf-array.github.io/rdf-array/examples/fhir/blood-pressure.ttl> .
+
+sue:asPatient a fhir:Patient ;
+  fhir:nodeRole fhir:treeRoot ;
+  fhir:id [ fhir:v "sue" ] ;
+  fhir:identifier ( [
+     fhir:system [ fhir:v "http://myorg.example/patients/"^^xsd:anyURI ; fhir:l <http://myorg.example/patients/> ] ;
+     fhir:value [ fhir:v "suejones" ]
+  ] ) ;
+  fhir:active [ fhir:v true ] ;
+  fhir:name ( [
+     fhir:family [ fhir:v "Jones" ] ;
+     fhir:given ( [ fhir:v "Sue" ] [ fhir:v "Ann" ] )
+  ] ) ;
+  fhir:gender [ fhir:v "female" ] .
+  # No fhir:birthDate: FHIR writes a date as xsd:date, which is not in the OWL 2 datatype map, and HermiT
+  # refuses to load a literal of a datatype it does not know. See README.md.
+
+sue:Obs1 a fhir:Observation ;
+  fhir:nodeRole fhir:treeRoot ;
+  fhir:id [ fhir:v "sue-obs1" ] ;
+  fhir:status [ fhir:v "final" ] ;
+  fhir:code [
+     fhir:coding ( [
+       fhir:system [ fhir:v "http://hl7.org/fhir/sid/icd-10"^^xsd:anyURI ; fhir:l <http://hl7.org/fhir/sid/icd-10> ] ;
+       fhir:code [ fhir:v "M05.9" ] ;
+       fhir:display [ fhir:v "Seropositive rheumatoid arthritis, unspecified" ]
+     ] ) ;
+     fhir:text [ fhir:v "Seropositive rheumatoid arthritis" ]
+  ] ;
+  fhir:subject [ fhir:reference [ fhir:v "Patient/sue" ] ; fhir:l sue:asPatient ] ;
+  fhir:effective [ a fhir:DateTime ; fhir:v "2016-12-02T09:30:00Z"^^xsd:dateTime ] .

@@ -1,0 +1,48 @@
+# subject-bob.ttl: Bob, as FHIR RDF writes him today; the 2016 original is
+# https://www.w3.org/2016/Talks/1205-swat4ls-egp/examples/subject-bob.ttl.
+
+@prefix fhir: <http://hl7.org/fhir/> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix bob:  <https://rdf-array.github.io/rdf-array/examples/fhir/subject-bob.ttl#> .
+
+<https://rdf-array.github.io/rdf-array/examples/fhir/subject-bob.ttl> a owl:Ontology ;
+    owl:imports <https://rdf-array.github.io/rdf-array/examples/fhir/arthritis.ttl> ,
+                <https://rdf-array.github.io/rdf-array/examples/fhir/blood-pressure.ttl> .
+
+bob:asPatient a fhir:Patient ;
+  fhir:nodeRole fhir:treeRoot ;
+  fhir:id [ fhir:v "bob" ] ;
+  fhir:identifier ( [
+     fhir:system [ fhir:v "http://myorg.example/patients/"^^xsd:anyURI ; fhir:l <http://myorg.example/patients/> ] ;
+     fhir:value [ fhir:v "bobsmith" ]
+  ] ) ;
+  fhir:active [ fhir:v true ] ;
+  fhir:name ( [
+     fhir:family [ fhir:v "Smith" ] ;
+     fhir:given ( [ fhir:v "Bob" ] )
+  ] ) ;
+  fhir:gender [ fhir:v "male" ] .
+  # No fhir:birthDate: FHIR writes a date as xsd:date, which is not in the OWL 2 datatype map, and HermiT
+  # refuses to load a literal of a datatype it does not know. See README.md.
+
+# Seronegative rheumatoid arthritis, ICD-10 first and SNOMED CT second, and no concept IRI on the
+# CodeableConcept: this generator did not add them. The SNOMED CT coding is found in the list.
+bob:Obs1 a fhir:Observation ;
+  fhir:nodeRole fhir:treeRoot ;
+  fhir:id [ fhir:v "bob-obs1" ] ;
+  fhir:status [ fhir:v "final" ] ;
+  fhir:code [
+     fhir:coding ( [
+       fhir:system [ fhir:v "http://hl7.org/fhir/sid/icd-10"^^xsd:anyURI ; fhir:l <http://hl7.org/fhir/sid/icd-10> ] ;
+       fhir:code [ fhir:v "M06.0" ] ;
+       fhir:display [ fhir:v "Seronegative rheumatoid arthritis" ]
+     ] [
+       fhir:system [ fhir:v "http://snomed.info/sct"^^xsd:anyURI ; fhir:l <http://snomed.info/sct> ] ;
+       fhir:code [ fhir:v "239792003" ] ;
+       fhir:display [ fhir:v "Seronegative rheumatoid arthritis" ]
+     ] ) ;
+     fhir:text [ fhir:v "Seronegative rheumatoid arthritis" ]
+  ] ;
+  fhir:subject [ fhir:reference [ fhir:v "Patient/bob" ] ; fhir:l bob:asPatient ] ;
+  fhir:effective [ a fhir:DateTime ; fhir:v "2016-12-01T11:00:00Z"^^xsd:dateTime ] .

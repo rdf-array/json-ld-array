@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FHIR RDF reasoning with OWL-array</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus: "unofficial",
+      shortName: "index",
+      editors: [{ name: "Eric Prud'hommeaux" }],
+      edDraftURI: "https://rdf-array.github.io/rdf-array/examples/fhir/index.html",
+      latestVersion: null,
+      overrideCopyright: "<p class='copyright'>Copyright &copy; 2026 the rdf-array project. This document is licensed under a <a href='https://creativecommons.org/licenses/by/4.0/'>Creative Commons Attribution 4.0 License</a>.</p>",
+      lint: { "no-unused-dfns": false },
+      localBiblio: {
+        "RML-CORE": { title: "RML-Core: Generic Mapping Language for RDF", href: "https://w3id.org/rml/core/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-CC": { title: "RML-CC: RML Collections and Containers", href: "https://w3id.org/rml/cc/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-LV": { title: "RML-LV: RML Logical Views", href: "https://w3id.org/rml/lv/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-FNML": { title: "RML-FNML: RML Functions", href: "https://w3id.org/rml/fnml/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "YARRRML": { title: "YARRRML", href: "https://rml.io/yarrrml/spec/", publisher: "IDLab, Ghent University" }
+      }
+    };
+  </script>
+  <style>
+    table.simple { font-size: 0.9em; }
+    table.simple td, table.simple th { vertical-align: top; }
+    pre.example { font-size: 0.9em; line-height: 1.35; }
+    .hljs-iri { color: #0b5394; }
+    .hljs-pname { color: #38761d; }
+    .hljs-lit { color: #a61c00; }
+    .hljs-kw { color: #741b47; font-weight: bold; }
+    .hljs-var { color: #b45f06; }
+    .hljs-cmt { color: #777; font-style: italic; }
+    .hljs-bnode { color: #666; }
+    .hljs-num, .hljs-number { color: #a61c00; }
+    .hljs-attr { color: #0b5394; }
+    .hljs-string { color: #38761d; }
+    .hljs-literal { color: #741b47; }
+  </style>
+</head>
+<body>
+  <section id="abstract">
+    <p>The 2016 talk classified FHIR observations by what they are observations of: define a class of codings by system and code, connect it to a SNOMED CT concept, and let SNOMED CT's hierarchy answer "which observations are of an arthritis?". FHIR RDF has changed since: an element's literal is <code>fhir:v</code>, a uri also carries <code>fhir:l</code>, the IRI, a repeated element such as <code>CodeableConcept.coding</code> is an RDF list <code>( … )</code>, and a CodeableConcept may carry the concept IRIs of its codings as <code>rdf:type</code> arcs. The list is the problem for OWL: FHIR's own <a href="https://build.fhir.org/rdf.html">RDF page</a> warns that RDF lists "cause problems for OWL 2" and offers a conversion script. Read over rdf-array the list is one term, and OWL-array gives a class expression a way into it, <code>fhir:coding some (ra:member some C)</code>, so the 2016 process runs on today's data unchanged in spirit: recognizers over the codings in the list, connective tissue to SNOMED CT, DL queries over the hierarchy.</p>
+  </section>
+  <section id="sotd">
+    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/examples/fhir/README.md">examples/fhir/README.md</a> by <code>md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
+  </section>
+  <section class="introductory" id="introduction">
+    <h2>Introduction</h2>
+    <p><em>Example, 2026-10-27. The process of <a href="https://www.w3.org/2016/Talks/1205-swat4ls-egp/reasoning.html">Semantic Representations of Clinical Care Data Leveraging HL7 FHIR</a> (Solbrig and Prud'hommeaux, SWAT4LS, 4 December 2016) over the FHIR RDF of today, which writes a repeated element as a list, with <a href="../../owl-array.html">OWL-array</a> to look into the list. Run through <a href="https://github.com/rdf-array/owlapi-array">owlapi-array</a> and HermiT (every query below answers as expected), and in Protégé 5.6.9 with owlapi-array's bundle and the <a href="https://github.com/rdf-array/protege-owl-array">protege-owl-array</a> reasoner plugin, whose DL Query tab lists the same answers (§4). The sources are <a href="https://github.com/rdf-array/rdf-array/tree/main/examples/fhir">examples/fhir</a> in the rdf-array meta-repository.</em></p>
+  </section>
+  <section id="the-files">
+  <h2>The files</h2>
+  <table class="simple">
+  <thead><tr><th>File</th><th>What it is</th></tr></thead>
+  <tbody>
+  <tr><td><a href="subjects.ttl"><code>subjects.ttl</code></a></td><td>the root: imports the three subjects. Open this one.</td></tr>
+  <tr><td><a href="subject-amy.ttl"><code>subject-amy.ttl</code></a>, <a href="subject-bob.ttl"><code>subject-bob.ttl</code></a>, <a href="subject-sue.ttl"><code>subject-sue.ttl</code></a></td><td>a Patient and an Observation each, in today's FHIR RDF. Amy: rheumatoid arthritis coded in SNOMED CT then ICD-10, with the SNOMED CT concept IRI the generator adds, and a blood pressure of 150/95 with two components. Bob: seronegative rheumatoid arthritis, ICD-10 first and SNOMED CT second, no concept IRI. Sue: seropositive rheumatoid arthritis in ICD-10 only.</td></tr>
+  <tr><td><a href="arthritis.ttl"><code>arthritis.ttl</code></a></td><td>the talk's domain logic: recognizers of codings, connective tissue through the coding list to SNOMED CT concepts, the classes the DL queries ask for, and two more that look at the list itself.</td></tr>
+  <tr><td><a href="blood-pressure.ttl"><code>blood-pressure.ttl</code></a></td><td>a second domain, after FHIR's <a href="https://build.fhir.org/observation-example-compound-numeric-blood-pressure.ttl">compound blood pressure example</a>: components are a list, each with a coding list of its own, and a number to compare.</td></tr>
+  <tr><td><a href="fhir-min.ttl"><code>fhir-min.ttl</code></a></td><td>the part of the FHIR ontology (<a href="https://build.fhir.org/fhir.ttl">fhir.ttl</a>) the subjects use, with each repeating element typed as a sequence of its element type. Imports the <a href="../../vocab/owl-array.ttl">OWL-array vocabulary</a>.</td></tr>
+  <tr><td><code>snomedct_extract_descriptive.ttl</code>, <code>snomedct_extract_base_descriptive.ttl</code></td><td>the SNOMED CT extract of the 2016 talk, unchanged: arthritis and its neighbourhood, with descriptive IRIs (<code>sct:Rheumatoid_arthritis-disorder</code>) and the numeric code as an annotation.</td></tr>
+  <tr><td><a href="catalog-v001.xml"><code>catalog-v001.xml</code></a></td><td>maps every <code>owl:imports</code> IRI to the file beside it, in the form Protégé reads.</td></tr>
+  <tr><td><a href="FhirReasoning.java"><code>FhirReasoning.java</code></a>, <a href="pom.xml"><code>pom.xml</code></a></td><td>the check: loads <code>subjects.ttl</code> through the catalog, reasons with HermiT behind owlapi-array's decorator, runs the DL queries of §3 and compares the answers (§5).</td></tr>
+  </tbody></table>
+  <p>The ontology IRIs are the files' addresses on this site, so the imports resolve on the web as well as through the catalog; the SNOMED CT ones are the module IRIs the 2016 extract carries and resolve only through the catalog.</p>
+  </section>
+  <section id="what-changed-since-2016-in-the-data">
+  <h2>What changed since 2016, in the data</h2>
+  <table class="simple">
+  <thead><tr><th>2016 (FHIR STU3 RDF)</th><th>Today</th></tr></thead>
+  <tbody>
+  <tr><td><code>fhir:Observation.code</code>, <code>fhir:CodeableConcept.coding</code>, <code>fhir:Coding.system</code>: a property per element of each type</td><td><code>fhir:code</code>, <code>fhir:coding</code>, <code>fhir:system</code>: one property per element name, reused across types</td></tr>
+  <tr><td><code>fhir:Coding.system [ fhir:value "http://snomed.info/sct" ]</code>: a string</td><td><code>fhir:system [ fhir:v "http://snomed.info/sct"^^xsd:anyURI ; fhir:l &lt;http://snomed.info/sct&gt; ]</code>: a typed literal and an IRI</td></tr>
+  <tr><td>one coding, a blank node</td><td><code>fhir:coding ( [ … ] [ … ] )</code>: a list of codings, in order</td></tr>
+  <tr><td>the talk's own <code>fhir:concept</code> link from a coding to a SNOMED CT concept</td><td><code>fhir:code [ a sct:69896004 ; fhir:coding ( … ) ]</code>: the generator types the CodeableConcept with the concept IRI when the code system has an IRI stem</td></tr>
+  <tr><td><code>fhir:Observation.code some (fhir:CodeableConcept.coding some (fhir:concept some sct:Rheumatoid_arthritis-disorder))</code></td><td><code>fhir:code some sct:Rheumatoid_arthritis-disorder</code>, with <code>ra:member</code> doing the work of reaching the codings (§3)</td></tr>
+  </tbody></table>
+  <p>Amy's observation, today:</p>
+  <pre class="example turtle nohighlight">amy:Obs1 a fhir:Observation ;
+    fhir:status [ fhir:v "final" ] ;
+    fhir:code [
+       a sct:69896004 ;
+       fhir:coding ( [
+         fhir:system [ fhir:v "http://snomed.info/sct"^^xsd:anyURI ; fhir:l &lt;http://snomed.info/sct&gt; ] ;
+         fhir:code [ fhir:v "69896004" ] ;
+         fhir:display [ fhir:v "Rheumatoid arthritis" ]
+       ] [
+         fhir:system [ fhir:v "http://hl7.org/fhir/sid/icd-10"^^xsd:anyURI ; fhir:l &lt;http://hl7.org/fhir/sid/icd-10&gt; ] ;
+         fhir:code [ fhir:v "M06.9" ] ;
+         fhir:display [ fhir:v "Rheumatoid arthritis, unspecified" ]
+       ] ) ;
+       fhir:text [ fhir:v "Rheumatoid arthritis" ]
+    ] ;
+    fhir:subject [ fhir:reference [ fhir:v "Patient/amy" ] ; fhir:l amy:asPatient ] ;
+    fhir:effective [ a fhir:DateTime ; fhir:v "2016-12-01T10:00:00Z"^^xsd:dateTime ] .</pre>
+  </section>
+  <section id="the-process-step-by-step">
+  <h2>The process, step by step</h2>
+  <p>The steps of the talk, as <code>arthritis.ttl</code> writes them; each <code>##</code> comment there has the Manchester syntax that Protégé's DL Query tab takes.</p>
+  <ol><li><strong>A predicate ontology.</strong> <code>fhir-min.ttl</code> declares the classes and properties, in fhir.ttl's style but with every repeating element a list: <code>fhir:CodeableConcept SubClassOf: fhir:coding only (ra:Sequence and ra:member only fhir:Coding)</code>, <code>fhir:coding max 1</code>. From that alone a reasoner knows that each blank node in a coding list is a <code>fhir:Coding</code>.</li><li><strong>Recognizers.</strong> A coding is recognised by its system and its code: <code>:Coding-of-sct-69896004 EquivalentTo: fhir:system some (fhir:l value &lt;http://snomed.info/sct&gt;) and fhir:code some (fhir:v value "69896004")</code>. The system is an individual now (<code>fhir:l</code>); the code is still a literal, so this is the one place a class is defined from a string, as in 2016 ("we can't reason about literals so we make classes for each code"). One recognizer per code, in SNOMED CT and in ICD-10.</li><li><strong>Connective tissue, through the list.</strong> <code>fhir:coding some (ra:member some (:Coding-of-sct-69896004 or :Coding-of-icd10-M06.9)) SubClassOf: sct:69896004</code>: a CodeableConcept one of whose codings is a recognised rheumatoid arthritis coding is an instance of the SNOMED CT concept, which is exactly the type arc FHIR's generator adds when it can. So Amy's CodeableConcept is <code>sct:69896004</code> twice over, Bob's from the SNOMED CT coding in second position, Sue's from an ICD-10 code mapped to SNOMED CT. <code>sct:69896004 EquivalentTo: sct:Rheumatoid_arthritis-disorder</code> joins the numeric IRIs of FHIR RDF and SNOMED CT's own OWL to the 2016 extract's descriptive ones.</li><li><strong>SNOMED CT's hierarchy.</strong> The talk's queries: an observation of rheumatoid arthritis, of seronegative rheumatoid arthritis, of an arthritis (by subclass), of an inflammatory disorder with a musculoskeletal finding site (by the role-group definitions in the extract).</li><li><strong>Beyond the talk.</strong> The patient, through the Reference (<code>fhir:subject [ fhir:l amy:asPatient ]</code>): <code>fhir:Patient and inverse fhir:l some (inverse fhir:subject some :Observation-of-Rheumatoid_arthritis)</code>. The shape of the list itself: whose primary coding is SNOMED CT (<code>ra:first</code>), which are coded in more than one system (<code>ra:length</code>). And in <code>blood-pressure.ttl</code>, a component list inside an observation, each component with its own coding list and a Quantity: <code>fhir:component some (ra:member some (bp:Systolic-component and fhir:value some (fhir:value some (fhir:v some xsd:decimal[&gt;= 140]))))</code>.</li></ol>
+  </section>
+  <section id="in-prot-g">
+  <h2>In Protégé</h2>
+  <p>Done on 2026-10-27, in Protégé 5.6.9 (the platform-independent zip, Java 21 on macOS) with two changes and nothing else: <code>bundles/owlapi-osgidistribution.jar</code> replaced by owlapi-array's bundle (same symbolic name, <code>org.semanticweb.owl.owlapi</code>, and version, 4.5.29) and <a href="https://github.com/rdf-array/protege-owl-array">protege-owl-array</a>'s plugin added to <code>plugins/</code>. Its <code>assemble.sh</code> builds that from the stock zip. The walk-through was driven from inside Protégé by that repository's <code>walkthrough</code> bundle, which uses Protégé's own model, reasoner menu and DL Query view and paints the window to the PNGs below; its log is <a href="protege/walkthrough.txt"><code>protege/walkthrough.txt</code></a>.</p>
+  <p><strong>1. Open <code>subjects.ttl</code>.</strong> The catalog resolves the nine imports; the closure is 10 ontologies and 1171 axioms, no triple is left unparsed in any of them, no <code>rdf:first</code> is anywhere in a signature, and the 16 lists are 16 sequence terms. amy:Obs1 shows <code>fhir:code</code> to a blank node, as in 2016:</p>
+  <p><img src="protege/amy-obs1.png" alt="amy:Obs1 in the Individuals tab: fhir:code, fhir:effective, fhir:id, fhir:status and fhir:subject to blank nodes" style="max-width: 100%"></p>
+  <p>A sequence displays by its node ID: sue:asPatient's <code>fhir:identifier</code> and <code>fhir:name</code> are <code>_:seq_KCBf…</code>, the base64url of <code>( _:genid… )</code>, until owlapi-array's Manchester renderer, which Protégé's own renderer extends, learns <code>( … )</code>:</p>
+  <p><img src="protege/sue-patient.png" alt="sue:asPatient: fhir:identifier and fhir:name are _:seq_ node IDs" style="max-width: 100%"></p>
+  <p><strong>2. Reasoner menu.</strong> It lists "HermiT 1.4.3 (OWL-array)" and "ELK 0.6.0 (OWL-array)" beside the stock HermiT and ELK. With the OWL-array HermiT the closure is consistent and the reasoner starts in two and a half seconds.</p>
+  <p><strong>3. DL Query tab.</strong> Protégé names an entity by its <code>rdfs:label</code> when it has one, prefixed, and the query editor parses only the names it displays. <code>sct:Rheumatoid_arthritis-disorder</code>, as §5 spells it, is underlined and Execute stays disabled; the same class is <code>'sct:Rheumatoid arthritis (disorder)'</code> there:</p>
+  <p><img src="protege/query-as-spelled.png" alt="The query as §5 spells it: the SNOMED CT name does not parse" style="max-width: 100%"></p>
+  <p>Typed as Protégé displays the names, every query of §5 lists the instances <code>FhirReasoning.java</code> finds, 24 of 24 (with Instances ticked):</p>
+  <table class="simple">
+  <thead><tr><th>#</th><th>Typed in the DL Query tab</th><th>Instances listed</th></tr></thead>
+  <tbody>
+  <tr><td>01</td><td><code>fhir:Observation and fhir:code some 'sct:Rheumatoid arthritis (disorder)'</code></td><td>amy:Obs1 bob:Obs1 sue:Obs1</td></tr>
+  <tr><td>02</td><td><code>fhir:Observation and fhir:code some 'sct:Rheumatoid arthritis (disorder)'</code></td><td>amy:Obs1 bob:Obs1 sue:Obs1</td></tr>
+  <tr><td>03</td><td><code>'Observation of Rheumatoid arthritis'</code></td><td>amy:Obs1 bob:Obs1 sue:Obs1</td></tr>
+  <tr><td>04</td><td><code>'Observation of Seronegative rheumatoid arthritis'</code></td><td>bob:Obs1</td></tr>
+  <tr><td>05</td><td><code>'Observation of Seropositive rheumatoid arthritis'</code></td><td>sue:Obs1</td></tr>
+  <tr><td>06</td><td><code>fhir:Observation and fhir:code some 'sct:Arthritis (disorder)'</code></td><td>amy:Obs1 bob:Obs1 sue:Obs1</td></tr>
+  <tr><td>07</td><td><code>'Observation of an inflammatory disorder with a musculoskeletal finding site'</code></td><td>amy:Obs1 bob:Obs1 sue:Obs1</td></tr>
+  <tr><td>08</td><td><code>fhir:Observation and fhir:code some ('sct:Inflammatory disorder (disorder)' and 'sct:Role group (attribute)' some ('sct:Associated morphology (attribute)' some 'sct:Inflammatory morphology (morphologic abnormality)' and 'sct:Finding site (attribute)' some 'sct:Structure of musculoskeletal system (body structure)'))</code></td><td>amy:Obs1 bob:Obs1 sue:Obs1</td></tr>
+  <tr><td>09</td><td><code>fhir:Observation and fhir:code some (fhir:coding some (ra:member some 'Coding in ICD-10'))</code></td><td>amy:Obs1 bob:Obs1 sue:Obs1</td></tr>
+  <tr><td>10</td><td><code>fhir:Observation and fhir:code some (fhir:coding some (ra:member some 'Coding: ICD-10 M05.9, Seropositive rheumatoid arthritis, unspecified'))</code></td><td>sue:Obs1</td></tr>
+  <tr><td>11</td><td><code>'Patient with an observation of rheumatoid arthritis'</code></td><td>amy:asPatient bob:asPatient sue:asPatient</td></tr>
+  <tr><td>12</td><td><code>fhir:Patient and inverse fhir:l some (inverse fhir:subject some 'Observation of Seronegative rheumatoid arthritis')</code></td><td>bob:asPatient</td></tr>
+  <tr><td>13</td><td><code>'Observation whose primary coding is SNOMED CT'</code></td><td>amy:Obs1</td></tr>
+  <tr><td>14</td><td><code>fhir:Observation and fhir:code some (fhir:coding some (ra:first some 'Coding in SNOMED CT'))</code></td><td>amy:Obs1</td></tr>
+  <tr><td>15</td><td><code>fhir:Observation and fhir:code some (fhir:coding some (ra:last some 'Coding in SNOMED CT'))</code></td><td>amy:Obs2 bob:Obs1</td></tr>
+  <tr><td>16</td><td><code>'Observation coded in more than one system'</code></td><td>amy:Obs1 amy:Obs2 bob:Obs1</td></tr>
+  <tr><td>17</td><td><code>fhir:Observation and fhir:code some (fhir:coding some (ra:length value 1))</code></td><td>sue:Obs1</td></tr>
+  <tr><td>18</td><td><code>'bp:Observation of blood pressure'</code></td><td>amy:Obs2</td></tr>
+  <tr><td>19</td><td><code>'bp:Observation of blood pressure with a systolic reading of 140 mm[Hg] or more'</code></td><td>amy:Obs2</td></tr>
+  <tr><td>20</td><td><code>'bp:Observation of blood pressure with exactly two components'</code></td><td>amy:Obs2</td></tr>
+  <tr><td>21</td><td><code>'bp:Observation of blood pressure with a systolic and a diastolic component'</code></td><td>amy:Obs2</td></tr>
+  <tr><td>22</td><td><code>fhir:Observation and fhir:component some (ra:member some (fhir:value some (fhir:value some (fhir:v some xsd:decimal[&gt;= 160]))))</code></td><td>(none)</td></tr>
+  <tr><td>23</td><td><code>fhir:Patient and fhir:name some (ra:member some (fhir:given some (ra:length some xsd:integer[&gt;= 2])))</code></td><td>sue:asPatient</td></tr>
+  <tr><td>24</td><td><code>fhir:Observation and fhir:code some (fhir:coding some ra:EmptySequence)</code></td><td>(none)</td></tr>
+  </tbody></table>
+  <p><img src="protege/query-14-ra-first.png" alt="ra:first: amy:Obs1, whose first coding is SNOMED CT" style="max-width: 100%"></p>
+  <p><img src="protege/query-23-ra-length.png" alt="ra:length inside a list inside a list: sue:asPatient, whose name has two given names" style="max-width: 100%"></p>
+  <p>The Observation and Patient individuals are IRIs and appear; the CodeableConcepts, codings and lists are blank nodes and sequences and do not (<a href="https://github.com/rdf-array/rdf-array/issues/21">rdf-array#21</a>).</p>
+  <p><strong>4. ELK (OWL-array)</strong>, the closure left out, lists none of the 22 non-empty answers: ELK skips anonymous individuals ("Potential incompleteness due to occurrences of AnonymousIndividual", 213 of them), and every FHIR element is one. Naming them inside the expansion (<a href="https://github.com/rdf-array/rdf-array/issues/20">rdf-array#20</a>) would give ELK the data as well.</p>
+  <p><strong>5. Saving.</strong> arthritis.ttl (with its <code>owl:unionOf</code> lists) and subject-sue.ttl (lists of blank nodes, one inside another) save as Turtle and as RDF/XML and read back with the same axioms, besides the <code>owl:NamedIndividual</code> declarations the writers add. An ontology loaded from Turtle is saved as Turtle. RDF/XML refuses a list holding a literal (<a href="https://github.com/rdf-array/rdf-array/issues/18">rdf-array#18</a>); this data has none, since every FHIR element, a given name included, is a node.</p>
+  <p>The walk-through found two things, both fixed: <code>subjects.ttl</code> now declares the default prefix as arthritis.ttl's namespace, without which Protégé gave the <code>:</code> prefix to subjects.ttl itself and showed arthritis.ttl's classes as full IRIs, which the query editor does not parse; and owlapi-array's RDF writers dropped the triples of a blank node inside a sequence (sue's given names), now written inside the list.</p>
+  </section>
+  <section id="the-queries-and-their-answers">
+  <h2>The queries and their answers</h2>
+  <p><code>FhirReasoning.java</code> runs these through owlapi-array and HermiT 1.4.5 (the OWL API 4 build): the closure loads in a quarter of a second (10 ontologies, 1171 axioms, 16 sequences, no <code>rdf:first</code> anywhere), is consistent, and classifies in half a second. Every answer is as expected.</p>
+  <table class="simple">
+  <thead><tr><th>DL query</th><th>Instances</th></tr></thead>
+  <tbody>
+  <tr><td><code>fhir:Observation and fhir:code some sct:Rheumatoid_arthritis-disorder</code></td><td>amy:Obs1, bob:Obs1, sue:Obs1</td></tr>
+  <tr><td><code>fhir:Observation and fhir:code some sct:69896004</code></td><td>the same</td></tr>
+  <tr><td><code>:Observation-of-Seronegative_rheumatoid_arthritis</code></td><td>bob:Obs1</td></tr>
+  <tr><td><code>:Observation-of-Seropositive_rheumatoid_arthritis</code></td><td>sue:Obs1</td></tr>
+  <tr><td><code>fhir:Observation and fhir:code some sct:Arthritis-disorder</code></td><td>amy:Obs1, bob:Obs1, sue:Obs1</td></tr>
+  <tr><td><code>fhir:Observation and fhir:code some (sct:Inflammatory_disorder-disorder and sct:role_group-attr some (sct:Associated_morphology-attr some sct:Inflammatory_morphology-morph and sct:Finding_site-attr some sct:Structure_of_musculoskeletal_system-body))</code></td><td>amy:Obs1, bob:Obs1, sue:Obs1</td></tr>
+  <tr><td><code>fhir:Observation and fhir:code some (fhir:coding some (ra:member some :Coding-in-ICD-10))</code></td><td>amy:Obs1, bob:Obs1, sue:Obs1</td></tr>
+  <tr><td><code>fhir:Observation and fhir:code some (fhir:coding some (ra:member some :Coding-of-icd10-M05.9))</code></td><td>sue:Obs1</td></tr>
+  <tr><td><code>:Patient_with_rheumatoid_arthritis</code></td><td>amy:asPatient, bob:asPatient, sue:asPatient</td></tr>
+  <tr><td><code>fhir:Patient and inverse fhir:l some (inverse fhir:subject some :Observation-of-Seronegative_rheumatoid_arthritis)</code></td><td>bob:asPatient</td></tr>
+  <tr><td><code>fhir:Observation and fhir:code some (fhir:coding some (ra:first some :Coding-in-SNOMED))</code></td><td>amy:Obs1</td></tr>
+  <tr><td><code>fhir:Observation and fhir:code some (fhir:coding some (ra:last some :Coding-in-SNOMED))</code></td><td>amy:Obs2, bob:Obs1</td></tr>
+  <tr><td><code>fhir:Observation and fhir:code some (fhir:coding some (ra:length some xsd:integer[&gt;= 2]))</code></td><td>amy:Obs1, amy:Obs2, bob:Obs1</td></tr>
+  <tr><td><code>fhir:Observation and fhir:code some (fhir:coding some (ra:length value 1))</code></td><td>sue:Obs1</td></tr>
+  <tr><td><code>bp:Observation-of-elevated-blood-pressure</code></td><td>amy:Obs2</td></tr>
+  <tr><td><code>bp:Two-component-blood-pressure</code>, <code>bp:Complete-blood-pressure</code></td><td>amy:Obs2</td></tr>
+  <tr><td><code>fhir:Observation and fhir:component some (ra:member some (fhir:value some (fhir:value some (fhir:v some xsd:decimal[&gt;= 160]))))</code></td><td>none</td></tr>
+  <tr><td><code>fhir:Patient and fhir:name some (ra:member some (fhir:given some (ra:length some xsd:integer[&gt;= 2])))</code></td><td>sue:asPatient</td></tr>
+  <tr><td><code>fhir:Observation and fhir:code some (fhir:coding some ra:EmptySequence)</code></td><td>none</td></tr>
+  </tbody></table>
+  <p>And the axiom fhir.ttl publishes for the repeating element, <code>fhir:CodeableConcept SubClassOf: fhir:coding only fhir:Coding</code>, added to the closure makes it inconsistent: the value of <code>fhir:coding</code> is the list, <code>fhir-min.ttl</code> says a list is no FHIR element (<code>fhir:Base DisjointWith: ra:Sequence</code>), and the contradiction is the point. Over rdf-array the FHIR ontology has to say <code>ra:member only</code>; its generator, kindling's <code>FhirTurtleGenerator</code>, is a target in <a href="../../repos.html#not-yet-forked">repos.html</a>.</p>
+  <p>To run the check against owlapi-array's jars (built with <code>mvn install -Dmaven.repo.local=…</code>, as its <code>doc/rdf-array.md</code> says), from this directory:</p>
+  <pre class="example nohighlight">mvn -q -Dmaven.repo.local=/path/to/.m2-owlapi dependency:build-classpath -Dmdep.outputFile=cp.txt
+  javac -d out -cp "$(cat cp.txt)" FhirReasoning.java
+  java -cp "out:$(cat cp.txt)" FhirReasoning .</pre>
+  </section>
+  <section id="findings">
+  <h2>Findings</h2>
+  <ul><li><strong><code>xsd:date</code> stops HermiT.</strong> FHIR writes a <code>date</code> as <code>xsd:date</code> (and <code>gYear</code>, <code>gYearMonth</code>, <code>time</code>), none of which is in the OWL 2 datatype map, and HermiT refuses to load a literal of a datatype it does not know. The subjects therefore carry no <code>fhir:birthDate</code>. Real FHIR data will; a FHIR-to-OWL pipeline needs a reasoner with those datatypes, a custom datatype definition, or a rewrite of such literals before reasoning. Nothing to do with lists, but it will be the first thing Protégé users hit.</li><li><strong>Every FHIR list holds blank nodes</strong>, since every element is one, so no list here gets the object closure of owl-array.md §6, which OWL 2 DL allows only over named individuals (<a href="https://github.com/rdf-array/rdf-array/issues/20">rdf-array#20</a>). <code>some</code> over members is unaffected, and <code>only</code> over members holds where an axiom gives it (every coding is a Coding), but a DL query that asks it of the data, "observations all of whose codings are ICD-10", finds nothing where it should find sue:Obs1. Worse, HermiT reads a class assertion on an anonymous individual existentially, so <code>getSequenceInstances(fhir:Observation)</code> returned all 16 lists and <code>isEntailed</code> of a class assertion on such a list answers for some individual, not this one. owlapi-array's <code>getSequenceInstances</code> now leaves those lists out, so it returns none of the 16 until #20 is decided; <code>isEntailed</code> still answers existentially for them. Naming the expansion individuals and the blank nodes inside them, inside the reasoner's view only, would settle both; that is the recommendation recorded on #20.</li><li><strong>JFact 4.0.4 calls the closure inconsistent</strong> where HermiT finds it consistent; the verdict goes away when the data property assertions or the cardinality restrictions are removed, so it is JFact's datatype reasoning over <code>fhir:v exactly 1</code> with literals of several datatypes. HermiT is the reference here, and the one Protégé bundles.</li><li><strong>The FHIR ontology's list axioms are wrong over rdf-array</strong>, as §5 shows: <code>allValuesFrom</code> on a repeating element types the list. The fix is mechanical, <code>ra:member only</code> for every element whose maximum cardinality is <code>*</code>, and belongs in the generator.</li></ul>
+  </section>
+  <script>
+  // Turtle-array and SPARQL-array highlighting: a few token classes are enough for these examples.
+  (function () {
+    var token = /(<[^>\s]*>)|("""[\s\S]*?"""|"(?:[^"\\]|\\.)*")(@[A-Za-z0-9-]+|\^\^[^\s;,.()\]]+)?|(#[^\n]*)|(\?[A-Za-z_][\w]*)|(_:[A-Za-z0-9_-]+)|(\b(?:PREFIX|BASE|SELECT|CONSTRUCT|ASK|DESCRIBE|WHERE|DELETE|INSERT|DATA|FILTER|OPTIONAL|UNION|ORDER|BY|GROUP|LIMIT|OFFSET|BIND|VALUES|GRAPH|a)\b)|(\b-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|([A-Za-z][\w-]*:[\w#./-]*|[A-Za-z][\w-]*:)/g;
+    function paint(pre) {
+      var src = pre.textContent, out = '', last = 0, m;
+      token.lastIndex = 0;
+      while ((m = token.exec(src))) {
+        out += esc(src.slice(last, m.index));
+        var cls = m[1] ? 'hljs-iri' : m[2] ? 'hljs-lit' : m[4] ? 'hljs-cmt' : m[5] ? 'hljs-var' : m[6] ? 'hljs-bnode' : m[7] ? 'hljs-kw' : m[8] ? 'hljs-num' : 'hljs-pname';
+        out += '<span class="' + cls + '">' + esc(m[0]) + '</span>';
+        last = token.lastIndex;
+      }
+      out += esc(src.slice(last));
+      pre.innerHTML = out;
+    }
+    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    var jsonToken = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(true|false|null)\b/g;
+    function paintJson(pre) {
+      var src = pre.textContent, out = '', last = 0, m;
+      jsonToken.lastIndex = 0;
+      while ((m = jsonToken.exec(src))) {
+        out += esc(src.slice(last, m.index));
+        if (m[1]) { out += '<span class="' + (m[2] ? 'hljs-attr' : 'hljs-string') + '">' + esc(m[1]) + '</span>' + esc(m[2] || ''); }
+        else if (m[3]) { out += '<span class="hljs-number">' + esc(m[3]) + '</span>'; }
+        else { out += '<span class="hljs-literal">' + esc(m[4]) + '</span>'; }
+        last = jsonToken.lastIndex;
+      }
+      out += esc(src.slice(last));
+      pre.innerHTML = out;
+    }
+    function tidyHeader() {
+      // An unofficial draft has no published version; ReSpec prints the line anyway.
+      document.querySelectorAll('.head dt').forEach(function (dt) {
+        if (/^Latest published version/.test(dt.textContent)) { var dd = dt.nextElementSibling; dt.remove(); if (dd && dd.tagName === 'DD') dd.remove(); }
+      });
+    }
+    function run() { tidyHeader(); document.querySelectorAll('pre.turtle, pre.sparql').forEach(paint); document.querySelectorAll('pre.json').forEach(paintJson); }
+    if (document.respec && document.respec.ready) { document.respec.ready.then(run); } else { document.addEventListener('DOMContentLoaded', run); }
+  })();
+  </script>
+</body>
+</html>

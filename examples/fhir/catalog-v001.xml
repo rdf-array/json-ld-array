@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Protégé reads this file from the folder of the ontology it opens and resolves each owl:imports IRI
+     to the file beside it, so the examples open without the network. The IRIs are also live: the
+     rdf-array ones at rdf-array.github.io, the OWL-array vocabulary likewise; the SNOMED CT ones are
+     the module IRIs the 2016 extract carries and resolve only here. -->
+<catalog prefer="public" xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog">
+    <uri id="rdf-array" name="https://rdf-array.github.io/rdf-array/examples/fhir/subjects.ttl" uri="subjects.ttl"/>
+    <uri id="rdf-array" name="https://rdf-array.github.io/rdf-array/examples/fhir/subject-amy.ttl" uri="subject-amy.ttl"/>
+    <uri id="rdf-array" name="https://rdf-array.github.io/rdf-array/examples/fhir/subject-bob.ttl" uri="subject-bob.ttl"/>
+    <uri id="rdf-array" name="https://rdf-array.github.io/rdf-array/examples/fhir/subject-sue.ttl" uri="subject-sue.ttl"/>
+    <uri id="rdf-array" name="https://rdf-array.github.io/rdf-array/examples/fhir/arthritis.ttl" uri="arthritis.ttl"/>
+    <uri id="rdf-array" name="https://rdf-array.github.io/rdf-array/examples/fhir/blood-pressure.ttl" uri="blood-pressure.ttl"/>
+    <uri id="rdf-array" name="https://rdf-array.github.io/rdf-array/examples/fhir/fhir-min.ttl" uri="fhir-min.ttl"/>
+    <uri id="rdf-array" name="https://rdf-array.github.io/rdf-array/vocab/owl-array.ttl" uri="../../vocab/owl-array.ttl"/>
+    <uri id="SWAT4LS 2016" name="http://snomed.info/sct/900000000000207008" uri="snomedct_extract_descriptive.ttl"/>
+    <uri id="SWAT4LS 2016" name="http://snomed.info/sct/snomedct_extract_base_descriptive" uri="snomedct_extract_base_descriptive.ttl"/>
+</catalog>

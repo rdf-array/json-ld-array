@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The classpath for FhirReasoning.java: owlapi-array's modules (installed with
+     mvn install -Dmaven.repo.local=…, see owlapi-array/doc/rdf-array.md) and HermiT's OWL API 4 build.
+     mvn -q -Dmaven.repo.local=/path/to/.m2-owlapi dependency:build-classpath -Dmdep.outputFile=cp.txt -->
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.github.rdf-array.examples</groupId>
+  <artifactId>fhir-reasoning</artifactId>
+  <version>0</version>
+  <dependencies>
+    <dependency><groupId>net.sourceforge.owlapi</groupId><artifactId>owlapi-apibinding</artifactId><version>4.5.29</version></dependency>
+    <dependency><groupId>net.sourceforge.owlapi</groupId><artifactId>org.semanticweb.hermit</artifactId><version>1.4.5.456</version>
+      <exclusions>
+        <exclusion><groupId>net.sourceforge.owlapi</groupId><artifactId>owlapi-distribution</artifactId></exclusion>
+        <exclusion><groupId>net.sourceforge.owlapi</groupId><artifactId>owlapi-osgidistribution</artifactId></exclusion>
+      </exclusions>
+    </dependency>
+    <dependency><groupId>org.slf4j</groupId><artifactId>slf4j-simple</artifactId><version>2.0.11</version></dependency>
+  </dependencies>
+</project>

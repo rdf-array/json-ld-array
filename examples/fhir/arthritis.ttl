@@ -1,0 +1,143 @@
+# arthritis.ttl: the domain logic of "Semantic Representations of Clinical Care Data Leveraging HL7 FHIR"
+# (Solbrig and Prud'hommeaux, SWAT4LS, 4 December 2016; its fhir-min.ttl held these axioms), over the
+# FHIR RDF of today, in which a repeated element is a list, `fhir:coding ( [ … ] [ … ] )`, and the
+# system of a Coding is an IRI as well as a string. OWL-array lets a class expression look into the
+# list: `fhir:coding some (ra:member some C)`.
+#
+# The steps of the talk, in order. Each `##` comment gives the class expression in Manchester syntax,
+# as one types it into Protégé's DL Query tab.
+
+@prefix fhir: <http://hl7.org/fhir/> .
+@prefix sct:  <http://snomed.info/id/> .
+@prefix ra:   <https://rdf-array.github.io/rdf-array/vocab#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix :     <https://rdf-array.github.io/rdf-array/examples/fhir/arthritis.ttl#> .
+
+<https://rdf-array.github.io/rdf-array/examples/fhir/arthritis.ttl> a owl:Ontology ;
+    rdfs:label "Rheumatoid arthritis over FHIR RDF: the SWAT4LS 2016 process in OWL-array" ;
+    rdfs:seeAlso <https://www.w3.org/2016/Talks/1205-swat4ls-egp/reasoning.html> ;
+    owl:imports <https://rdf-array.github.io/rdf-array/examples/fhir/fhir-min.ttl> ,
+                <http://snomed.info/sct/900000000000207008> .
+
+## 1. The code systems. FHIR RDF writes a uri as `[ fhir:v "http://snomed.info/sct"^^xsd:anyURI ;
+##    fhir:l <http://snomed.info/sct> ]`: the system is an individual, which a class expression can
+##    name with `value`. In 2016 it was a string only.
+
+<http://snomed.info/sct>            a owl:NamedIndividual ; rdfs:label "SNOMED CT" .
+<http://hl7.org/fhir/sid/icd-10>    a owl:NamedIndividual ; rdfs:label "ICD-10" .
+
+## 2. Recognizers: a Coding is recognised by its system and its code. The code is still a literal,
+##    so this is the one place a class is defined from a string, as in 2016.
+##
+##    fhir:system some (fhir:l value <http://snomed.info/sct>) and fhir:code some (fhir:v value "69896004")
+
+:Coding-in-SNOMED a owl:Class ; rdfs:label "Coding in SNOMED CT" ;
+    owl:equivalentClass [ a owl:Restriction ; owl:onProperty fhir:system ;
+                          owl:someValuesFrom [ a owl:Restriction ; owl:onProperty fhir:l ; owl:hasValue <http://snomed.info/sct> ] ] .
+:Coding-in-ICD-10 a owl:Class ; rdfs:label "Coding in ICD-10" ;
+    owl:equivalentClass [ a owl:Restriction ; owl:onProperty fhir:system ;
+                          owl:someValuesFrom [ a owl:Restriction ; owl:onProperty fhir:l ; owl:hasValue <http://hl7.org/fhir/sid/icd-10> ] ] .
+
+:Coding-of-sct-69896004 a owl:Class ; rdfs:label "Coding: SNOMED CT 69896004, Rheumatoid arthritis" ;
+    owl:equivalentClass [ owl:intersectionOf ( :Coding-in-SNOMED
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom [ a owl:Restriction ; owl:onProperty fhir:v ; owl:hasValue "69896004" ] ] ) ] .
+:Coding-of-sct-239791005 a owl:Class ; rdfs:label "Coding: SNOMED CT 239791005, Seropositive rheumatoid arthritis" ;
+    owl:equivalentClass [ owl:intersectionOf ( :Coding-in-SNOMED
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom [ a owl:Restriction ; owl:onProperty fhir:v ; owl:hasValue "239791005" ] ] ) ] .
+:Coding-of-sct-239792003 a owl:Class ; rdfs:label "Coding: SNOMED CT 239792003, Seronegative rheumatoid arthritis" ;
+    owl:equivalentClass [ owl:intersectionOf ( :Coding-in-SNOMED
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom [ a owl:Restriction ; owl:onProperty fhir:v ; owl:hasValue "239792003" ] ] ) ] .
+:Coding-of-icd10-M06.9 a owl:Class ; rdfs:label "Coding: ICD-10 M06.9, Rheumatoid arthritis, unspecified" ;
+    owl:equivalentClass [ owl:intersectionOf ( :Coding-in-ICD-10
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom [ a owl:Restriction ; owl:onProperty fhir:v ; owl:hasValue "M06.9" ] ] ) ] .
+:Coding-of-icd10-M05.9 a owl:Class ; rdfs:label "Coding: ICD-10 M05.9, Seropositive rheumatoid arthritis, unspecified" ;
+    owl:equivalentClass [ owl:intersectionOf ( :Coding-in-ICD-10
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom [ a owl:Restriction ; owl:onProperty fhir:v ; owl:hasValue "M05.9" ] ] ) ] .
+:Coding-of-icd10-M06.0 a owl:Class ; rdfs:label "Coding: ICD-10 M06.0, Seronegative rheumatoid arthritis" ;
+    owl:equivalentClass [ owl:intersectionOf ( :Coding-in-ICD-10
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom [ a owl:Restriction ; owl:onProperty fhir:v ; owl:hasValue "M06.0" ] ] ) ] .
+
+## 3. Connective tissue, through the list. FHIR RDF's own convention for connecting a coding to a
+##    concept is an rdf:type arc on the CodeableConcept, `fhir:code [ a sct:69896004 ; fhir:coding ( … ) ]`,
+##    which the generator adds when the code system has an IRI stem (SNOMED CT, LOINC), and which the
+##    2016 talk did with a fhir:concept property. These axioms derive the same type arc from the codings
+##    in the list, so that a CodeableConcept is an instance of the concept whether or not the generator
+##    typed it, and whichever position the coding has: ICD-10, which has no concept IRIs, is mapped to
+##    SNOMED CT here. This is the step that needs ra:member.
+##
+##    fhir:coding some (ra:member some (:Coding-of-sct-69896004 or :Coding-of-icd10-M06.9))  SubClassOf  sct:69896004
+
+[ a owl:Restriction ; owl:onProperty fhir:coding ; owl:someValuesFrom [ a owl:Restriction ; owl:onProperty ra:member ;
+    owl:someValuesFrom [ owl:unionOf ( :Coding-of-sct-69896004 :Coding-of-icd10-M06.9 ) ] ] ]
+  rdfs:subClassOf sct:69896004 .
+[ a owl:Restriction ; owl:onProperty fhir:coding ; owl:someValuesFrom [ a owl:Restriction ; owl:onProperty ra:member ;
+    owl:someValuesFrom [ owl:unionOf ( :Coding-of-sct-239791005 :Coding-of-icd10-M05.9 ) ] ] ]
+  rdfs:subClassOf sct:239791005 .
+[ a owl:Restriction ; owl:onProperty fhir:coding ; owl:someValuesFrom [ a owl:Restriction ; owl:onProperty ra:member ;
+    owl:someValuesFrom [ owl:unionOf ( :Coding-of-sct-239792003 :Coding-of-icd10-M06.0 ) ] ] ]
+  rdfs:subClassOf sct:239792003 .
+
+## 4. SNOMED CT. Its OWL uses the numeric IRIs FHIR RDF uses, http://snomed.info/id/69896004; the 2016
+##    extract names the same concepts descriptively, so the three the data uses are declared equal.
+
+sct:69896004  a owl:Class ; rdfs:label "Rheumatoid arthritis (disorder)" ;              owl:equivalentClass sct:Rheumatoid_arthritis-disorder .
+sct:239791005 a owl:Class ; rdfs:label "Seropositive rheumatoid arthritis (disorder)" ; owl:equivalentClass sct:Seropositive_rheumatoid_arthritis-disorder .
+sct:239792003 a owl:Class ; rdfs:label "Seronegative rheumatoid arthritis (disorder)" ; owl:equivalentClass sct:Seronegative_rheumatoid_arthritis-disorder .
+
+## 5. Observations by concept, and by SNOMED CT's hierarchy: what the talk's DL queries asked.
+##
+##    fhir:Observation and fhir:code some sct:Rheumatoid_arthritis-disorder
+##    fhir:Observation and fhir:code some sct:Seronegative_rheumatoid_arthritis-disorder
+##    fhir:Observation and fhir:code some sct:Arthritis-disorder
+##    fhir:Observation and fhir:code some (sct:Inflammatory_disorder-disorder
+##        and sct:role_group-attr some (sct:Associated_morphology-attr some sct:Inflammatory_morphology-morph
+##                                      and sct:Finding_site-attr some sct:Structure_of_musculoskeletal_system-body))
+
+:Observation-of-Rheumatoid_arthritis a owl:Class ; rdfs:label "Observation of Rheumatoid arthritis" ;
+    owl:equivalentClass [ owl:intersectionOf ( fhir:Observation
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom sct:Rheumatoid_arthritis-disorder ] ) ] .
+:Observation-of-Seropositive_rheumatoid_arthritis a owl:Class ; rdfs:label "Observation of Seropositive rheumatoid arthritis" ;
+    owl:equivalentClass [ owl:intersectionOf ( fhir:Observation
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom sct:Seropositive_rheumatoid_arthritis-disorder ] ) ] .
+:Observation-of-Seronegative_rheumatoid_arthritis a owl:Class ; rdfs:label "Observation of Seronegative rheumatoid arthritis" ;
+    owl:equivalentClass [ owl:intersectionOf ( fhir:Observation
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom sct:Seronegative_rheumatoid_arthritis-disorder ] ) ] .
+:Observation-of-Arthritis a owl:Class ; rdfs:label "Observation of Arthritis" ;
+    owl:equivalentClass [ owl:intersectionOf ( fhir:Observation
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom sct:Arthritis-disorder ] ) ] .
+:Observation-of-inflammatory_musculoskeletal_disorder a owl:Class ;
+    rdfs:label "Observation of an inflammatory disorder with a musculoskeletal finding site" ;
+    owl:equivalentClass [ owl:intersectionOf ( fhir:Observation
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom [ owl:intersectionOf ( sct:Inflammatory_disorder-disorder
+            [ a owl:Restriction ; owl:onProperty sct:role_group-attr ; owl:someValuesFrom [ owl:intersectionOf (
+                [ a owl:Restriction ; owl:onProperty sct:Associated_morphology-attr ; owl:someValuesFrom sct:Inflammatory_morphology-morph ]
+                [ a owl:Restriction ; owl:onProperty sct:Finding_site-attr ; owl:someValuesFrom sct:Structure_of_musculoskeletal_system-body ] ) ] ] ) ] ] ) ] .
+
+## 6. Patients, through the Reference: fhir:subject [ fhir:l amy:asPatient ]. Beyond the 2016 talk.
+##
+##    fhir:Patient and inverse fhir:l some (inverse fhir:subject some :Observation-of-Rheumatoid_arthritis)
+
+:Patient_with_rheumatoid_arthritis a owl:Class ; rdfs:label "Patient with an observation of rheumatoid arthritis" ;
+    owl:equivalentClass [ owl:intersectionOf ( fhir:Patient
+        [ a owl:Restriction ; owl:onProperty [ owl:inverseOf fhir:l ] ; owl:someValuesFrom
+            [ a owl:Restriction ; owl:onProperty [ owl:inverseOf fhir:subject ] ; owl:someValuesFrom :Observation-of-Rheumatoid_arthritis ] ] ) ] .
+
+## 7. The shape of the list itself: its first member and its length. Beyond the 2016 talk.
+##
+##    fhir:Observation and fhir:code some (fhir:coding some (ra:first some :Coding-in-SNOMED))
+##    fhir:Observation and fhir:code some (fhir:coding some (ra:length some xsd:integer[>= 2]))
+
+:Observation-coded-first-in-SNOMED a owl:Class ; rdfs:label "Observation whose primary coding is SNOMED CT" ;
+    owl:equivalentClass [ owl:intersectionOf ( fhir:Observation
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom
+            [ a owl:Restriction ; owl:onProperty fhir:coding ; owl:someValuesFrom
+                [ a owl:Restriction ; owl:onProperty ra:first ; owl:someValuesFrom :Coding-in-SNOMED ] ] ] ) ] .
+:Observation-with-several-codings a owl:Class ; rdfs:label "Observation coded in more than one system" ;
+    owl:equivalentClass [ owl:intersectionOf ( fhir:Observation
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom
+            [ a owl:Restriction ; owl:onProperty fhir:coding ; owl:someValuesFrom
+                [ a owl:Restriction ; owl:onProperty ra:length ; owl:someValuesFrom
+                    [ a rdfs:Datatype ; owl:onDatatype xsd:integer ; owl:withRestrictions ( [ xsd:minInclusive 2 ] ) ] ] ] ] ) ] .

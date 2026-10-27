@@ -30,6 +30,8 @@
     <dd>SHACL-array: a SHACL list is a sequence term, a ladder is not a list, and SHACL 1.2's list constraints (<code>sh:memberShape</code>, <code>sh:minListLength</code>, <code>sh:maxListLength</code>, <code>sh:uniqueMembers</code>) apply to sequence values. Implemented in <a href="https://github.com/rdf-array/jena-array">jena-array</a>.</dd>
     <dt><a href="owl-array.html">owl-array.html</a></dt>
     <dd>OWL-array: OWL's own lists are sequences, and a sequence in the data is an individual whose members, length, first and last element the built-in <code>ra:member</code>, <code>ra:memberValue</code>, <code>ra:length</code>, <code>ra:first</code> and <code>ra:last</code> give, so a class expression can constrain the members of a list-valued property in OWL 2 DL. Implemented in <a href="https://github.com/rdf-array/owlapi-array">owlapi-array</a>.</dd>
+    <dt><a href="examples/fhir/">examples/fhir/</a></dt>
+    <dd>FHIR RDF reasoning with OWL-array: the SWAT4LS 2016 process (recognizers of codings, connective tissue to SNOMED CT, DL queries over its hierarchy) over today's FHIR RDF, in which every repeated element is a list; run through <a href="https://github.com/rdf-array/owlapi-array">owlapi-array</a> and HermiT, with the files to open in Protégé.</dd>
     <dt><a href="repos.html">repos.html</a></dt>
     <dd>Every repository of the organisation by language and stack, with its upstream, its forked dependencies, the suites it runs and its open issues; the targets not yet forked. Rendered from <a href="repos.json">repos.json</a>.</dd>
     <dt><a href="vocab/">vocab/</a></dt>

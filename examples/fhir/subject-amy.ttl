@@ -1,0 +1,119 @@
+# subject-amy.ttl: Amy, as FHIR RDF writes her today (https://build.fhir.org/rdf.html): a primitive is a
+# node whose literal is fhir:v, a uri also carries fhir:l, a repeating element is a list `( … )`, a
+# choice type is typed (`a fhir:DateTime`, `a fhir:Quantity`), and a CodeableConcept may carry the
+# concept IRIs of its codings as rdf:type arcs. The 2016 original is
+# https://www.w3.org/2016/Talks/1205-swat4ls-egp/examples/subject-amy.ttl.
+
+@prefix fhir:  <http://hl7.org/fhir/> .
+@prefix sct:   <http://snomed.info/id/> .
+@prefix loinc: <https://loinc.org/rdf/> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix amy:   <https://rdf-array.github.io/rdf-array/examples/fhir/subject-amy.ttl#> .
+
+<https://rdf-array.github.io/rdf-array/examples/fhir/subject-amy.ttl> a owl:Ontology ;
+    owl:imports <https://rdf-array.github.io/rdf-array/examples/fhir/arthritis.ttl> ,
+                <https://rdf-array.github.io/rdf-array/examples/fhir/blood-pressure.ttl> .
+
+amy:asPatient a fhir:Patient ;
+  fhir:nodeRole fhir:treeRoot ;
+  fhir:id [ fhir:v "amy" ] ;
+  fhir:identifier ( [
+     fhir:system [ fhir:v "http://myorg.example/patients/"^^xsd:anyURI ; fhir:l <http://myorg.example/patients/> ] ;
+     fhir:value [ fhir:v "amysmith" ]
+  ] ) ;
+  fhir:active [ fhir:v true ] ;
+  fhir:name ( [
+     fhir:family [ fhir:v "Smith" ] ;
+     fhir:given ( [ fhir:v "Amy" ] )
+  ] ) ;
+  fhir:gender [ fhir:v "female" ] .
+  # No fhir:birthDate: FHIR writes a date as xsd:date, which is not in the OWL 2 datatype map, and HermiT
+  # refuses to load a literal of a datatype it does not know. See README.md.
+
+# Rheumatoid arthritis, coded in SNOMED CT and in ICD-10. The generator added the SNOMED CT concept
+# IRI to the CodeableConcept; ICD-10 has no IRI stem, so that coding is reached only through the list.
+amy:Obs1 a fhir:Observation ;
+  fhir:nodeRole fhir:treeRoot ;
+  fhir:id [ fhir:v "amy-obs1" ] ;
+  fhir:status [ fhir:v "final" ] ;
+  fhir:code [
+     a sct:69896004 ;
+     fhir:coding ( [
+       fhir:system [ fhir:v "http://snomed.info/sct"^^xsd:anyURI ; fhir:l <http://snomed.info/sct> ] ;
+       fhir:code [ fhir:v "69896004" ] ;
+       fhir:display [ fhir:v "Rheumatoid arthritis" ]
+     ] [
+       fhir:system [ fhir:v "http://hl7.org/fhir/sid/icd-10"^^xsd:anyURI ; fhir:l <http://hl7.org/fhir/sid/icd-10> ] ;
+       fhir:code [ fhir:v "M06.9" ] ;
+       fhir:display [ fhir:v "Rheumatoid arthritis, unspecified" ]
+     ] ) ;
+     fhir:text [ fhir:v "Rheumatoid arthritis" ]
+  ] ;
+  fhir:subject [ fhir:reference [ fhir:v "Patient/amy" ] ; fhir:l amy:asPatient ] ;
+  fhir:effective [ a fhir:DateTime ; fhir:v "2016-12-01T10:00:00Z"^^xsd:dateTime ] .
+
+# Blood pressure 150/95, after observation-example-compound-numeric-blood-pressure: the components are
+# a list, and each component's code has a coding list of its own.
+amy:Obs2 a fhir:Observation ;
+  fhir:nodeRole fhir:treeRoot ;
+  fhir:id [ fhir:v "amy-obs2" ] ;
+  fhir:status [ fhir:v "final" ] ;
+  fhir:code [
+     a sct:75367002, loinc:85354-9 ;
+     fhir:coding ( [
+       fhir:system [ fhir:v "http://loinc.org"^^xsd:anyURI ; fhir:l <http://loinc.org> ] ;
+       fhir:code [ fhir:v "85354-9" ] ;
+       fhir:display [ fhir:v "Blood pressure panel with all children optional" ]
+     ] [
+       fhir:system [ fhir:v "http://snomed.info/sct"^^xsd:anyURI ; fhir:l <http://snomed.info/sct> ] ;
+       fhir:code [ fhir:v "75367002" ] ;
+       fhir:display [ fhir:v "Blood pressure" ]
+     ] ) ;
+     fhir:text [ fhir:v "Blood pressure" ]
+  ] ;
+  fhir:subject [ fhir:reference [ fhir:v "Patient/amy" ] ; fhir:l amy:asPatient ] ;
+  fhir:effective [ a fhir:DateTime ; fhir:v "2016-12-01T10:05:00Z"^^xsd:dateTime ] ;
+  fhir:component ( [
+     fhir:code [
+       a sct:271649006, loinc:8480-6 ;
+       fhir:coding ( [
+         fhir:system [ fhir:v "http://loinc.org"^^xsd:anyURI ; fhir:l <http://loinc.org> ] ;
+         fhir:code [ fhir:v "8480-6" ] ;
+         fhir:display [ fhir:v "Systolic blood pressure" ]
+       ] [
+         fhir:system [ fhir:v "http://snomed.info/sct"^^xsd:anyURI ; fhir:l <http://snomed.info/sct> ] ;
+         fhir:code [ fhir:v "271649006" ] ;
+         fhir:display [ fhir:v "Systolic blood pressure" ]
+       ] ) ;
+       fhir:text [ fhir:v "Systolic blood pressure" ]
+     ] ;
+     fhir:value [
+       a fhir:Quantity ;
+       fhir:value [ fhir:v "150"^^xsd:decimal ] ;
+       fhir:unit [ fhir:v "mm[Hg]" ] ;
+       fhir:system [ fhir:v "http://unitsofmeasure.org"^^xsd:anyURI ; fhir:l <http://unitsofmeasure.org> ] ;
+       fhir:code [ fhir:v "mm[Hg]" ]
+     ]
+  ] [
+     fhir:code [
+       a sct:271650006, loinc:8462-4 ;
+       fhir:coding ( [
+         fhir:system [ fhir:v "http://loinc.org"^^xsd:anyURI ; fhir:l <http://loinc.org> ] ;
+         fhir:code [ fhir:v "8462-4" ] ;
+         fhir:display [ fhir:v "Diastolic blood pressure" ]
+       ] [
+         fhir:system [ fhir:v "http://snomed.info/sct"^^xsd:anyURI ; fhir:l <http://snomed.info/sct> ] ;
+         fhir:code [ fhir:v "271650006" ] ;
+         fhir:display [ fhir:v "Diastolic blood pressure" ]
+       ] ) ;
+       fhir:text [ fhir:v "Diastolic blood pressure" ]
+     ] ;
+     fhir:value [
+       a fhir:Quantity ;
+       fhir:value [ fhir:v "95"^^xsd:decimal ] ;
+       fhir:unit [ fhir:v "mm[Hg]" ] ;
+       fhir:system [ fhir:v "http://unitsofmeasure.org"^^xsd:anyURI ; fhir:l <http://unitsofmeasure.org> ] ;
+       fhir:code [ fhir:v "mm[Hg]" ]
+     ]
+  ] ) .

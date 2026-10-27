@@ -1,0 +1,68 @@
+# blood-pressure.ttl: a second domain, after FHIR's observation-example-compound-numeric-blood-pressure,
+# https://build.fhir.org/observation-example-compound-numeric-blood-pressure.ttl. A blood pressure is
+# one Observation whose fhir:component list holds the systolic and the diastolic readings, each with a
+# coding list of its own and a Quantity: lists inside a list, and numbers to compare.
+
+@prefix fhir:  <http://hl7.org/fhir/> .
+@prefix sct:   <http://snomed.info/id/> .
+@prefix loinc: <https://loinc.org/rdf/> .
+@prefix ra:    <https://rdf-array.github.io/rdf-array/vocab#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix bp:    <https://rdf-array.github.io/rdf-array/examples/fhir/blood-pressure.ttl#> .
+
+<https://rdf-array.github.io/rdf-array/examples/fhir/blood-pressure.ttl> a owl:Ontology ;
+    rdfs:label "Blood pressure over FHIR RDF in OWL-array: components, a list inside a list" ;
+    owl:imports <https://rdf-array.github.io/rdf-array/examples/fhir/fhir-min.ttl> .
+
+## The concepts the generator types the CodeableConcepts with (`a sct:271649006, loinc:8480-6`).
+## The SNOMED CT extract of the 2016 talk has none of them, so they are declared here.
+
+sct:75367002  a owl:Class ; rdfs:label "Blood pressure (observable entity)" .
+sct:271649006 a owl:Class ; rdfs:label "Systolic blood pressure (observable entity)" ;  rdfs:subClassOf sct:75367002 .
+sct:271650006 a owl:Class ; rdfs:label "Diastolic blood pressure (observable entity)" ; rdfs:subClassOf sct:75367002 .
+loinc:85354-9 a owl:Class ; rdfs:label "Blood pressure panel with all children optional" ; owl:equivalentClass sct:75367002 .
+loinc:8480-6  a owl:Class ; rdfs:label "Systolic blood pressure" ;  owl:equivalentClass sct:271649006 .
+loinc:8462-4  a owl:Class ; rdfs:label "Diastolic blood pressure" ; owl:equivalentClass sct:271650006 .
+
+## Components, by concept and by value.
+##
+##    fhir:Observation.component and fhir:code some sct:271649006
+##    bp:Systolic-component and fhir:value some (fhir:value some (fhir:v some xsd:decimal[>= 140]))
+
+bp:Systolic-component a owl:Class ; rdfs:label "Systolic component" ;
+    owl:equivalentClass [ owl:intersectionOf ( fhir:Observation.component
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom sct:271649006 ] ) ] .
+bp:Diastolic-component a owl:Class ; rdfs:label "Diastolic component" ;
+    owl:equivalentClass [ owl:intersectionOf ( fhir:Observation.component
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom sct:271650006 ] ) ] .
+bp:Elevated-systolic-component a owl:Class ; rdfs:label "Systolic component of 140 mm[Hg] or more" ;
+    owl:equivalentClass [ owl:intersectionOf ( bp:Systolic-component
+        [ a owl:Restriction ; owl:onProperty fhir:value ; owl:someValuesFrom
+            [ a owl:Restriction ; owl:onProperty fhir:value ; owl:someValuesFrom
+                [ a owl:Restriction ; owl:onProperty fhir:v ; owl:someValuesFrom
+                    [ a rdfs:Datatype ; owl:onDatatype xsd:decimal ; owl:withRestrictions ( [ xsd:minInclusive 140 ] ) ] ] ] ] ) ] .
+
+## Observations, through the component list: a member, and the length.
+##
+##    fhir:Observation and fhir:code some sct:75367002 and fhir:component some (ra:member some bp:Elevated-systolic-component)
+##    fhir:Observation and fhir:code some sct:75367002 and fhir:component some (ra:length value 2)
+
+bp:Observation-of-blood-pressure a owl:Class ; rdfs:label "Observation of blood pressure" ;
+    owl:equivalentClass [ owl:intersectionOf ( fhir:Observation
+        [ a owl:Restriction ; owl:onProperty fhir:code ; owl:someValuesFrom sct:75367002 ] ) ] .
+bp:Observation-of-elevated-blood-pressure a owl:Class ; rdfs:label "Observation of blood pressure with a systolic reading of 140 mm[Hg] or more" ;
+    owl:equivalentClass [ owl:intersectionOf ( bp:Observation-of-blood-pressure
+        [ a owl:Restriction ; owl:onProperty fhir:component ; owl:someValuesFrom
+            [ a owl:Restriction ; owl:onProperty ra:member ; owl:someValuesFrom bp:Elevated-systolic-component ] ] ) ] .
+bp:Two-component-blood-pressure a owl:Class ; rdfs:label "Observation of blood pressure with exactly two components" ;
+    owl:equivalentClass [ owl:intersectionOf ( bp:Observation-of-blood-pressure
+        [ a owl:Restriction ; owl:onProperty fhir:component ; owl:someValuesFrom
+            [ a owl:Restriction ; owl:onProperty ra:length ; owl:hasValue "2"^^xsd:nonNegativeInteger ] ] ) ] .
+bp:Complete-blood-pressure a owl:Class ; rdfs:label "Observation of blood pressure with a systolic and a diastolic component" ;
+    owl:equivalentClass [ owl:intersectionOf ( bp:Observation-of-blood-pressure
+        [ a owl:Restriction ; owl:onProperty fhir:component ; owl:someValuesFrom [ owl:intersectionOf (
+            [ a owl:Restriction ; owl:onProperty ra:member ; owl:someValuesFrom bp:Systolic-component ]
+            [ a owl:Restriction ; owl:onProperty ra:member ; owl:someValuesFrom bp:Diastolic-component ] ) ] ] ) ] .

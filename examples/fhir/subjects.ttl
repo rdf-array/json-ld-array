@@ -1,0 +1,13 @@
+# subjects.ttl: open this one in Protégé. It imports the three subjects, which import the domain
+# ontologies, which import fhir-min.ttl and the SNOMED CT extract; catalog-v001.xml beside it maps every
+# import to its file, so nothing is fetched.
+
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+# Protégé takes the default prefix from the ontology it opens: this one makes arthritis.ttl's classes
+# render, and parse in the DL Query tab, as :Observation-of-Rheumatoid_arthritis and the like.
+@prefix :    <https://rdf-array.github.io/rdf-array/examples/fhir/arthritis.ttl#> .
+
+<https://rdf-array.github.io/rdf-array/examples/fhir/subjects.ttl> a owl:Ontology ;
+    owl:imports <https://rdf-array.github.io/rdf-array/examples/fhir/subject-amy.ttl> ,
+                <https://rdf-array.github.io/rdf-array/examples/fhir/subject-bob.ttl> ,
+                <https://rdf-array.github.io/rdf-array/examples/fhir/subject-sue.ttl> .

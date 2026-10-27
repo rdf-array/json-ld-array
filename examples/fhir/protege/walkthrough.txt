@@ -1,0 +1,189 @@
+
+== 1. Loaded
+active ontology: https://rdf-array.github.io/rdf-array/examples/fhir/subjects.ttl
+imports closure: 10 ontologies, 1171 axioms
+  http://snomed.info/sct/900000000000207008  Turtle Syntax, 308 axioms, unparsed triples: 0
+  http://snomed.info/sct/snomedct_extract_base_descriptive  Turtle Syntax, 267 axioms, unparsed triples: 0
+  https://rdf-array.github.io/rdf-array/examples/fhir/arthritis.ttl  Turtle Syntax, 64 axioms, unparsed triples: 0
+  https://rdf-array.github.io/rdf-array/examples/fhir/blood-pressure.ttl  Turtle Syntax, 38 axioms, unparsed triples: 0
+  https://rdf-array.github.io/rdf-array/examples/fhir/fhir-min.ttl  Turtle Syntax, 199 axioms, unparsed triples: 0
+  https://rdf-array.github.io/rdf-array/examples/fhir/subject-amy.ttl  Turtle Syntax, 147 axioms, unparsed triples: 0
+  https://rdf-array.github.io/rdf-array/examples/fhir/subject-bob.ttl  Turtle Syntax, 50 axioms, unparsed triples: 0
+  https://rdf-array.github.io/rdf-array/examples/fhir/subject-sue.ttl  Turtle Syntax, 44 axioms, unparsed triples: 0
+  https://rdf-array.github.io/rdf-array/examples/fhir/subjects.ttl  Turtle Syntax, 0 axioms, unparsed triples: 0
+  https://rdf-array.github.io/rdf-array/vocab/owl-array.ttl  Turtle Syntax, 54 axioms, unparsed triples: 0
+rdf:first in a signature: 0
+distinct sequence terms: 16, in 16 axioms
+
+== 2. How Protégé renders an axiom holding a sequence
+  _:genid2147484136 fhir:given _:seq_KCBfOmdlbmlkMjE0NzQ4NDEzOSAp
+  _:genid2147484046 fhir:given _:seq_KCBfOmdlbmlkMjE0NzQ4NDA2OSAp
+  _:genid2147484173 fhir:coding _:seq_KCBfOmdlbmlkMjE0NzQ4NDE3NiAp
+  amy:Obs1: amy:Obs1 fhir:nodeRole fhir:treeRoot
+  amy:Obs1: amy:Obs1 fhir:code _:genid2147483965
+  amy:Obs1: amy:Obs1 fhir:effective _:genid2147483978
+  amy:Obs1: amy:Obs1 fhir:status _:genid2147484078
+  amy:Obs1: amy:Obs1 Type fhir:Observation
+  amy:Obs1: amy:Obs1 fhir:subject _:genid2147484063
+  amy:Obs1: amy:Obs1 fhir:id _:genid2147484077
+  sue:asPatient: _:genid2147484165 fhir:l sue:asPatient
+  sue:asPatient: sue:asPatient fhir:identifier _:seq_KCBfOmdlbmlkMjE0NzQ4NDE3MSAp
+  sue:asPatient: sue:asPatient fhir:nodeRole fhir:treeRoot
+  sue:asPatient: sue:asPatient fhir:id _:genid2147484169
+  sue:asPatient: sue:asPatient fhir:gender _:genid2147484170
+  sue:asPatient: sue:asPatient Type fhir:Patient
+  sue:asPatient: sue:asPatient fhir:active _:genid2147484167
+  sue:asPatient: sue:asPatient fhir:name _:seq_KCBfOmdlbmlkMjE0NzQ4NDE2OCAp
+
+== 3. The reasoner
+  reasoner menu: ELK 0.6.0  (org.semanticweb.elk.elk.reasoner.factory)
+  reasoner menu: HermiT 1.4.3 (OWL-array)  (org.rdfarray.protege.hermit-owl-array)
+  reasoner menu: HermiT 1.4.3.456  (org.semanticweb.hermit.HermiT.reasoner.factory)
+  reasoner menu: ELK 0.6.0 (OWL-array)  (org.rdfarray.protege.elk-owl-array)
+  reasoner menu: None  (org.protege.editor.owl.NoOpReasoner)
+current reasoner: HermiT (rdf-array sequences); status: INITIALIZED; 2543 ms
+consistent: true
+
+== 4. The DL Query tab, the names typed as the example spells them
+  renderer: Render by prefixed annotation property
+query: fhir:Observation and fhir:code some sct:Rheumatoid_arthritis-disorder
+  Execute disabled: the expression does not parse
+
+== 5. The DL Query tab, the names typed as Protégé displays them
+prefixes of the active ontology before: [:, owl:, rdf:, xml:, xsd:, rdfs:]
+prefixes added to the active ontology by hand: false
+  renderer: Render by prefixed annotation property
+  rendering of fhir:Observation: fhir:Observation
+  rendering of sct:Rheumatoid_arthritis-disorder: 'sct:Rheumatoid arthritis (disorder)'
+  rendering of sct:69896004: 'sct:Rheumatoid arthritis (disorder)'
+  rendering of :Coding-in-ICD-10: 'Coding in ICD-10'
+  rendering of bp:Observation-of-blood-pressure: 'bp:Observation of blood pressure'
+  rendering of ra:member: ra:member
+  rendering of amy:Obs1: amy:Obs1
+      typed as: fhir:Observation and fhir:code some 'sct:Rheumatoid arthritis (disorder)'
+PASS 10-query-01  fhir:Observation and fhir:code some sct:Rheumatoid_arthritis-disorder
+      tab lists: amy:Obs1 bob:Obs1 sue:Obs1
+      typed as: fhir:Observation and fhir:code some 'sct:Rheumatoid arthritis (disorder)'
+PASS 10-query-02  fhir:Observation and fhir:code some sct:69896004
+      tab lists: amy:Obs1 bob:Obs1 sue:Obs1
+      typed as: 'Observation of Rheumatoid arthritis'
+PASS 10-query-03  :Observation-of-Rheumatoid_arthritis
+      tab lists: amy:Obs1 bob:Obs1 sue:Obs1
+      typed as: 'Observation of Seronegative rheumatoid arthritis'
+PASS 10-query-04  :Observation-of-Seronegative_rheumatoid_arthritis
+      tab lists: bob:Obs1
+      typed as: 'Observation of Seropositive rheumatoid arthritis'
+PASS 10-query-05  :Observation-of-Seropositive_rheumatoid_arthritis
+      tab lists: sue:Obs1
+      typed as: fhir:Observation and fhir:code some 'sct:Arthritis (disorder)'
+PASS 10-query-06  fhir:Observation and fhir:code some sct:Arthritis-disorder
+      tab lists: amy:Obs1 bob:Obs1 sue:Obs1
+      typed as: 'Observation of an inflammatory disorder with a musculoskeletal finding site'
+PASS 10-query-07  :Observation-of-inflammatory_musculoskeletal_disorder
+      tab lists: amy:Obs1 bob:Obs1 sue:Obs1
+      typed as: fhir:Observation and fhir:code some ('sct:Inflammatory disorder (disorder)' and 'sct:Role group (attribute)' some ('sct:Associated morphology (attribute)' some 'sct:Inflammatory morphology (morphologic abnormality)' and 'sct:Finding site (attribute)' some 'sct:Structure of musculoskeletal system (body structure)'))
+PASS 10-query-08  fhir:Observation and fhir:code some (sct:Inflammatory_disorder-disorder and sct:role_group-attr some (sct:Associated_morphology-attr some sct:Inflammatory_morphology-morph and sct:Finding_site-attr some sct:Structure_of_musculoskeletal_system-body))
+      tab lists: amy:Obs1 bob:Obs1 sue:Obs1
+      typed as: fhir:Observation and fhir:code some (fhir:coding some (ra:member some 'Coding in ICD-10'))
+PASS 10-query-09  fhir:Observation and fhir:code some (fhir:coding some (ra:member some :Coding-in-ICD-10))
+      tab lists: amy:Obs1 bob:Obs1 sue:Obs1
+      typed as: fhir:Observation and fhir:code some (fhir:coding some (ra:member some 'Coding: ICD-10 M05.9, Seropositive rheumatoid arthritis, unspecified'))
+PASS 10-query-10  fhir:Observation and fhir:code some (fhir:coding some (ra:member some :Coding-of-icd10-M05.9))
+      tab lists: sue:Obs1
+      typed as: 'Patient with an observation of rheumatoid arthritis'
+PASS 10-query-11  :Patient_with_rheumatoid_arthritis
+      tab lists: amy:asPatient bob:asPatient sue:asPatient
+      typed as: fhir:Patient and inverse fhir:l some (inverse fhir:subject some 'Observation of Seronegative rheumatoid arthritis')
+PASS 10-query-12  fhir:Patient and inverse fhir:l some (inverse fhir:subject some :Observation-of-Seronegative_rheumatoid_arthritis)
+      tab lists: bob:asPatient
+      typed as: 'Observation whose primary coding is SNOMED CT'
+PASS 10-query-13  :Observation-coded-first-in-SNOMED
+      tab lists: amy:Obs1
+      typed as: fhir:Observation and fhir:code some (fhir:coding some (ra:first some 'Coding in SNOMED CT'))
+PASS 10-query-14  fhir:Observation and fhir:code some (fhir:coding some (ra:first some :Coding-in-SNOMED))
+      tab lists: amy:Obs1
+      typed as: fhir:Observation and fhir:code some (fhir:coding some (ra:last some 'Coding in SNOMED CT'))
+PASS 10-query-15  fhir:Observation and fhir:code some (fhir:coding some (ra:last some :Coding-in-SNOMED))
+      tab lists: amy:Obs2 bob:Obs1
+      typed as: 'Observation coded in more than one system'
+PASS 10-query-16  :Observation-with-several-codings
+      tab lists: amy:Obs1 amy:Obs2 bob:Obs1
+PASS 10-query-17  fhir:Observation and fhir:code some (fhir:coding some (ra:length value 1))
+      tab lists: sue:Obs1
+      typed as: 'bp:Observation of blood pressure'
+PASS 10-query-18  bp:Observation-of-blood-pressure
+      tab lists: amy:Obs2
+      typed as: 'bp:Observation of blood pressure with a systolic reading of 140 mm[Hg] or more'
+PASS 10-query-19  bp:Observation-of-elevated-blood-pressure
+      tab lists: amy:Obs2
+      typed as: 'bp:Observation of blood pressure with exactly two components'
+PASS 10-query-20  bp:Two-component-blood-pressure
+      tab lists: amy:Obs2
+      typed as: 'bp:Observation of blood pressure with a systolic and a diastolic component'
+PASS 10-query-21  bp:Complete-blood-pressure
+      tab lists: amy:Obs2
+PASS 10-query-22  fhir:Observation and fhir:component some (ra:member some (fhir:value some (fhir:value some (fhir:v some xsd:decimal[>= 160]))))
+      tab lists: (none)
+PASS 10-query-23  fhir:Patient and fhir:name some (ra:member some (fhir:given some (ra:length some xsd:integer[>= 2])))
+      tab lists: sue:asPatient
+PASS 10-query-24  fhir:Observation and fhir:code some (fhir:coding some ra:EmptySequence)
+      tab lists: (none)
+24 of 24 queries list the expected instances
+
+== 7. The same queries with ELK (OWL-array), closure off
+current reasoner: ELK Reasoner (rdf-array sequences); status: INITIALIZED; 2016 ms
+DIFF 01 fhir:Observation and fhir:code some sct:Rheumatoid_arthritis-disorder
+      tab lists: (none)    expected: [amy:Obs1, bob:Obs1, sue:Obs1]
+DIFF 02 fhir:Observation and fhir:code some sct:69896004
+      tab lists: (none)    expected: [amy:Obs1, bob:Obs1, sue:Obs1]
+DIFF 03 :Observation-of-Rheumatoid_arthritis
+      tab lists: (none)    expected: [amy:Obs1, bob:Obs1, sue:Obs1]
+DIFF 04 :Observation-of-Seronegative_rheumatoid_arthritis
+      tab lists: (none)    expected: [bob:Obs1]
+DIFF 05 :Observation-of-Seropositive_rheumatoid_arthritis
+      tab lists: (none)    expected: [sue:Obs1]
+DIFF 06 fhir:Observation and fhir:code some sct:Arthritis-disorder
+      tab lists: (none)    expected: [amy:Obs1, bob:Obs1, sue:Obs1]
+DIFF 07 :Observation-of-inflammatory_musculoskeletal_disorder
+      tab lists: (none)    expected: [amy:Obs1, bob:Obs1, sue:Obs1]
+DIFF 08 fhir:Observation and fhir:code some (sct:Inflammatory_disorder-disorder and sct:role_group-attr some (sct:Associated_morphology-attr some sct:Inflammatory_morphology-morph and sct:Finding_site-attr some sct:Structure_of_musculoskeletal_system-body))
+      tab lists: (none)    expected: [amy:Obs1, bob:Obs1, sue:Obs1]
+DIFF 09 fhir:Observation and fhir:code some (fhir:coding some (ra:member some :Coding-in-ICD-10))
+      tab lists: (none)    expected: [amy:Obs1, bob:Obs1, sue:Obs1]
+DIFF 10 fhir:Observation and fhir:code some (fhir:coding some (ra:member some :Coding-of-icd10-M05.9))
+      tab lists: (none)    expected: [sue:Obs1]
+DIFF 11 :Patient_with_rheumatoid_arthritis
+      tab lists: (none)    expected: [amy:asPatient, bob:asPatient, sue:asPatient]
+DIFF 12 fhir:Patient and inverse fhir:l some (inverse fhir:subject some :Observation-of-Seronegative_rheumatoid_arthritis)
+      tab lists: (none)    expected: [bob:asPatient]
+DIFF 13 :Observation-coded-first-in-SNOMED
+      tab lists: (none)    expected: [amy:Obs1]
+DIFF 14 fhir:Observation and fhir:code some (fhir:coding some (ra:first some :Coding-in-SNOMED))
+      tab lists: (none)    expected: [amy:Obs1]
+DIFF 15 fhir:Observation and fhir:code some (fhir:coding some (ra:last some :Coding-in-SNOMED))
+      tab lists: (none)    expected: [amy:Obs2, bob:Obs1]
+DIFF 16 :Observation-with-several-codings
+      tab lists: (none)    expected: [amy:Obs1, amy:Obs2, bob:Obs1]
+DIFF 17 fhir:Observation and fhir:code some (fhir:coding some (ra:length value 1))
+      tab lists: (none)    expected: [sue:Obs1]
+DIFF 18 bp:Observation-of-blood-pressure
+      tab lists: (none)    expected: [amy:Obs2]
+DIFF 19 bp:Observation-of-elevated-blood-pressure
+      tab lists: (none)    expected: [amy:Obs2]
+DIFF 20 bp:Two-component-blood-pressure
+      tab lists: (none)    expected: [amy:Obs2]
+DIFF 21 bp:Complete-blood-pressure
+      tab lists: (none)    expected: [amy:Obs2]
+PASS 22 fhir:Observation and fhir:component some (ra:member some (fhir:value some (fhir:value some (fhir:v some xsd:decimal[>= 160]))))
+DIFF 23 fhir:Patient and fhir:name some (ra:member some (fhir:given some (ra:length some xsd:integer[>= 2])))
+      tab lists: (none)    expected: [sue:asPatient]
+PASS 24 fhir:Observation and fhir:code some (fhir:coding some ra:EmptySequence)
+2 of 24 queries list the expected instances with ELK
+
+== 6. Saving
+  arthritis.ttl as Turtle Syntax: saved, reopened, axioms the same by type ({AnnotationAssertion=21, EquivalentClasses=19, SubClassOf=3}), declarations aside
+  arthritis.ttl as RDF/XML Syntax: saved, reopened, axioms the same by type ({AnnotationAssertion=21, EquivalentClasses=19, SubClassOf=3}), declarations aside
+  subject-sue.ttl as Turtle Syntax: saved, reopened, axioms the same by type ({ClassAssertion=3, DataPropertyAssertion=16, ObjectPropertyAssertion=25}), declarations aside
+  subject-sue.ttl as RDF/XML Syntax: saved, reopened, axioms the same by type ({ClassAssertion=3, DataPropertyAssertion=16, ObjectPropertyAssertion=25}), declarations aside
+format the active ontology would be saved in: Turtle Syntax
+done

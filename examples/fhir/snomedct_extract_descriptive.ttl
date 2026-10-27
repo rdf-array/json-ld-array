@@ -1,0 +1,508 @@
+@prefix snomedct: <http://snomed.info/id/> .
+# @prefix : <http://snomed.info/id/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sctf: <http://snomed.info/field/> .
+@prefix sctp: <http://snomed.info/field/Description.term.> .
+@base <http://snomed.info/sct/900000000000207008> .
+
+<http://snomed.info/sct/900000000000207008> a owl:Ontology ;
+    owl:imports <http://snomed.info/sct/snomedct_extract_base_descriptive> ;
+    # owl:versionIRI <http://snomed.info/sct/900000000000207008/version/20140731>
+    .
+
+snomedct:SNOMED_CT_CONCEPT 
+    a owl:Class ;
+    rdfs:label "SNOMED CT Concept (SNOMED RT+CTV3)" ; snomedct:code "138875005" ;
+    sctf:Description.term.en-us.preferred "SNOMED CT Concept" .
+
+snomedct:Associated_morphology-attr 
+    a owl:ObjectProperty ;
+    rdfs:label "Associated morphology (attribute)" ; snomedct:code "116676008" ;
+    sctf:Description.term.en-us.synonym "Morphology" ;
+    sctf:Description.term.en-us.preferred "Associated morphology" .
+
+snomedct:Associated_finding-attr 
+    a owl:ObjectProperty ;
+    rdfs:label "Associated finding (attribute)" ; snomedct:code "246090004" ;
+    sctf:Description.term.en-us.preferred "Associated finding" .
+
+snomedct:Finding_site-attr 
+    a owl:ObjectProperty ;
+    rdfs:label "Finding site (attribute)" ; snomedct:code "363698007" ;
+    sctf:Description.term.en-us.preferred "Finding site" .
+
+snomedct:Procedure_site-attr 
+    a owl:ObjectProperty ;
+    rdfs:label "Procedure site (attribute)" ; snomedct:code "363704007" ;
+    sctf:Description.term.en-us.preferred "Procedure site" .
+
+snomedct:Procedure_site_-_Direct-attr 
+    a owl:ObjectProperty ;
+    rdfs:label "Procedure site - Direct (attribute)" ; snomedct:code "405813007" ;
+    sctf:Description.term.en-us.preferred "Procedure site - Direct" ;
+    rdfs:subPropertyOf snomedct:Procedure_site-attr .
+
+snomedct:Pathological_process-attr 
+    a owl:ObjectProperty ;
+    rdfs:label "Pathological process (attribute)" ; snomedct:code "370135005" ;
+    sctf:Description.term.en-us.preferred "Pathological process" .
+
+snomedct:Finding_context-attr 
+    a owl:ObjectProperty ;
+    rdfs:label "Finding context (attribute)" ; snomedct:code "408729009" ;
+    sctf:Description.term.en-us.preferred "Finding context" .
+
+snomedct:Temporal_context-attr 
+    a owl:ObjectProperty ;
+    rdfs:label "Temporal context (attribute)" ; snomedct:code "408731000" ;
+    sctf:Description.term.en-us.preferred "Temporal context" .
+
+snomedct:Subject_relationship_context-attr 
+    a owl:ObjectProperty ;
+    rdfs:label "Subject relationship context (attribute)" ; snomedct:code "408732007" ;
+    sctf:Description.term.en-us.preferred "Subject relationship context" .
+
+
+# Anatomy
+
+snomedct:Body_structure-body 
+    a owl:Class ;
+    rdfs:label "Body structure (body structure)" ; snomedct:code "123037004" ;
+    rdfs:subClassOf snomedct:SNOMED_CT_CONCEPT ;
+    sctf:Description.term.en-us.synonym "Body structures" ;
+    sctf:Description.term.en-us.preferred "Body structure" .
+
+snomedct:Anatomical_or_acquired_body_structure-body 
+    a owl:Class ;
+    rdfs:label "Anatomical or acquired body structure (body structure)" ; snomedct:code "442083009" ;
+    rdfs:subClassOf snomedct:Body_structure-body ;
+    sctf:Description.term.en-us.preferred "Anatomical or acquired body structure" .
+
+snomedct:Anatomical_structure-body 
+    a owl:Class ;
+    rdfs:label "Anatomical structure (body structure)" ; snomedct:code "91723000" ;
+    rdfs:subClassOf snomedct:Anatomical_or_acquired_body_structure-body ;
+    sctf:Description.term.en-us.preferred "Anatomical structure" .
+
+snomedct:Body_organ_structure-body 
+    a owl:Class ;
+    rdfs:label "Body organ structure (body structure)" ; snomedct:code "113343008" ;
+    rdfs:subClassOf snomedct:Anatomical_structure-body ;
+    sctf:Description.term.en-us.synonym "Body organ" ;
+    sctf:TextDefinition.term "An anatomical structure that consists of the maximal set of organ parts so connected to one another that together they constitute a self-contained unit of macroscopic anatomy, distinct both morphologically and functionally from other such units. Together with other organs, an organ constitutes an organ system or a body part. An organ is divisible into organ parts but not organs (examples: femur, biceps, liver, heart, aorta, sciatic nerve, ovary)." ;
+    sctf:Description.term.en-us.preferred "Body organ structure" .
+
+snomedct:Body_structure_altered_from_its_original_anatomical_structure-morph 
+    a owl:Class ;
+    rdfs:label "Body structure, altered from its original anatomical structure (morphologic abnormality)" ; snomedct:code "118956008" ;
+    rdfs:subClassOf snomedct:Body_structure-body ;
+    sctf:Description.term.en-us.synonym "Body structure, altered from its original anatomical structure" ;
+    sctf:Description.term.en-us.preferred "Morphologically altered structure" ;
+    sctf:Description.term.en-us.synonym "Morphologic alteration" , "Morphologic change" .
+
+snomedct:Morphologically_abnormal_structure-morph 
+    a owl:Class ;
+    rdfs:label "Morphologically abnormal structure (morphologic abnormality)" ; snomedct:code "49755003" ;
+    rdfs:subClassOf snomedct:Body_structure_altered_from_its_original_anatomical_structure-morph ;
+    sctf:Description.term.en-us.synonym "Abnormal tissue appearance" , "Lesion" ;
+    sctf:Description.term.en-us.preferred "Morphologically abnormal structure" .
+
+snomedct:Inflammatory_morphology-morph 
+    a owl:Class ;
+    rdfs:label "Inflammatory morphology (morphologic abnormality)" ; snomedct:code "409774005" ;
+    rdfs:subClassOf snomedct:Morphologically_abnormal_structure-morph ;
+    sctf:Description.term.en-us.preferred "Inflammatory morphology" .
+
+
+snomedct:Disease-disorder 
+    a owl:Class ;
+    rdfs:label "Disease (disorder)" ; snomedct:code "64572001" ;
+    rdfs:subClassOf snomedct:Clinical_finding-finding ;
+    sctf:Description.term.en-us.synonym "Disorders" ;
+    sctf:Description.term.en-us.preferred "Disease" ;
+    sctf:Description.term.en-us.synonym "Diseases" , "Clinical disease AND/OR syndrome" , "Disorder" , "Syndrome" , "Disease AND/OR syndrome present" , "Clinical disease AND/OR syndrome present" .
+
+snomedct:Disorder_by_body_site-disorder 
+    a owl:Class ;
+    rdfs:label "Disorder by body site (disorder)" ; snomedct:code "123946008" ;
+    owl:equivalentClass [ rdf:type owl:Class ;
+                          owl:intersectionOf ( snomedct:Disease-disorder
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty snomedct:role_group-attr ;
+                                                 owl:someValuesFrom [ rdf:type owl:Restriction ;
+                                                                      owl:onProperty snomedct:Finding_site-attr ;
+                                                                      owl:someValuesFrom snomedct:Anatomical_or_acquired_body_structure-body 
+                                                                    ]
+                                               ]
+                                             )
+                        ] ;
+    sctf:Description.term.en-us.preferred "Disorder by body site" .
+
+snomedct:Inflammatory_disorder-disorder 
+    a owl:Class ;
+    rdfs:label "Inflammatory disorder (disorder)" ; snomedct:code "128139000" ;
+    owl:equivalentClass [ rdf:type owl:Class ;
+                          owl:intersectionOf ( snomedct:Disease-disorder
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty snomedct:role_group-attr ;
+                                                 owl:someValuesFrom [ rdf:type owl:Restriction ;
+                                                                      owl:onProperty snomedct:Associated_morphology-attr ;
+                                                                      owl:someValuesFrom snomedct:Inflammatory_morphology-morph
+                                                                    ]
+                                               ]
+                                             )
+                        ] ;
+    sctf:Description.term.en-us.preferred "Inflammatory disorder" ;
+    sctf:Description.term.en-us.synonym "Inflammatory disease" .
+
+snomedct:Family_history_Rheumatoid_arthritis-situation 
+    a owl:Class ;
+    rdfs:label "Family history: Rheumatoid arthritis (situation)" ; snomedct:code "160413008" ;
+    owl:equivalentClass [ rdf:type owl:Class ;
+                          owl:intersectionOf ( snomedct:Family_history_with_explicit_context-situation 
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty snomedct:role_group-attr ;
+                                                 owl:someValuesFrom [ rdf:type owl:Class ;
+                                                                      owl:intersectionOf ( [ rdf:type owl:Restriction ;
+                                                                                             owl:onProperty snomedct:Associated_finding-attr ;
+                                                                                             owl:someValuesFrom snomedct:Rheumatoid_arthritis-disorder 
+                                                                                           ]
+                                                                                           [ rdf:type owl:Restriction ;
+                                                                                             owl:onProperty snomedct:Finding_context-attr ;
+                                                                                             owl:someValuesFrom snomedct:Known_present-qual 
+                                                                                           ]
+                                                                                           [ rdf:type owl:Restriction ;
+                                                                                             owl:onProperty snomedct:Temporal_context-attr ;
+                                                                                             owl:someValuesFrom snomedct:Current_or_past-actual-qual 
+                                                                                           ]
+                                                                                           [ rdf:type owl:Restriction ;
+                                                                                             owl:onProperty snomedct:Subject_relationship_context-attr ;
+                                                                                             owl:someValuesFrom snomedct:Person_in_family_of_subject-person 
+                                                                                           ]
+                                                                                         )
+                                                                    ]
+                                               ]
+                                             )
+                        ] ;
+    sctf:Description.term.en-us.preferred "FH: Rheumatoid arthritis" ;
+    sctf:Description.term.en-us.synonym "Family history: Rheumatoid arthritis" .
+
+snomedct:Inflammation-morphologic_abnormality 
+    a owl:Class ;
+    rdfs:label "Inflammation (morphologic abnormality)" ; snomedct:code "23583003" ;
+    rdfs:subClassOf snomedct:Inflammatory_morphology-morph ;
+    sctf:Description.term.en-us.synonym "Inflammatory infiltration" , "Leukocytic infiltrate" , "Inflammatory cell infiltration" , "Inflammatory reaction" ;
+    sctf:Description.term.en-us.preferred "Inflammation" .
+
+snomedct:Situation_with_explicit_context-situation 
+    a owl:Class ;
+    rdfs:label "Situation with explicit context (situation)" ; snomedct:code "243796009" ;
+    rdfs:subClassOf snomedct:SNOMED_CT_CONCEPT ;
+    sctf:Description.term.en-us.preferred "Situation with explicit context" ;
+    sctf:Description.term.en-us.synonym "Context-dependent categories" , "Context-dependent category" .
+
+snomedct:Structure_of_musculoskeletal_system-body 
+    a owl:Class ;
+    rdfs:label "Structure of musculoskeletal system (body structure)" ; snomedct:code "26107004" ;
+    rdfs:subClassOf snomedct:Body_system_structure-body ;
+    sctf:Description.term.en-us.preferred "Structure of musculoskeletal system" ;
+    sctf:Description.term.en-us.synonym "Musculoskeletal structure" , "Locomotor system" , "Musculoskeletal system" .
+
+snomedct:Autoimmune-qual 
+    a owl:Class ;
+    rdfs:label "Autoimmune (qualifier value)" ; snomedct:code "263680009" ;
+    rdfs:subClassOf snomedct:Pathological_process-qual ;
+    sctf:Description.term.en-us.synonym "AI - autoimmune" ;
+    sctf:Description.term.en-us.preferred "Autoimmune" .
+
+snomedct:Qualifier_value_qualifier_value-qual 
+    a owl:Class ;
+    rdfs:label "Qualifier value (qualifier value)" ; snomedct:code "362981000" ;
+    rdfs:subClassOf snomedct:SNOMED_CT_CONCEPT ;
+    sctf:Description.term.en-us.preferred "Qualifier value" .
+
+snomedct:Special_atomic_mapping_values-qual 
+    a owl:Class ;
+    rdfs:label "Special atomic mapping values (qualifier value)" ; snomedct:code "281586009" ;
+    rdfs:subClassOf snomedct:Qualifier_value_qualifier_value-qual ;
+    sctf:Description.term.en-us.preferred "Special atomic mapping values" .
+
+snomedct:Context_values-qual 
+    a owl:Class ;
+    rdfs:label "Context values (qualifier value)" ; snomedct:code "288529006" ;
+    rdfs:subClassOf snomedct:Qualifier_value_qualifier_value-qual ;
+    sctf:Description.term.en-us.preferred "Context values" .
+
+# Person
+snomedct:Person-person 
+    a owl:Class ;
+    rdfs:label "Person (person)" ; snomedct:code "125676002" ;
+    rdfs:subClassOf snomedct:Social_context-social ;
+    sctf:Description.term.en-us.preferred "Person" .
+
+snomedct:Person_in_the_family-person 
+    a owl:Class ;
+    rdfs:label "Person in the family (person)" ; snomedct:code "303071001" ;
+    rdfs:subClassOf snomedct:Person-person ;
+    sctf:Description.term.en-us.preferred "Person in the family" ;
+    sctf:Description.term.en-us.synonym "Family member" .
+
+snomedct:Person_with_characteristic_related_to_subject_of_record-person 
+    a owl:Class ;
+    rdfs:label "Person with characteristic related to subject of record (person)" ; snomedct:code "444018008" ;
+    rdfs:subClassOf snomedct:Person-person ;
+    sctf:Description.term.en-us.preferred "Person with characteristic related to subject of record" .
+
+snomedct:Person_in_family_of_subject-person 
+    a owl:Class ;
+    rdfs:label "Person in family of subject (person)" ; snomedct:code "444148008" ;
+    rdfs:subClassOf [ rdf:type owl:Class ;
+                      owl:intersectionOf ( snomedct:Person_in_the_family-person
+                                           snomedct:Person_with_characteristic_related_to_subject_of_record-person
+                                         )
+                    ] ;
+    sctf:Description.term.en-us.preferred "Person in family of subject" .
+
+
+snomedct:Special_disorder_atoms-qual 
+    a owl:Class ;
+    rdfs:label "Special disorder atoms (qualifier value)" ; snomedct:code "303102005" ;
+    rdfs:subClassOf snomedct:Special_atomic_mapping_values-qual ;
+    sctf:Description.term.en-us.preferred "Special disorder atoms" .
+
+snomedct:Bone_and_or_joint_structure-body 
+    a owl:Class ;
+    rdfs:label "Bone and/or joint structure (body structure)" ; snomedct:code "306721000" ;
+    rdfs:subClassOf snomedct:Structure_of_musculoskeletal_system-body ;
+    sctf:Description.term.en-us.preferred "Bone and/or joint structure" ;
+    sctf:Description.term.en-us.synonym "Bone and joint structures" .
+
+snomedct:Pathological_process-qual 
+    a owl:Class ;
+    rdfs:label "Pathological process (qualifier value)" ; snomedct:code "308489006" ;
+    rdfs:subClassOf snomedct:Special_disorder_atoms-qual ;
+    sctf:Description.term.en-us.preferred "Pathological process" .
+
+snomedct:Inflammation_of_specific_body_systems-disorder 
+    a owl:Class ;
+    rdfs:label "Inflammation of specific body systems (disorder)" ; snomedct:code "363171009" ;
+    owl:equivalentClass [ rdf:type owl:Class ;
+                          owl:intersectionOf ( snomedct:Inflammatory_disorder-disorder
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty snomedct:role_group-attr ;
+                                                 owl:someValuesFrom [ rdf:type owl:Class ;
+                                                                      owl:intersectionOf ( [ rdf:type owl:Restriction ;
+                                                                                             owl:onProperty snomedct:Associated_morphology-attr ;
+                                                                                             owl:someValuesFrom snomedct:Inflammatory_morphology-morph
+                                                                                           ]
+                                                                                           [ rdf:type owl:Restriction ;
+                                                                                             owl:onProperty snomedct:Finding_site-attr ;
+                                                                                             owl:someValuesFrom snomedct:Structure_of_musculoskeletal_system-body 
+                                                                                           ]
+                                                                                         )
+                                                                    ]
+                                               ]
+                                             )
+                        ] ;
+    sctf:Description.term.en-us.preferred "Inflammation of specific body systems" .
+
+snomedct:Inflammatory_disorder_of_musculoskeletal_system-disorder 
+    a owl:Class ;
+    rdfs:label "Inflammatory disorder of musculoskeletal system (disorder)" ; snomedct:code "363179006" ;
+    owl:equivalentClass [ rdf:type owl:Class ;
+                          owl:intersectionOf ( snomedct:Inflammation_of_specific_body_systems-disorder
+                                               snomedct:Disorder_of_musculoskeletal_system-disorder 
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty snomedct:role_group-attr ;
+                                                 owl:someValuesFrom [ rdf:type owl:Class ;
+                                                                      owl:intersectionOf ( [ rdf:type owl:Restriction ;
+                                                                                             owl:onProperty snomedct:Associated_morphology-attr ;
+                                                                                             owl:someValuesFrom snomedct:Inflammatory_morphology-morph
+                                                                                           ]
+                                                                                           [ rdf:type owl:Restriction ;
+                                                                                             owl:onProperty snomedct:Finding_site-attr ;
+                                                                                             owl:someValuesFrom snomedct:Structure_of_musculoskeletal_system-body
+                                                                                           ]
+                                                                                         )
+                                                                    ]
+                                               ]
+                                             )
+                        ] ;
+    sctf:Description.term.en-us.preferred "Inflammatory disorder of musculoskeletal system" .
+
+snomedct:Known-qual 
+    a owl:Class ;
+    rdfs:label "Known (qualifier value)" ; snomedct:code "36692007" ;
+    rdfs:subClassOf snomedct:Finding_context_value-qual ;
+    sctf:Description.term.en-us.preferred "Known" .
+
+snomedct:Arthritis-disorder 
+    a owl:Class ;
+    rdfs:label "Arthritis (disorder)" ; snomedct:code "3723001" ;
+    owl:equivalentClass [ rdf:type owl:Class ;
+                          owl:intersectionOf ( snomedct:Inflammatory_disorder_of_musculoskeletal_system-disorder
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty snomedct:role_group-attr ;
+                                                 owl:someValuesFrom [ rdf:type owl:Class ;
+                                                                      owl:intersectionOf ( [ rdf:type owl:Restriction ;
+                                                                                             owl:onProperty snomedct:Associated_morphology-attr ;
+                                                                                             owl:someValuesFrom snomedct:Inflammation-morphologic_abnormality
+                                                                                           ]
+                                                                                           [ rdf:type owl:Restriction ;
+                                                                                             owl:onProperty snomedct:Finding_site-attr ;
+                                                                                             owl:someValuesFrom snomedct:Joint_structure-body 
+                                                                                           ]
+                                                                                         )
+                                                                    ]
+                                               ]
+                                             )
+                        ] ;
+    sctf:Description.term.en-us.synonym "Joint inflammation" , "Inflammatory arthritis" ;
+    sctf:Description.term.en-us.preferred "Arthritis" .
+
+snomedct:Joint_structure-body 
+    a owl:Class ;
+    rdfs:label "Joint structure (body structure)" ; snomedct:code "39352004" ;
+    rdfs:subClassOf [ rdf:type owl:Class ;
+                      owl:intersectionOf ( snomedct:Body_organ_structure-body
+                                           snomedct:Bone_and_or_joint_structure-body
+                                           snomedct:Disorder_of_musculoskeletal_system-disorder 
+                                         )
+                    ] ;
+    sctf:Description.term.en-us.synonym "Joint" , "Joint types" ;
+    sctf:Description.term.en-us.preferred "Joint structure" .
+
+snomedct:Clinical_finding-finding 
+    a owl:Class ;
+    rdfs:label "Clinical finding (finding)" ; snomedct:code "404684003" ;
+    rdfs:subClassOf snomedct:SNOMED_CT_CONCEPT ;
+    sctf:Description.term.en-us.preferred "Clinical finding" .
+
+snomedct:Temporal_context_value-qual 
+    a owl:Class ;
+    rdfs:label "Temporal context value (qualifier value)" ; snomedct:code "410510008" ;
+    rdfs:subClassOf snomedct:Context_values-qual ;
+    sctf:Description.term.en-us.preferred "Temporal context value" .
+
+snomedct:Current_or_past-actual-qual 
+    a owl:Class ;
+    rdfs:label "Current or past (actual) (qualifier value)" ; snomedct:code "410511007" ;
+    rdfs:subClassOf snomedct:Temporal_context_value-qual ;
+    sctf:Description.term.en-us.preferred "Current or past" ;
+    sctf:Description.term.en-us.synonym "Current or past (actual)" .
+
+snomedct:Finding_context_value-qual 
+    a owl:Class ;
+    rdfs:label "Finding context value (qualifier value)" ; snomedct:code "410514004" ;
+    rdfs:subClassOf snomedct:Context_values-qual ;
+    sctf:Description.term.en-us.preferred "Finding context value" .
+
+snomedct:Known_present-qual 
+    a owl:Class ;
+    rdfs:label "Known present (qualifier value)" ; snomedct:code "410515003" ;
+    rdfs:subClassOf [ rdf:type owl:Class ;
+                      owl:intersectionOf ( snomedct:Known-qual
+                                           snomedct:Suspected_or_known_present-qual 
+                                         )
+                    ] ;
+    sctf:Description.term.en-us.preferred "Known present" .
+
+snomedct:Social_context-social 
+    a owl:Class ;
+    rdfs:label "Social context (social concept)" ; snomedct:code "48176007" ;
+    rdfs:subClassOf snomedct:SNOMED_CT_CONCEPT ;
+    sctf:Description.term.en-us.preferred "Social context" .
+
+snomedct:Family_history_with_explicit_context-situation 
+    a owl:Class ;
+    rdfs:label "Family history with explicit context (situation)" ; snomedct:code "57177007" ;
+    owl:equivalentClass [ rdf:type owl:Class ;
+                          owl:intersectionOf ( snomedct:Situation_with_explicit_context-situation
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty snomedct:role_group-attr ;
+                                                 owl:someValuesFrom [ rdf:type owl:Restriction ;
+                                                                      owl:onProperty snomedct:Temporal_context-attr ;
+                                                                      owl:someValuesFrom snomedct:Current_or_past-actual-qual
+                                                                    ]
+                                               ]
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty snomedct:role_group-attr ;
+                                                 owl:someValuesFrom [ rdf:type owl:Restriction ;
+                                                                      owl:onProperty snomedct:Subject_relationship_context-attr ;
+                                                                      owl:someValuesFrom snomedct:Person_in_family_of_subject-person
+                                                                    ]
+                                               ]
+                                             )
+                        ] ;
+    sctf:Description.term.en-us.synonym "FH" ;
+    sctf:Description.term.en-us.preferred "Family history with explicit context" ;
+    sctf:Description.term.en-us.synonym "FH - Family history" , "Family history of" .
+
+snomedct:Suspected_or_known_present-qual 
+    a owl:Class ;
+    rdfs:label "Suspected or known present (qualifier value)" ; snomedct:code "609412005" ;
+    rdfs:subClassOf snomedct:Known-qual ;
+    sctf:Description.term.en-us.preferred "Suspected or known present" .
+
+snomedct:Rheumatoid_arthritis-disorder 
+    a owl:Class ;
+    rdfs:label "Rheumatoid arthritis (disorder)" ; snomedct:code "69896004" ;
+    rdfs:subClassOf [ rdf:type owl:Class ;
+                      owl:intersectionOf ( snomedct:Arthritis-disorder 
+                                           [ rdf:type owl:Restriction ;
+                                             owl:onProperty snomedct:role_group-attr ;
+                                             owl:someValuesFrom [ rdf:type owl:Restriction ;
+                                                                  owl:onProperty snomedct:Pathological_process-attr ;
+                                                                  owl:someValuesFrom snomedct:Autoimmune-qual 
+                                                                ]
+                                           ]
+                                         )
+                    ] ;
+    sctf:Description.term.en-us.preferred "Rheumatoid arthritis" ;
+    sctf:Description.term.en-us.synonym "Rheumatoid disease" , "Proliferative arthritis" , "Atrophic arthritis" , "Chronic rheumatic arthritis" , "RA - Rheumatoid arthritis" , "RhA - Rheumatoid arthritis" , "Rheumatic gout" .
+
+snomedct:Seropositive_rheumatoid_arthritis-disorder 
+    a owl:Class ;
+    rdfs:label "Seropositive rheumatoid arthritis" ; snomedct:code "239791005" ;
+    rdfs:subClassOf snomedct:Rheumatoid_arthritis-disorder .
+
+snomedct:Seronegative_rheumatoid_arthritis-disorder 
+    a owl:Class ;
+    rdfs:label "Seronegative rheumatoid arthritis" ; snomedct:code "239792003" ;
+    rdfs:subClassOf snomedct:Rheumatoid_arthritis-disorder .
+
+snomedct:Articular_system_structure-body 
+    a owl:Class ;
+    rdfs:label "Articular system structure (body structure)" ; snomedct:code "81087007" ;
+    rdfs:subClassOf snomedct:Structure_of_musculoskeletal_system-body ;
+    sctf:Description.term.en-us.preferred "Articular system structure" ;
+    sctf:Description.term.en-us.synonym "Articular system" , "Joints" .
+
+snomedct:Body_system_structure-body 
+    a owl:Class ;
+    rdfs:label "Body system structure (body structure)" ; snomedct:code "91689009" ;
+    rdfs:subClassOf snomedct:Anatomical_structure-body ;
+    sctf:Description.term.en-us.synonym "Organ system" ;
+    sctf:Description.term.en-us.preferred "Body system structure" .
+
+snomedct:Disorder_of_musculoskeletal_system-disorder 
+    a owl:Class ;
+    rdfs:label "Disorder of musculoskeletal system (disorder)" ; snomedct:code "928000" ;
+    owl:equivalentClass [ rdf:type owl:Class ;
+                          owl:intersectionOf ( snomedct:Disorder_by_body_site-disorder
+                                               [ rdf:type owl:Restriction ;
+                                                 owl:onProperty snomedct:role_group-attr ;
+                                                 owl:someValuesFrom [ rdf:type owl:Restriction ;
+                                                                      owl:onProperty snomedct:Finding_site-attr ;
+                                                                      owl:someValuesFrom snomedct:Structure_of_musculoskeletal_system-body
+                                                                    ]
+                                               ]
+                                             )
+                        ] ;
+    sctf:Description.term.en-us.synonym "Musculoskeletal disorder" ;
+    sctf:Description.term.en-us.preferred "Disorder of musculoskeletal system" .
+

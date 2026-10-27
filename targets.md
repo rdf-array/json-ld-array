@@ -153,12 +153,48 @@ rdflib-array already reads `seq` bindings, and Yasgui would need the position-pa
 Yasqe and a `seq` renderer in Yasr; both matter once there is an endpoint to point them at, which
 jena-array's Fuseki can provide today for the cost of deploying it.
 
+## Protégé
+
+Protégé 5.6.9 loads the OWL API 4.5.29 as one OSGi bundle, `bundles/owlapi-osgidistribution.jar`, and
+HermiT as a plugin that exports its package. So the first step is no fork at all: owlapi-array's
+`osgidistribution` module builds the same bundle (symbolic name `org.semanticweb.owl.owlapi`, version
+4.5.29, the `org.semanticweb.owlapi.rdfarray` package exported), it replaces Protégé's, and a plugin of
+a few lines registers HermiT wrapped in `SequenceAwareReasonerFactory` in the reasoner menu
+(`protege-owl-array`, a repository of its own with a script that assembles the three from the stock
+zip). What that gives: Protégé reads `( … )` as one term and OWL's own lists as before, and the DL
+Query tab answers over list members; the walk-through is [examples/fhir](examples/fhir/README.md),
+already run through owlapi-array and HermiT. What it does not give: a sequence displays as its `_:seq_…`
+node ID until owlapi-array's Manchester renderer learns `( … )`; the DL Query tab lists named
+individuals only, so a sequence is never an answer ([#21](https://github.com/rdf-array/rdf-array/issues/21));
+the default save format, RDF/XML, cannot write a list holding a literal
+([#18](https://github.com/rdf-array/rdf-array/issues/18)). The fork, `protege-array` from tag `5.6.9`, is
+for the editor changes those need, together with the DL Query plugin (protegeproject/dlquery), and would
+pin an owlapi-array bundle with a version of its own. Protégé 6.0.0-alpha-1 (2026-09-28) moves to OWL
+API 5.5.1 and breaks every 5.x plugin; owlapi-array is on the 4.5 line for 5.6.9, and a `version5` port
+is the price of following. Impact 1 for the swap and the plugin, 3 for the fork; utility 4: the editor
+most OWL users have, showing a constraint on list members to people who will never read a specification.
+
+## The FHIR ontology
+
+fhir.ttl, the OWL ontology the FHIR build publishes (kindling's `FhirTurtleGenerator`, through
+`FHIRResourceFactory.fhir_cardinality_restriction`), types every element's values with
+`owl:allValuesFrom` and bounds them with cardinalities, and passes a repeating element's `*` straight
+through: `fhir:CodeableConcept SubClassOf fhir:coding only fhir:Coding`. FHIR RDF writes that element as
+a list, so over rdf-array the axiom types the list, and with a list disjoint from FHIR's elements the
+published ontology is inconsistent with FHIR's own example data (examples/fhir §5 shows it). The change
+is mechanical: for an element whose maximum cardinality is `*`, `only (ra:Sequence and ra:member only
+T)` and `max 1`; the rest of the generator is untouched. A fork of kindling (`kindling-array`) or a
+post-processor over the published fhir.ttl; the latter is a day. To settle in the same place: FHIR's
+`xsd:date`, `gYear`, `gYearMonth` and `time` literals, which are outside the OWL 2 datatype map (HermiT
+refuses to load them). Impact 1, utility 3: it is the ontology every FHIR RDF user loads beside their
+data, and it makes OWL-array's case in one axiom.
+
 ## Not targets
 
 Virtuoso, GraphDB, Stardog, AllegroGraph and Neptune are commercial, closed or both; Blazegraph is
 unmaintained; Raptor and Redland are C libraries whose users have moved on; the OWL API and Protégé
-would be a large fork for a language whose lists (`owl:unionOf`, `owl:intersectionOf`,
-`owl:oneOf`) do deserve an rdf-array reading, but not before SHACL has one. Sophia duplicates what
+were here until SHACL had its reading: owlapi-array exists (2026-10-26), and Protégé is assessed
+above. Sophia duplicates what
 Oxigraph gives Rust.
 
 ## What to do first

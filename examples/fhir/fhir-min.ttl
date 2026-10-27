@@ -1,0 +1,181 @@
+# fhir-min.ttl: the part of the FHIR ontology that these examples use, written for OWL-array.
+#
+# The FHIR ontology, https://build.fhir.org/fhir.ttl, types an element's values with owl:allValuesFrom
+# and bounds them with owl:cardinality or owl:maxCardinality. FHIR RDF writes a repeating element
+# (max cardinality *) as an RDF list, `fhir:coding ( [ … ] [ … ] )`, and for such an element fhir.ttl
+# says `fhir:coding only fhir:Coding`. Read over rdf-array the value of fhir:coding is one term, the
+# list, so that axiom types the list and says nothing about its members. OWL-array says what fhir.ttl
+# means, `fhir:coding only (ra:Sequence and ra:member only fhir:Coding)`, and can add
+# `fhir:coding max 1`, because a repeating element has one list. Everything else below is fhir.ttl's
+# own style, cut down to the classes and properties subject-*.ttl use.
+#
+# https://rdf-array.github.io/rdf-array/owl-array.html, and README.md beside this file.
+
+@prefix fhir: <http://hl7.org/fhir/> .
+@prefix ra:   <https://rdf-array.github.io/rdf-array/vocab#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+
+<https://rdf-array.github.io/rdf-array/examples/fhir/fhir-min.ttl> a owl:Ontology ;
+    rdfs:label "FHIR for OWL-array: the part the examples use" ;
+    rdfs:comment "A cut of the FHIR ontology (fhir.ttl) with every repeating element typed as a sequence of its element type, ra:member only …, instead of fhir.ttl's allValuesFrom on the element type, which read over rdf-array types the list itself." ;
+    rdfs:seeAlso <https://build.fhir.org/rdf.html> , <https://build.fhir.org/fhir.ttl> ;
+    owl:imports <https://rdf-array.github.io/rdf-array/vocab/owl-array.ttl> .
+
+## Base: resources and elements. A list is a term of its own, never a FHIR element or resource.
+
+fhir:Base a owl:Class ; rdfs:label "Base" ;
+    owl:disjointWith ra:Sequence .
+fhir:Resource a owl:Class ; rdfs:label "Resource" ; rdfs:subClassOf fhir:Base ;
+    rdfs:subClassOf [ a owl:Restriction ; owl:onProperty fhir:id ; owl:allValuesFrom fhir:Id ] ,
+                    [ a owl:Restriction ; owl:onProperty fhir:id ; owl:maxCardinality 1 ] .
+fhir:DomainResource a owl:Class ; rdfs:label "DomainResource" ; rdfs:subClassOf fhir:Resource .
+fhir:Element a owl:Class ; rdfs:label "Element" ; rdfs:subClassOf fhir:Base .
+fhir:BackboneElement a owl:Class ; rdfs:label "BackboneElement" ; rdfs:subClassOf fhir:Element .
+fhir:DataType a owl:Class ; rdfs:label "DataType" ; rdfs:subClassOf fhir:Element .
+fhir:PrimitiveType a owl:Class ; rdfs:label "PrimitiveType" ; rdfs:subClassOf fhir:DataType .
+
+## Primitive types: a node with exactly one fhir:v, the literal. A uri also carries fhir:l, the
+## same URI as an IRI, so that the code system a Coding names is an individual, not only a string.
+
+fhir:Boolean  a owl:Class ; rdfs:label "boolean"  ; rdfs:subClassOf fhir:PrimitiveType , [ a owl:Restriction ; owl:onProperty fhir:v ; owl:cardinality 1 ] .
+fhir:Code     a owl:Class ; rdfs:label "code"     ; rdfs:subClassOf fhir:PrimitiveType , [ a owl:Restriction ; owl:onProperty fhir:v ; owl:cardinality 1 ] .
+fhir:Date     a owl:Class ; rdfs:label "date"     ; rdfs:subClassOf fhir:PrimitiveType , [ a owl:Restriction ; owl:onProperty fhir:v ; owl:cardinality 1 ] .
+fhir:DateTime a owl:Class ; rdfs:label "dateTime" ; rdfs:subClassOf fhir:PrimitiveType , [ a owl:Restriction ; owl:onProperty fhir:v ; owl:cardinality 1 ] .
+fhir:Decimal  a owl:Class ; rdfs:label "decimal"  ; rdfs:subClassOf fhir:PrimitiveType , [ a owl:Restriction ; owl:onProperty fhir:v ; owl:cardinality 1 ] .
+fhir:Id       a owl:Class ; rdfs:label "id"       ; rdfs:subClassOf fhir:PrimitiveType , [ a owl:Restriction ; owl:onProperty fhir:v ; owl:cardinality 1 ] .
+fhir:Instant  a owl:Class ; rdfs:label "instant"  ; rdfs:subClassOf fhir:PrimitiveType , [ a owl:Restriction ; owl:onProperty fhir:v ; owl:cardinality 1 ] .
+fhir:String   a owl:Class ; rdfs:label "string"   ; rdfs:subClassOf fhir:PrimitiveType , [ a owl:Restriction ; owl:onProperty fhir:v ; owl:cardinality 1 ] .
+fhir:Uri      a owl:Class ; rdfs:label "uri"      ; rdfs:subClassOf fhir:PrimitiveType , [ a owl:Restriction ; owl:onProperty fhir:v ; owl:cardinality 1 ] ,
+                                                                                         [ a owl:Restriction ; owl:onProperty fhir:l ; owl:maxCardinality 1 ] .
+
+## Data types
+
+fhir:Coding a owl:Class ; rdfs:label "Coding" ; rdfs:subClassOf fhir:DataType ,
+    [ a owl:Restriction ; owl:onProperty fhir:system  ; owl:allValuesFrom fhir:Uri ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:system  ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:code    ; owl:allValuesFrom fhir:Code ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:code    ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:display ; owl:allValuesFrom fhir:String ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:display ; owl:maxCardinality 1 ] .
+
+# CodeableConcept.coding is 0..*: one list, every member a Coding. fhir.ttl's
+# `fhir:coding only fhir:Coding` would type the list; see README.md.
+fhir:CodeableConcept a owl:Class ; rdfs:label "CodeableConcept" ; rdfs:subClassOf fhir:DataType ,
+    [ a owl:Restriction ; owl:onProperty fhir:coding ;
+      owl:allValuesFrom [ owl:intersectionOf ( ra:Sequence
+                            [ a owl:Restriction ; owl:onProperty ra:member ; owl:allValuesFrom fhir:Coding ] ) ] ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:coding ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:text   ; owl:allValuesFrom fhir:String ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:text   ; owl:maxCardinality 1 ] .
+
+fhir:Quantity a owl:Class ; rdfs:label "Quantity" ; rdfs:subClassOf fhir:DataType ,
+    [ a owl:Restriction ; owl:onProperty fhir:value  ; owl:allValuesFrom fhir:Decimal ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:value  ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:unit   ; owl:allValuesFrom fhir:String ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:unit   ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:system ; owl:allValuesFrom fhir:Uri ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:system ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:code   ; owl:allValuesFrom fhir:Code ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:code   ; owl:maxCardinality 1 ] .
+
+fhir:Reference a owl:Class ; rdfs:label "Reference" ; rdfs:subClassOf fhir:DataType ,
+    [ a owl:Restriction ; owl:onProperty fhir:reference ; owl:allValuesFrom fhir:String ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:reference ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:l ; owl:maxCardinality 1 ] .
+
+fhir:Identifier a owl:Class ; rdfs:label "Identifier" ; rdfs:subClassOf fhir:DataType ,
+    [ a owl:Restriction ; owl:onProperty fhir:system ; owl:allValuesFrom fhir:Uri ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:system ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:value  ; owl:allValuesFrom fhir:String ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:value  ; owl:maxCardinality 1 ] .
+
+# HumanName.given is 0..*: a list of strings.
+fhir:HumanName a owl:Class ; rdfs:label "HumanName" ; rdfs:subClassOf fhir:DataType ,
+    [ a owl:Restriction ; owl:onProperty fhir:family ; owl:allValuesFrom fhir:String ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:family ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:given ;
+      owl:allValuesFrom [ owl:intersectionOf ( ra:Sequence
+                            [ a owl:Restriction ; owl:onProperty ra:member ; owl:allValuesFrom fhir:String ] ) ] ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:given ; owl:maxCardinality 1 ] .
+
+## Resources
+
+fhir:Patient a owl:Class ; rdfs:label "Patient" ; rdfs:subClassOf fhir:DomainResource ,
+    [ a owl:Restriction ; owl:onProperty fhir:identifier ;
+      owl:allValuesFrom [ owl:intersectionOf ( ra:Sequence
+                            [ a owl:Restriction ; owl:onProperty ra:member ; owl:allValuesFrom fhir:Identifier ] ) ] ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:identifier ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:active ; owl:allValuesFrom fhir:Boolean ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:active ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:name ;
+      owl:allValuesFrom [ owl:intersectionOf ( ra:Sequence
+                            [ a owl:Restriction ; owl:onProperty ra:member ; owl:allValuesFrom fhir:HumanName ] ) ] ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:name ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:gender ; owl:allValuesFrom fhir:Code ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:gender ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:birthDate ; owl:allValuesFrom fhir:Date ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:birthDate ; owl:maxCardinality 1 ] .
+
+fhir:Group a owl:Class ; rdfs:label "Group" ; rdfs:subClassOf fhir:DomainResource .
+
+fhir:Observation a owl:Class ; rdfs:label "Observation" ; rdfs:subClassOf fhir:DomainResource ,
+    [ a owl:Restriction ; owl:onProperty fhir:status ; owl:allValuesFrom fhir:Code ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:status ; owl:cardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:category ;
+      owl:allValuesFrom [ owl:intersectionOf ( ra:Sequence
+                            [ a owl:Restriction ; owl:onProperty ra:member ; owl:allValuesFrom fhir:CodeableConcept ] ) ] ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:category ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:code ; owl:allValuesFrom fhir:CodeableConcept ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:code ; owl:cardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:subject ;
+      owl:allValuesFrom [ owl:intersectionOf ( fhir:Reference
+                            [ a owl:Restriction ; owl:onProperty fhir:l ;
+                              owl:allValuesFrom [ owl:unionOf ( fhir:Patient fhir:Group ) ] ] ) ] ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:subject ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:effective ; owl:allValuesFrom [ owl:unionOf ( fhir:DateTime fhir:Instant ) ] ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:effective ; owl:maxCardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:value ; owl:allValuesFrom [ owl:unionOf ( fhir:Quantity fhir:CodeableConcept fhir:String fhir:Boolean ) ] ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:value ; owl:maxCardinality 1 ] ,
+    # Observation.component is 0..*: one list, every member an Observation.component.
+    [ a owl:Restriction ; owl:onProperty fhir:component ;
+      owl:allValuesFrom [ owl:intersectionOf ( ra:Sequence
+                            [ a owl:Restriction ; owl:onProperty ra:member ; owl:allValuesFrom fhir:Observation.component ] ) ] ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:component ; owl:maxCardinality 1 ] .
+
+fhir:Observation.component a owl:Class ; rdfs:label "Observation.component" ; rdfs:subClassOf fhir:BackboneElement ,
+    [ a owl:Restriction ; owl:onProperty fhir:code ; owl:allValuesFrom fhir:CodeableConcept ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:code ; owl:cardinality 1 ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:value ; owl:allValuesFrom [ owl:unionOf ( fhir:Quantity fhir:CodeableConcept fhir:String fhir:Boolean ) ] ] ,
+    [ a owl:Restriction ; owl:onProperty fhir:value ; owl:maxCardinality 1 ] .
+
+## Properties: FHIR RDF reuses one property per element name across resources and data types.
+
+fhir:v a owl:DatatypeProperty ; rdfs:label "fhir:v" ; rdfs:comment "The literal of a primitive element." .
+fhir:l a owl:ObjectProperty ; rdfs:label "fhir:l" ; rdfs:comment "The IRI beside a uri's or a Reference's literal." .
+fhir:nodeRole a owl:ObjectProperty ; rdfs:label "nodeRole" .
+fhir:treeRoot a owl:NamedIndividual ; rdfs:label "treeRoot" .
+
+fhir:active     a owl:ObjectProperty ; rdfs:label "active" .
+fhir:birthDate  a owl:ObjectProperty ; rdfs:label "birthDate" .
+fhir:category   a owl:ObjectProperty ; rdfs:label "category" .
+fhir:code       a owl:ObjectProperty ; rdfs:label "code" .
+fhir:coding     a owl:ObjectProperty ; rdfs:label "coding" .
+fhir:component  a owl:ObjectProperty ; rdfs:label "component" .
+fhir:display    a owl:ObjectProperty ; rdfs:label "display" .
+fhir:effective  a owl:ObjectProperty ; rdfs:label "effective" .
+fhir:family     a owl:ObjectProperty ; rdfs:label "family" .
+fhir:gender     a owl:ObjectProperty ; rdfs:label "gender" .
+fhir:given      a owl:ObjectProperty ; rdfs:label "given" .
+fhir:id         a owl:ObjectProperty ; rdfs:label "id" .
+fhir:identifier a owl:ObjectProperty ; rdfs:label "identifier" .
+fhir:name       a owl:ObjectProperty ; rdfs:label "name" .
+fhir:reference  a owl:ObjectProperty ; rdfs:label "reference" .
+fhir:status     a owl:ObjectProperty ; rdfs:label "status" .
+fhir:subject    a owl:ObjectProperty ; rdfs:label "subject" .
+fhir:system     a owl:ObjectProperty ; rdfs:label "system" .
+fhir:text       a owl:ObjectProperty ; rdfs:label "text" .
+fhir:unit       a owl:ObjectProperty ; rdfs:label "unit" .
+fhir:value      a owl:ObjectProperty ; rdfs:label "value" .

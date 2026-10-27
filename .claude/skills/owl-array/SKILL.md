@@ -172,15 +172,114 @@ is marked done; run `python3 tools/manifest-check.py` in rdf-array/rdf-array aft
 and default branch are set, and add a row to owl-array.md §8 and rdf-array.md's implementations
 table when the status changes.
 
+### 1.8 The FHIR example, and what it found
+
+[examples/fhir](../../../examples/fhir/README.md) is the SWAT4LS 2016 FHIR reasoning process over
+today's FHIR RDF (lists everywhere, `fhir:v`/`fhir:l`, concept IRIs), run through owlapi-array and
+HermiT 1.4.5.456 by `examples/fhir/FhirReasoning.java` (its `pom.xml` gives the classpath): 10
+ontologies, 1171 axioms, 16 sequences, 24 DL queries with their expected answers, one inconsistency.
+Make it a test, `contract/.../rdfarray/FhirReasoningTestCase`: copy the example files unchanged under
+`contract/src/test/resources/rdfarray/fhir/` (say in `doc/rdf-array.md` that they are copies of
+rdf-array's), read the catalog as `FhirReasoning.java` does, one test per query of its table, one for
+the inconsistency. The run found four things to act on or record:
+
+- **HermiT reads `ClassAssertion(C, _:b)` existentially**: `isEntailed(ClassAssertion(fhir:Observation,
+  _:fresh))` is true because some Observation exists. With an anonymous expansion individual,
+  `getSequenceInstances(fhir:Observation)` therefore returns every list that holds a blank node (all 16),
+  and `isEntailed` of a class assertion on such a list answers for some individual, not this one. Every
+  FHIR list holds blank nodes. The decision is rdf-array#20 (the recommendation there: name the
+  anonymous individuals inside the expansion); until it is taken, `getSequenceInstances` must not ask
+  `isEntailed` of an anonymous expansion individual.
+- **The change listener outlives an undisposed reasoner** and `markDirty` throws when the source
+  ontology has been removed from its manager (`getImportsClosure` on a removed ontology); guard it.
+- **JFact 4.0.4 calls the closure inconsistent** where HermiT does not; the verdict goes away without
+  the data property assertions or without the cardinality restrictions, so it is JFact's datatype
+  reasoning over `fhir:v exactly 1` with literals of several datatypes. HermiT is the reference.
+- **`xsd:date` stops HermiT at load** (not in the OWL 2 datatype map); FHIR dates are `xsd:date`,
+  `gYear`, `gYearMonth`, `time`. The example carries no birthDate for that reason; real FHIR data will,
+  so the Protégé plugin's documentation must say so, and a rewrite option is worth considering later.
+
 ## 2. Protégé
 
-Protégé 5.6 loads the OWL API as the OSGi bundle built by the `osgidistribution` module. The first
-experiment is to build owlapi-array's bundle with the upstream symbolic name and version so that
-Protégé's manifest resolves it, replace the bundle in a Protégé installation, open an ontology
-holding a sequence (it displays by its node ID until the Manchester renderer is taught `( … )`), and
-run HermiT through a `ProtegeOWLReasonerInfo` plugin that wraps HermiT's factory in
-`SequenceAwareReasonerFactory`. A `protege-array` fork (`fork-array`) is warranted only if the
-editor itself must change; the reasoner plugin can be a small repository of its own.
+Protégé 5.6.9 (released 2026-03-07; tag `5.6.9` of protegeproject/protege; Java 11) loads the OWL API
+4.5.29 as one OSGi bundle, `bundles/owlapi-osgidistribution.jar` (protege-desktop's
+`dependency-sets.xml` names every bundle `artifactId.extension`), symbolic name
+`org.semanticweb.owl.owlapi`, version 4.5.29. HermiT is the plugin
+`plugins/org.semanticweb.hermit-1.4.3.456.jar` (protege-distribution's pom), an OSGi bundle with
+`Bundle-Category: protege` that exports the package `org.semanticweb.HermiT` and whose `plugin.xml`
+registers the reasoner:
+
+```xml
+<extension id="HermiT.reasoner.factory" point="org.protege.editor.owl.inference_reasonerfactory">
+    <name value="HermiT 1.4.3.456"/>
+    <label value="HermiT 1.4.3.456"/>
+    <class value="org.semanticweb.HermiT.ProtegeReasonerFactory"/>
+</extension>
+```
+
+Protégé 6.0.0-alpha-1 (2026-09-28) moves to OWL API 5.5.1 and breaks every 5.x plugin; owlapi-array is
+on the 4.5 line for 5.6.9, and following Protégé 6 means a `version5` port of the fork. Three steps, in
+order; the first two need no fork of Protégé.
+
+1. **The bundle.** With the modules installed (`mvn install -pl '!distribution' -Dmaven.javadoc.skip
+   -Dno-javadoc=true -Dgpg.skip -Dmaven.repo.local=…`), `mvn -pl osgidistribution package -DskipTests
+   -Dmaven.javadoc.skip=true -Dgpg.skip -Dmaven.repo.local=…`. The bundle in `osgidistribution/target`
+   must be newer than the modules: the one built on 2026-10-26 predated the parsers and the `rdfarray`
+   package; rebuilt on 2026-10-27 it carries them and exports `org.semanticweb.owlapi.rdfarray`
+   (the `attach-javadoc` execution fails after the bundle goal under JDK 21 unless `-Dno-javadoc=true`
+   is passed as well; the jar is complete either way: check `unzip -l` for `rdfarray/` and the
+   manifest's `Export-Package`). Download the platform-independent
+   zip of the 5.6.9 release, replace `bundles/owlapi-osgidistribution.jar` with that jar, start
+   Protégé, open `examples/fhir/subjects.ttl` (the catalog resolves the imports): no triple left
+   unparsed, amy:Obs1's description shows `fhir:code` to a blank node, a sequence displays as
+   `_:seq_…`. Also open an ontology with `owl:unionOf` and `owl:oneOf` lists, save as Turtle and as
+   RDF/XML, reopen. Set the default save format to Turtle, since RDF/XML refuses a list holding a
+   literal (rdf-array#18).
+2. **The reasoner plugin**, a repository of its own, `rdf-array/protege-owl-array` (kind `tool` in
+   repos.json): a Maven bundle built with `maven-bundle-plugin` as elk-protege's pom is
+   (`Bundle-SymbolicName` the plugin id, `singleton:=true`; `Bundle-Category: protege`;
+   `Export-Package: !*`; `Import-Package` computed by bnd with `org.semanticweb.HermiT;version="[1.4,2)"`
+   added; nothing embedded), compiled against `edu.stanford.protege:protege-editor-owl:5.6.6` (the
+   last on Central; 5.6.7–5.6.9 are not, and the reasoner API did not change), owlapi-array's
+   `owlapi-apibinding` 4.5.29 and HermiT `org.semanticweb.hermit` 1.4.3.456, all `provided`: at run
+   time they are the swapped bundle and the HermiT plugin. One class,
+   `org.rdfarray.protege.HermiTSequenceReasonerInfo extends AbstractProtegeOWLReasonerInfo` (no
+   abstract methods; the interface `ProtegeOWLReasonerInfo` wants `getReasonerFactory()`, here `new
+   SequenceAwareReasonerFactory(new org.semanticweb.HermiT.ReasonerFactory())`, and
+   `getRecommendedBuffering()`, `BUFFERING`), and a `plugin.xml` as above naming it "HermiT 1.4.3
+   (OWL-array)". Drop the jar into `plugins/`, start Protégé, pick it in the Reasoner menu, and do the
+   walk-through of examples/fhir §4; record what the DL Query tab shows, with screenshots, in that
+   README. A second info class wraps ELK (`io.github.liveontologies:elk-protege` is in the
+   distribution) with closure off. The repository also ships a script that assembles "Protégé 5.6.9 +
+   the bundle + the plugin" from the stock zip, so a user needs no build, and its README says what the
+   example's findings say: `xsd:date` literals stop HermiT, a sequence is never an answer (rdf-array#21).
+3. **`protege-array`**, a fork of protegeproject/protege from tag `5.6.9` (`fork-array`), only when the
+   editor itself must change: to list sequences where the UI lists individuals (rdf-array#21, which also
+   needs the DL Query plugin, protegeproject/dlquery, and a result type the OWL API 4 `OWLReasoner` does
+   not have), to render `( … )` where the renderer is Protégé's own rather than the OWL API's, to make
+   Turtle the default format. Its pom would pin owlapi-array's bundle, which then needs a version of its
+   own (`4.5.29-rdf-array` is the natural Maven spelling; owlapi-array keeps `4.5.29` today and shadows
+   upstream in a local repository): decide when the fork starts and record it in both `doc/rdf-array.md`.
+
+**Done 2026-10-27, steps 1 and 2** ([protege-owl-array](https://github.com/rdf-array/protege-owl-array),
+examples/fhir §4). What the plan did not foresee:
+
+- **ELK cannot be imported.** elk-protege exports no package, so `ElkSequenceReasonerInfo` takes ELK's
+  factory from ELK's own reasoner plugin (`ProtegeOWLReasonerPluginLoader`, the extension id ending
+  `elk.reasoner.factory`). ELK then skips anonymous individuals and answers nothing over FHIR data.
+- **bnd pins Guava from protege-editor-owl 5.6.6's pom** (33.x) while Protégé 5.6.9 ships 18.0; a bundle
+  that touches Guava types needs `com.google.common.*;version="0"` in `Import-Package`.
+- **The DL Query tab parses names as Protégé displays them**: by `rdfs:label` when there is one
+  (`'sct:Rheumatoid arthritis (disorder)'`), and with the default prefix of the ontology opened, so the
+  root document must declare the prefix its users will type (examples/fhir's `subjects.ttl` does).
+- **The DL Query tab opens a modal dialog when no reasoner is set**; anything that drives it must start
+  the reasoner first.
+- **Saving found an owlapi-array bug**: a blank node inside a sequence lost its triples in Turtle and
+  RDF/XML (fixed in owlapi-array 1200076f9, with a test).
+- **Driving Protégé**: the shell had no screen-recording or accessibility permission, so screenshots
+  come from a bundle inside Protégé (`walkthrough/` in protege-owl-array) that paints the window with
+  Swing; it needs no permission and can run again.
+- **Creating the repository** is the user's: the session cannot create a public repository.
 
 ## 3. Another OWL implementation
 

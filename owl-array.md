@@ -1,8 +1,9 @@
 # OWL-array: OWL over rdf-array
 
-*Definition, 2026-10-26; implementation begun in
+*Definition, 2026-10-26; implemented in
 [owlapi-array](https://github.com/rdf-array/owlapi-array) (OWL API 4.5.29, the 4.5 line that
-Protégé 5.6 loads). This document is [owl-array.md](https://github.com/rdf-array/rdf-array) in the
+Protégé 5.6 loads), 2026-10-26; a worked example over FHIR RDF, [examples/fhir](examples/fhir/index.html),
+2026-10-27. This document is [owl-array.md](https://github.com/rdf-array/rdf-array) in the
 organisation's meta-repository, rendered at <https://rdf-array.github.io/rdf-array/owl-array.html>;
 [rdf-array.md](rdf-array.html) describes the change from RDF to rdf-array, and
 [shacl-array.md](shacl-array.html) settles the same questions for SHACL. The `.claude/skills/owl-array`
@@ -43,7 +44,8 @@ In Manchester syntax, `fhir:coding only (ra:member only fhir:Coding)`. No constr
 is new: the OWL API, Protégé's expression editor and every OWL 2 DL reasoner accept it today,
 treating `ra:member` as an ordinary object property. What is new is the meaning of `ra:member`,
 and of the `( … )` term in the data it constrains; from the two, a reasoner concludes that the
-blank node inside the list is a `fhir:Coding`.
+blank node inside the list is a `fhir:Coding`. A worked example, the SWAT4LS 2016 FHIR reasoning
+process over today's FHIR RDF, is [examples/fhir](examples/fhir/index.html).
 
 ## 1. Why
 
@@ -296,7 +298,10 @@ elements `e1 … en`:
 
 - `s` becomes an individual: a named one, with a canonical IRI derived from the term's spelling,
   when `s` holds no anonymous individual, so that it can stand in `owl:hasValue` and `owl:oneOf`;
-  an anonymous one otherwise. The IRI is an artefact of the expansion and never leaves it.
+  an anonymous one otherwise. The IRI is an artefact of the expansion and never leaves it. Whether
+  the anonymous individuals themselves should be named inside the expansion, so that every sequence
+  is closed, is [rdf-array#20](https://github.com/rdf-array/rdf-array/issues/20); FHIR RDF, in which
+  every element is a blank node, is the case that decides it.
 - `ClassAssertion( ra:Sequence s )` and `DataPropertyAssertion( ra:length s n )`.
 - `ObjectPropertyAssertion( ra:member s ei )` for each individual element and
   `DataPropertyAssertion( ra:memberValue s vi )` for each literal element, with `ra:first`,
@@ -326,6 +331,9 @@ sequence terms on the way out.
   syntax, with the node-ID stopgap where a grammar lacks the spelling; §2's lists as sequences;
   the examples of §3.3 checked against a DL reasoner through the expansion of §6, as entailments and
   as inconsistencies; the two caveats of §3.5 as tests that the naive reading does not hold.
+- **The FHIR example**, [examples/fhir](examples/fhir/index.html): the SWAT4LS 2016 FHIR reasoning
+  process over today's FHIR RDF, 24 DL queries with their expected answers and one inconsistency, run
+  through owlapi-array and HermiT by its `FhirReasoning.java`; to become a test in the fork.
 - **owl-tests-contrib**, if a second implementation follows: the same cases in a manifest, with a
   requirement term `ra:OwlArray` added to the test vocabulary with it.
 
@@ -333,8 +341,8 @@ sequence terms on the way out.
 
 | Implementation | OWL's lists as sequences | Data sequences | Reasoning | Status |
 |---|---|---|---|---|
-| [owlapi-array](https://github.com/rdf-array/owlapi-array) (OWL API 4.5.29) | Turtle and RDF/XML parsers and renderers; RDF/XML refuses a sequence holding a literal ([#18](https://github.com/rdf-array/rdf-array/issues/18)); the Rio formats still use ladders ([#19](https://github.com/rdf-array/rdf-array/issues/19)); Functional-style, OWL/XML and Manchester carry a sequence as a `_:seq_…` node ID | an `OWLSequence` individual, equal by elements | the expansion of §6 as `SequenceAwareReasonerFactory`, tested with HermiT 1.4.5; no closure when a sequence holds an anonymous individual ([#20](https://github.com/rdf-array/rdf-array/issues/20)) | the term, parsers, renderers and decorator done 2026-10-26: 4673 tests, 0 failures, 316 flagged; see its `doc/rdf-array.md` |
-| Protégé 5.6 against owlapi-array | — | display by spelling | the decorator in the reasoner menu | not started |
+| [owlapi-array](https://github.com/rdf-array/owlapi-array) (OWL API 4.5.29) | Turtle and RDF/XML parsers and renderers; RDF/XML refuses a sequence holding a literal ([#18](https://github.com/rdf-array/rdf-array/issues/18)); the Rio formats still use ladders ([#19](https://github.com/rdf-array/rdf-array/issues/19)); Functional-style, OWL/XML and Manchester carry a sequence as a `_:seq_…` node ID | an `OWLSequence` individual, equal by elements | the expansion of §6 as `SequenceAwareReasonerFactory`, tested with HermiT 1.4.5; no closure when a sequence holds an anonymous individual ([#20](https://github.com/rdf-array/rdf-array/issues/20)) | the term, parsers, renderers and decorator done 2026-10-26; the FHIR example a test, blank nodes inside sequences written inside them, 2026-10-27: 4703 tests, 0 failures, 316 flagged; see its `doc/rdf-array.md` |
+| Protégé 5.6.9 against owlapi-array | its `bundles/owlapi-osgidistribution.jar` replaced by owlapi-array's, same symbolic name and version; no editor change | displayed by node ID, `_:seq_…`, until the Manchester renderer learns `( … )`; never a DL Query answer ([#21](https://github.com/rdf-array/rdf-array/issues/21)) | "HermiT 1.4.3 (OWL-array)" and "ELK 0.6.0 (OWL-array)" in the reasoner menu, from [protege-owl-array](https://github.com/rdf-array/protege-owl-array); ELK skips the blank nodes that hold FHIR data | done 2026-10-27: [examples/fhir](examples/fhir/index.html) §4, the 24 DL queries answered in the DL Query tab as through the OWL API |
 
 ## 9. Decisions and precedent
 
