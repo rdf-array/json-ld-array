@@ -19,9 +19,9 @@ distinct sequence terms: 16, in 16 axioms
   _:genid2147484136 fhir:given _:seq_KCBfOmdlbmlkMjE0NzQ4NDEzOSAp
   _:genid2147484046 fhir:given _:seq_KCBfOmdlbmlkMjE0NzQ4NDA2OSAp
   _:genid2147484173 fhir:coding _:seq_KCBfOmdlbmlkMjE0NzQ4NDE3NiAp
+  amy:Obs1: amy:Obs1 fhir:effective _:genid2147483978
   amy:Obs1: amy:Obs1 fhir:nodeRole fhir:treeRoot
   amy:Obs1: amy:Obs1 fhir:code _:genid2147483965
-  amy:Obs1: amy:Obs1 fhir:effective _:genid2147483978
   amy:Obs1: amy:Obs1 fhir:status _:genid2147484078
   amy:Obs1: amy:Obs1 Type fhir:Observation
   amy:Obs1: amy:Obs1 fhir:subject _:genid2147484063
@@ -36,13 +36,17 @@ distinct sequence terms: 16, in 16 axioms
   sue:asPatient: sue:asPatient fhir:name _:seq_KCBfOmdlbmlkMjE0NzQ4NDE2OCAp
 
 == 3. The reasoner
-  reasoner menu: ELK 0.6.0  (org.semanticweb.elk.elk.reasoner.factory)
-  reasoner menu: HermiT 1.4.3 (OWL-array)  (org.rdfarray.protege.hermit-owl-array)
   reasoner menu: HermiT 1.4.3.456  (org.semanticweb.hermit.HermiT.reasoner.factory)
   reasoner menu: ELK 0.6.0 (OWL-array)  (org.rdfarray.protege.elk-owl-array)
+  reasoner menu: ELK 0.6.0  (org.semanticweb.elk.elk.reasoner.factory)
+  reasoner menu: HermiT 1.4.3 (OWL-array)  (org.rdfarray.protege.hermit-owl-array)
   reasoner menu: None  (org.protege.editor.owl.NoOpReasoner)
-current reasoner: HermiT (rdf-array sequences); status: INITIALIZED; 2543 ms
+current reasoner: HermiT (rdf-array sequences); status: INITIALIZED; 2524 ms
+dialog after starting the reasoner: org.protege.editor.core.update.PluginPanel[,0,0,600x600,invalid,layout=java.awt.BorderLayout,alignmentX=0.0,alignmentY=0.0,border=,flags=9,maximumSize=,minimumSize=,preferredSize=java.awt.Dimension[width=600,height=600]]
 consistent: true
+  renderer: Render by prefixed annotation property
+  inferred types of amy:Obs1: ['Observation coded in more than one system', 'Observation of Arthritis', 'Observation of Rheumatoid arthritis', 'Observation of an inflammatory disorder with a musculoskeletal finding site', 'Observation whose primary coding is SNOMED CT', fhir:Base, fhir:DomainResource, fhir:Observation, fhir:Resource, owl:Thing]
+  inferred types of sue:Obs1: ['Observation of Arthritis', 'Observation of Rheumatoid arthritis', 'Observation of Seropositive rheumatoid arthritis', 'Observation of an inflammatory disorder with a musculoskeletal finding site', fhir:Base, fhir:DomainResource, fhir:Observation, fhir:Resource, owl:Thing]
 
 == 4. The DL Query tab, the names typed as the example spells them
   renderer: Render by prefixed annotation property
@@ -130,8 +134,8 @@ PASS 10-query-24  fhir:Observation and fhir:code some (fhir:coding some ra:Empty
       tab lists: (none)
 24 of 24 queries list the expected instances
 
-== 7. The same queries with ELK (OWL-array), closure off
-current reasoner: ELK Reasoner (rdf-array sequences); status: INITIALIZED; 2016 ms
+== 6. The same queries with ELK (OWL-array), closure off
+current reasoner: ELK Reasoner (rdf-array sequences); status: INITIALIZED; 2010 ms
 DIFF 01 fhir:Observation and fhir:code some sct:Rheumatoid_arthritis-disorder
       tab lists: (none)    expected: [amy:Obs1, bob:Obs1, sue:Obs1]
 DIFF 02 fhir:Observation and fhir:code some sct:69896004
@@ -180,7 +184,7 @@ DIFF 23 fhir:Patient and fhir:name some (ra:member some (fhir:given some (ra:len
 PASS 24 fhir:Observation and fhir:code some (fhir:coding some ra:EmptySequence)
 2 of 24 queries list the expected instances with ELK
 
-== 6. Saving
+== 7. Saving
   arthritis.ttl as Turtle Syntax: saved, reopened, axioms the same by type ({AnnotationAssertion=21, EquivalentClasses=19, SubClassOf=3}), declarations aside
   arthritis.ttl as RDF/XML Syntax: saved, reopened, axioms the same by type ({AnnotationAssertion=21, EquivalentClasses=19, SubClassOf=3}), declarations aside
   subject-sue.ttl as Turtle Syntax: saved, reopened, axioms the same by type ({ClassAssertion=3, DataPropertyAssertion=16, ObjectPropertyAssertion=25}), declarations aside
