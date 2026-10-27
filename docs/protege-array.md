@@ -1,7 +1,7 @@
 ---
 template: page
 title: OWL-array in Protégé
-description: rdf-array's FHIR example in Protégé 5.6.9: FHIR RDF writes every repeating element as a list ( … ); read as one term each, with OWL-array's semantics for the term, HermiT classifies observations and patients by what is inside the lists.
+description: "rdf-array's FHIR example in Protégé 5.6.9: FHIR RDF writes every repeating element as a list ( … ); read as one term each, with OWL-array's semantics for the term, HermiT classifies observations and patients by what is inside the lists."
 eyebrow: rdf-array · OWL-array in Protégé · demo
 ---
 # Protégé reasons into FHIR's lists

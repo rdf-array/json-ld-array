@@ -17,7 +17,8 @@ text before the first `##` becomes the abstract and an unnumbered introduction, 
 in the prose keep pointing at the right section. JSON is highlighted by ReSpec's highlight.js;
 Turtle and SPARQL by a small script of their own.
 
-Front matter (`---` lines around `key: value` lines, at the very top) with `template: page` makes a
+Front matter (`---` lines around `key: value` lines, at the very top; double-quote a value that holds
+": ") with `template: page` makes a
 plain page instead, styled by page.css beside it: `title` (the <title>), `description` and
 `eyebrow` (the line over the H1) come from the front matter; the first paragraph is the lede;
 `##` sections are numbered on the page; a paragraph that is only a linked image,
@@ -465,7 +466,9 @@ def render(src, dst):
     meta = {}
     front = FRONT.match(md)
     if front:
+        # One `key: value` a line; a value holding ": " is double-quoted, as YAML (and GitHub's view) needs.
         meta = dict(re.match(r'^(\w+):\s*(.*)$', l).groups() for l in front.group(1).split('\n') if l.strip())
+        meta = {k: v[1:-1].replace('\\"', '"') if len(v) > 1 and v[0] == v[-1] == '"' else v for k, v in meta.items()}
         md = md[front.end():]
     if meta.get('template') == 'page':
         return render_page(md, meta, src, dst)
