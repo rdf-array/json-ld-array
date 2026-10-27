@@ -110,7 +110,7 @@ symbolic name, `org.semanticweb.owl.owlapi`, and version, 4.5.29) and
 [protege-owl-array](https://github.com/rdf-array/protege-owl-array)'s plugin added to `plugins/`. Its
 `assemble.sh` builds that from the stock zip. The walk-through was driven from inside Protégé by that
 repository's `walkthrough` bundle, which uses Protégé's own model, reasoner menu and DL Query view and
-paints the window to the PNGs below; its log is [`protege/walkthrough.txt`](protege/walkthrough.txt). [protege.html](protege.html) is the same walk-through as a demo, step by step, with
+paints the window to the PNGs below; its log is [`protege/walkthrough.txt`](protege/walkthrough.txt). [OWL-array in Protégé](../../protege.html) is the same walk-through as a demo, step by step, with
 the inferred types of the observations and patients as Protégé shows them.
 
 **1. Open `subjects.ttl`.** The catalog resolves the nine imports; the closure is 10 ontologies and

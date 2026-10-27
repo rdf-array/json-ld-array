@@ -45,7 +45,8 @@ is new: the OWL API, Protégé's expression editor and every OWL 2 DL reasoner a
 treating `ra:member` as an ordinary object property. What is new is the meaning of `ra:member`,
 and of the `( … )` term in the data it constrains; from the two, a reasoner concludes that the
 blank node inside the list is a `fhir:Coding`. A worked example, the SWAT4LS 2016 FHIR reasoning
-process over today's FHIR RDF, is [examples/fhir](examples/fhir/index.html).
+process over today's FHIR RDF, is [examples/fhir](examples/fhir/index.html); [OWL-array in
+Protégé](protege.html) is a demo of it in Protégé.
 
 ## 1. Why
 

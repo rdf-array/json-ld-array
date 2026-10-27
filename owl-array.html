@@ -60,7 +60,7 @@ fhir:CodeableConcept rdfs:subClassOf
     owl:allValuesFrom [ a owl:Restriction ; owl:onProperty ra:member ; owl:allValuesFrom fhir:Coding ] ] .
 
 ex:cc fhir:coding ( [ fhir:system [ fhir:v "http://loinc.org"^^xsd:anyURI ] ; fhir:code [ fhir:v "8480-6" ] ] ) .</pre>
-    <p>In Manchester syntax, <code>fhir:coding only (ra:member only fhir:Coding)</code>. No construct in that axiom is new: the OWL API, Protégé's expression editor and every OWL 2 DL reasoner accept it today, treating <code>ra:member</code> as an ordinary object property. What is new is the meaning of <code>ra:member</code>, and of the <code>( … )</code> term in the data it constrains; from the two, a reasoner concludes that the blank node inside the list is a <code>fhir:Coding</code>. A worked example, the SWAT4LS 2016 FHIR reasoning process over today's FHIR RDF, is <a href="examples/fhir/index.html">examples/fhir</a>.</p>
+    <p>In Manchester syntax, <code>fhir:coding only (ra:member only fhir:Coding)</code>. No construct in that axiom is new: the OWL API, Protégé's expression editor and every OWL 2 DL reasoner accept it today, treating <code>ra:member</code> as an ordinary object property. What is new is the meaning of <code>ra:member</code>, and of the <code>( … )</code> term in the data it constrains; from the two, a reasoner concludes that the blank node inside the list is a <code>fhir:Coding</code>. A worked example, the SWAT4LS 2016 FHIR reasoning process over today's FHIR RDF, is <a href="examples/fhir/index.html">examples/fhir</a>; <a href="protege.html">OWL-array in Protégé</a> is a demo of it in Protégé.</p>
   </section>
   <section id="why">
   <h2>Why</h2>

@@ -125,7 +125,7 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--rule);
 <main>
 
 <header class="top">
-<p class="eyebrow">rdf-array · examples/fhir · demo</p>
+<p class="eyebrow">rdf-array · OWL-array in Protégé · demo</p>
 <h1>Protégé reads FHIR's lists and reasons across them</h1>
 <p class="lede">A walk-through in Protégé 5.6.9. The data is FHIR RDF as FHIR writes it today, where every repeated element is a Turtle list <code>( … )</code>. Protégé loads it with no triple left over, shows each list as a single term, and HermiT classifies observations and patients by what sits inside those lists: by a coding at any position, by the first or last coding, and by the length of a list.</p>
 <ul class="facts">
@@ -136,7 +136,7 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--rule);
 </ul>
 </header>
 
-<p>Two pieces make it work. <a href="https://github.com/rdf-array/owlapi-array">owlapi-array</a> is the OWL API that Protégé 5.6 runs on, taught by <a href="../../owl-array.html">OWL-array</a> to read a list as one term. It replaces Protégé's own OWL API bundle under the same name and version, so every other plugin runs unchanged. <a href="https://github.com/rdf-array/protege-owl-array">protege-owl-array</a> adds two entries to the Reasoner menu that understand the list built-ins <code>ra:member</code>, <code>ra:first</code>, <code>ra:last</code> and <code>ra:length</code>. Protégé itself is not modified. The screenshots below are Protégé's own window, painted to PNG by the walk-through harness in protege-owl-array. Its log is <a href="protege/walkthrough.txt">protege/walkthrough.txt</a>. Most figures show a detail of the window; click one for the whole window.</p>
+<p>The data is rdf-array's <a href="examples/fhir/index.html">FHIR example</a>. Two pieces make it work. <a href="https://github.com/rdf-array/owlapi-array">owlapi-array</a> is the OWL API that Protégé 5.6 runs on, taught by <a href="owl-array.html">OWL-array</a> to read a list as one term. It replaces Protégé's own OWL API bundle under the same name and version, so every other plugin runs unchanged. <a href="https://github.com/rdf-array/protege-owl-array">protege-owl-array</a> adds two entries to the Reasoner menu that understand the list built-ins <code>ra:member</code>, <code>ra:first</code>, <code>ra:last</code> and <code>ra:length</code>. Protégé itself is not modified. The screenshots below are Protégé's own window, painted to PNG by the walk-through harness in protege-owl-array. Its log is <a href="examples/fhir/protege/walkthrough.txt">protege/walkthrough.txt</a>. Most figures show a detail of the window; click one for the whole window.</p>
 
 <h2><span class="n">1</span>Set it up</h2>
 <p>You need Git, Maven and a JDK 11 or newer. <code>assemble.sh</code> starts from the stock Protégé 5.6.9 zip and swaps in the two jars, which it builds from source on the first run (about two minutes; later runs take seconds):</p>
@@ -149,7 +149,7 @@ JAVA_HOME=$(/usr/libexec/java_home -v 21) \
 <p>The <code>java_home</code> line is for macOS. Elsewhere, set <code>JAVA_HOME</code> to any JDK 11 or newer: the platform-independent zip brings no Java of its own. <code>subjects.ttl</code> imports Amy's, Bob's and Sue's records, the arthritis and blood-pressure definitions, a SNOMED CT extract, a little of the FHIR ontology and the OWL-array vocabulary. Its <code>catalog-v001.xml</code> maps each import to the file beside it.</p>
 
 <h2><span class="n">2</span>The data: lists everywhere</h2>
-<p>This is Amy's rheumatoid-arthritis observation, from <a href="subject-amy.ttl">subject-amy.ttl</a>. Its CodeableConcept holds two codings, SNOMED CT first and ICD-10 second, and FHIR writes them as a list:</p>
+<p>This is Amy's rheumatoid-arthritis observation, from <a href="examples/fhir/subject-amy.ttl">subject-amy.ttl</a>. Its CodeableConcept holds two codings, SNOMED CT first and ICD-10 second, and FHIR writes them as a list:</p>
 <pre><code>amy:Obs1 <span class="k">a</span> fhir:Observation ;
   fhir:code [
      <span class="k">a</span> sct:69896004 ;
@@ -185,23 +185,23 @@ JAVA_HOME=$(/usr/libexec/java_home -v 21) \
 <h2><span class="n">3</span>Open it: every list is parsed</h2>
 <p>Protégé opens <code>subjects.ttl</code> and follows the nine imports. The closure is 10 ontologies and 1,171 axioms. The walk-through checked each ontology's loader report: no triple is left unparsed, <code>rdf:first</code> appears in no signature, and the 16 lists in the data are 16 sequence terms.</p>
 <figure>
-<a href="protege/loaded.png"><img src="protege/loaded.png" width="1500" height="592" loading="lazy" alt="Protégé's Active ontology tab for subjects.ttl, with the ontology metrics: 1,171 axioms, 488 logical axioms, 160 classes, 42 object properties, 13 individuals."></a>
+<a href="examples/fhir/protege/loaded.png"><img src="examples/fhir/protege/loaded.png" width="1500" height="592" loading="lazy" alt="Protégé's Active ontology tab for subjects.ttl, with the ontology metrics: 1,171 axioms, 488 logical axioms, 160 classes, 42 object properties, 13 individuals."></a>
 <figcaption>The Active ontology tab after opening <code>subjects.ttl</code>.</figcaption>
 </figure>
 <p>In the Individuals tab, a list shows up where a blank node would. Sue's <code>fhir:identifier</code> and <code>fhir:name</code> each point to a single term, named <code>_:seq_…</code>. The name is derived from the list's contents, so two equal lists are the same term.</p>
 <figure>
-<a href="protege/sue-patient.png"><img src="protege/detail-sue-patient.png" width="1045" height="180" loading="lazy" alt="sue:asPatient in the Individuals tab. Its property assertions include fhir:identifier and fhir:name, each pointing to a term whose name begins with _:seq_."></a>
-<figcaption>sue:asPatient before reasoning: <code>fhir:identifier</code> and <code>fhir:name</code> are list terms. <a class="full" href="protege/sue-patient.png">Whole window</a></figcaption>
+<a href="examples/fhir/protege/sue-patient.png"><img src="examples/fhir/protege/detail-sue-patient.png" width="1045" height="180" loading="lazy" alt="sue:asPatient in the Individuals tab. Its property assertions include fhir:identifier and fhir:name, each pointing to a term whose name begins with _:seq_."></a>
+<figcaption>sue:asPatient before reasoning: <code>fhir:identifier</code> and <code>fhir:name</code> are list terms. <a class="full" href="examples/fhir/protege/sue-patient.png">Whole window</a></figcaption>
 </figure>
 
 <h2><span class="n">4</span>Start the reasoner</h2>
 <p>The Reasoner menu lists <b>HermiT 1.4.3 (OWL-array)</b> and <b>ELK 0.6.0 (OWL-array)</b> beside the stock HermiT and ELK. Pick <b>HermiT 1.4.3 (OWL-array)</b>, then <kbd>Reasoner › Start reasoner</kbd>. It wraps the stock HermiT and hands it each list's meaning: its members, first and last element, and length. The ontology you are editing is not changed. The closure is consistent and is classified in about two and a half seconds.</p>
 <p>The first inference already reaches through two lists. Sue is now a "Patient with an observation of rheumatoid arthritis", shown in yellow:</p>
 <figure>
-<a href="protege/sue-patient-inferred.png"><img src="protege/detail-sue-patient-inferred.png" width="1045" height="180" loading="lazy" alt="sue:asPatient with the reasoner running. Under Types, fhir:Patient is asserted and 'Patient with an observation of rheumatoid arthritis' is inferred, highlighted in yellow."></a>
-<figcaption>sue:asPatient with HermiT (OWL-array) running. <a class="full" href="protege/sue-patient-inferred.png">Whole window</a></figcaption>
+<a href="examples/fhir/protege/sue-patient-inferred.png"><img src="examples/fhir/protege/detail-sue-patient-inferred.png" width="1045" height="180" loading="lazy" alt="sue:asPatient with the reasoner running. Under Types, fhir:Patient is asserted and 'Patient with an observation of rheumatoid arthritis' is inferred, highlighted in yellow."></a>
+<figcaption>sue:asPatient with HermiT (OWL-array) running. <a class="full" href="examples/fhir/protege/sue-patient-inferred.png">Whole window</a></figcaption>
 </figure>
-<p>The only evidence is the ICD-10 code M05.9 inside the coding list of Sue's observation. <a href="arthritis.ttl">arthritis.ttl</a> says that a CodeableConcept with such a coding among its codings is an instance of the SNOMED CT concept:</p>
+<p>The only evidence is the ICD-10 code M05.9 inside the coding list of Sue's observation. <a href="examples/fhir/arthritis.ttl">arthritis.ttl</a> says that a CodeableConcept with such a coding among its codings is an instance of the SNOMED CT concept:</p>
 <pre><code><span class="c"># any member of the coding list, at any position</span>
 fhir:coding <span class="k">some</span> (ra:member <span class="k">some</span> (:Coding-of-sct-239791005 <span class="k">or</span> :Coding-of-icd10-M05.9))
     <span class="k">SubClassOf</span> sct:239791005          <span class="c"># Seropositive rheumatoid arthritis</span></code></pre>
@@ -210,13 +210,13 @@ fhir:coding <span class="k">some</span> (ra:member <span class="k">some</span> (
 <h2><span class="n">5</span>Observations classified by their lists</h2>
 <p>Select an observation in the Individuals tab to see what the reasoner made of it. Sue's observation is one of "Seropositive rheumatoid arthritis", found through <code>ra:member</code> as above:</p>
 <figure>
-<a href="protege/sue-obs1-inferred.png"><img src="protege/detail-sue-obs1-inferred.png" width="1045" height="180" loading="lazy" alt="sue:Obs1 with the reasoner running. Under Types, fhir:Observation is asserted and 'Observation of Seropositive rheumatoid arthritis' is inferred."></a>
-<figcaption>sue:Obs1: classified from a coding found inside its list. <a class="full" href="protege/sue-obs1-inferred.png">Whole window</a></figcaption>
+<a href="examples/fhir/protege/sue-obs1-inferred.png"><img src="examples/fhir/protege/detail-sue-obs1-inferred.png" width="1045" height="180" loading="lazy" alt="sue:Obs1 with the reasoner running. Under Types, fhir:Observation is asserted and 'Observation of Seropositive rheumatoid arthritis' is inferred."></a>
+<figcaption>sue:Obs1: classified from a coding found inside its list. <a class="full" href="examples/fhir/protege/sue-obs1-inferred.png">Whole window</a></figcaption>
 </figure>
 <p>Amy's observation picks up three types, and two of them depend on the shape of the list rather than on any single coding:</p>
 <figure>
-<a href="protege/amy-obs1-inferred.png"><img src="protege/detail-amy-obs1-inferred.png" width="1045" height="180" loading="lazy" alt="amy:Obs1 with the reasoner running. Under Types, fhir:Observation is asserted, and 'Observation coded in more than one system', 'Observation of Rheumatoid arthritis' and 'Observation whose primary coding is SNOMED CT' are inferred."></a>
-<figcaption>amy:Obs1: one type from the concept, two from the list's length and first element. <a class="full" href="protege/amy-obs1-inferred.png">Whole window</a></figcaption>
+<a href="examples/fhir/protege/amy-obs1-inferred.png"><img src="examples/fhir/protege/detail-amy-obs1-inferred.png" width="1045" height="180" loading="lazy" alt="amy:Obs1 with the reasoner running. Under Types, fhir:Observation is asserted, and 'Observation coded in more than one system', 'Observation of Rheumatoid arthritis' and 'Observation whose primary coding is SNOMED CT' are inferred."></a>
+<figcaption>amy:Obs1: one type from the concept, two from the list's length and first element. <a class="full" href="examples/fhir/protege/amy-obs1-inferred.png">Whole window</a></figcaption>
 </figure>
 <pre><code><span class="c"># 'Observation whose primary coding is SNOMED CT': the first element of the list</span>
 fhir:Observation <span class="k">and</span> fhir:code <span class="k">some</span> (fhir:coding <span class="k">some</span> (ra:first <span class="k">some</span> :Coding-in-SNOMED))
@@ -230,33 +230,33 @@ fhir:Observation <span class="k">and</span> fhir:code <span class="k">some</span
 
 <h3>A coding anywhere in the list: <code>ra:member</code></h3>
 <figure>
-<a href="protege/query-10-ra-member.png"><img src="protege/detail-query-10-ra-member.png" width="1040" height="320" loading="lazy" alt="The DL Query tab with the query fhir:Observation and fhir:code some (fhir:coding some (ra:member some 'Coding: ICD-10 M05.9, Seropositive rheumatoid arthritis, unspecified')). Instances: sue:Obs1."></a>
-<figcaption>Observations with an ICD-10 M05.9 coding at any position: sue:Obs1. <a class="full" href="protege/query-10-ra-member.png">Whole window</a></figcaption>
+<a href="examples/fhir/protege/query-10-ra-member.png"><img src="examples/fhir/protege/detail-query-10-ra-member.png" width="1040" height="320" loading="lazy" alt="The DL Query tab with the query fhir:Observation and fhir:code some (fhir:coding some (ra:member some 'Coding: ICD-10 M05.9, Seropositive rheumatoid arthritis, unspecified')). Instances: sue:Obs1."></a>
+<figcaption>Observations with an ICD-10 M05.9 coding at any position: sue:Obs1. <a class="full" href="examples/fhir/protege/query-10-ra-member.png">Whole window</a></figcaption>
 </figure>
 
 <h3>The first or the last coding: <code>ra:first</code>, <code>ra:last</code></h3>
 <figure>
-<a href="protege/query-14-ra-first.png"><img src="protege/detail-query-14-ra-first.png" width="822" height="320" loading="lazy" alt="The DL Query tab with the query fhir:Observation and fhir:code some (fhir:coding some (ra:first some 'Coding in SNOMED CT')). Instances: amy:Obs1."></a>
-<figcaption>First coding in SNOMED CT: amy:Obs1 only. Bob's observation also has a SNOMED CT coding, but second. <a class="full" href="protege/query-14-ra-first.png">Whole window</a></figcaption>
+<a href="examples/fhir/protege/query-14-ra-first.png"><img src="examples/fhir/protege/detail-query-14-ra-first.png" width="822" height="320" loading="lazy" alt="The DL Query tab with the query fhir:Observation and fhir:code some (fhir:coding some (ra:first some 'Coding in SNOMED CT')). Instances: amy:Obs1."></a>
+<figcaption>First coding in SNOMED CT: amy:Obs1 only. Bob's observation also has a SNOMED CT coding, but second. <a class="full" href="examples/fhir/protege/query-14-ra-first.png">Whole window</a></figcaption>
 </figure>
 <figure>
-<a href="protege/query-15-ra-last.png"><img src="protege/detail-query-15-ra-last.png" width="822" height="320" loading="lazy" alt="The DL Query tab with the query fhir:Observation and fhir:code some (fhir:coding some (ra:last some 'Coding in SNOMED CT')). Instances: amy:Obs2 and bob:Obs1."></a>
-<figcaption>Last coding in SNOMED CT: amy:Obs2 (LOINC, then SNOMED CT) and bob:Obs1 (ICD-10, then SNOMED CT). <a class="full" href="protege/query-15-ra-last.png">Whole window</a></figcaption>
+<a href="examples/fhir/protege/query-15-ra-last.png"><img src="examples/fhir/protege/detail-query-15-ra-last.png" width="822" height="320" loading="lazy" alt="The DL Query tab with the query fhir:Observation and fhir:code some (fhir:coding some (ra:last some 'Coding in SNOMED CT')). Instances: amy:Obs2 and bob:Obs1."></a>
+<figcaption>Last coding in SNOMED CT: amy:Obs2 (LOINC, then SNOMED CT) and bob:Obs1 (ICD-10, then SNOMED CT). <a class="full" href="examples/fhir/protege/query-15-ra-last.png">Whole window</a></figcaption>
 </figure>
 
 <h3>The length of the list: <code>ra:length</code></h3>
 <figure>
-<a href="protege/query-16-several-codings.png"><img src="protege/detail-query-16-several-codings.png" width="822" height="320" loading="lazy" alt="The DL Query tab with the query 'Observation coded in more than one system'. Instances: amy:Obs1, amy:Obs2 and bob:Obs1."></a>
-<figcaption>The defined class "Observation coded in more than one system" (a coding list of length ≥ 2): every observation except Sue's. <a class="full" href="protege/query-16-several-codings.png">Whole window</a></figcaption>
+<a href="examples/fhir/protege/query-16-several-codings.png"><img src="examples/fhir/protege/detail-query-16-several-codings.png" width="822" height="320" loading="lazy" alt="The DL Query tab with the query 'Observation coded in more than one system'. Instances: amy:Obs1, amy:Obs2 and bob:Obs1."></a>
+<figcaption>The defined class "Observation coded in more than one system" (a coding list of length ≥ 2): every observation except Sue's. <a class="full" href="examples/fhir/protege/query-16-several-codings.png">Whole window</a></figcaption>
 </figure>
 
 <h3>A list inside a list</h3>
 <figure>
-<a href="protege/query-23-ra-length.png"><img src="protege/detail-query-23-ra-length.png" width="822" height="320" loading="lazy" alt="The DL Query tab with the query fhir:Patient and fhir:name some (ra:member some (fhir:given some (ra:length some xsd:integer[>= 2]))). Instances: sue:asPatient."></a>
-<figcaption>Patients with a name that has at least two given names: sue:asPatient ("Sue", "Ann"). <a class="full" href="protege/query-23-ra-length.png">Whole window</a></figcaption>
+<a href="examples/fhir/protege/query-23-ra-length.png"><img src="examples/fhir/protege/detail-query-23-ra-length.png" width="822" height="320" loading="lazy" alt="The DL Query tab with the query fhir:Patient and fhir:name some (ra:member some (fhir:given some (ra:length some xsd:integer[>= 2]))). Instances: sue:asPatient."></a>
+<figcaption>Patients with a name that has at least two given names: sue:asPatient ("Sue", "Ann"). <a class="full" href="examples/fhir/protege/query-23-ra-length.png">Whole window</a></figcaption>
 </figure>
 
-<p>All 24 queries of the example, typed this way, list the instances that the OWL API run (<a href="FhirReasoning.java">FhirReasoning.java</a>) finds. A selection:</p>
+<p>All 24 queries of the example, typed this way, list the instances that the OWL API run (<a href="examples/fhir/FhirReasoning.java">FhirReasoning.java</a>) finds. A selection:</p>
 <div class="table-wrap">
 <table>
 <thead><tr><th>Typed in the DL Query tab</th><th>Instances</th></tr></thead>
@@ -271,7 +271,7 @@ fhir:Observation <span class="k">and</span> fhir:code <span class="k">some</span
 </tbody>
 </table>
 </div>
-<p>The full table is in <a href="index.html#in-prot-g">§4 of the example</a>.</p>
+<p>The full table is in <a href="examples/fhir/index.html#in-prot-g">§4 of the example</a>.</p>
 
 <h2><span class="n">7</span>What else the walk-through showed</h2>
 <ul>
@@ -283,7 +283,7 @@ fhir:Observation <span class="k">and</span> fhir:code <span class="k">some</span
 </ul>
 
 <footer>
-<p>Run on 2026-10-27: Protégé 5.6.9 (platform-independent zip) on Java 21, macOS, with owlapi-array <code>1200076f9</code> and protege-owl-array 0.1.0, both built from source by <code>assemble.sh</code>. Sources: <a href="https://github.com/rdf-array/rdf-array/tree/main/examples/fhir">examples/fhir</a> · the example's <a href="index.html">write-up</a> · <a href="../../owl-array.html">OWL-array</a> · <a href="https://github.com/rdf-array/protege-owl-array">protege-owl-array</a> · <a href="https://github.com/rdf-array/owlapi-array">owlapi-array</a>.</p>
+<p>Run on 2026-10-27: Protégé 5.6.9 (platform-independent zip) on Java 21, macOS, with owlapi-array <code>1200076f9</code> and protege-owl-array 0.1.0, both built from source by <code>assemble.sh</code>. Sources: <a href="https://github.com/rdf-array/rdf-array/tree/main/examples/fhir">examples/fhir</a> · the example's <a href="examples/fhir/index.html">write-up</a> · <a href="owl-array.html">OWL-array</a> · <a href="https://github.com/rdf-array/protege-owl-array">protege-owl-array</a> · <a href="https://github.com/rdf-array/owlapi-array">owlapi-array</a>.</p>
 </footer>
 
 </main>
