@@ -122,13 +122,13 @@ git clone https://github.com/rdf-array/rdf-array.git
 cd protege-owl-array
 ./assemble.sh Protege-5.6.9-owl-array
 JAVA_HOME=$(/usr/libexec/java_home -v 21) \
-  Protege-5.6.9-owl-array/run.sh ../rdf-array/examples/fhir/subjects.ttl
+  Protege-5.6.9-owl-array/run.sh "file://$PWD/../rdf-array/examples/fhir/subjects.ttl"
 ```
 
 The `java_home` line is macOS; elsewhere set `JAVA_HOME` to any JDK 11 or newer. `subjects.ttl`
 imports Amy's, Bob's and Sue's records, the arthritis and blood-pressure definitions, the 2016
 talk's SNOMED CT extract, the part of the FHIR ontology they use, and the OWL-array vocabulary; its
-`catalog-v001.xml` maps each import to the file beside it.
+`catalog-v001.xml` maps each import to the file beside it. Note: An absolute URI is expected for the file path here.
 
 ## FHIR/RDF, lists everywhere
 
