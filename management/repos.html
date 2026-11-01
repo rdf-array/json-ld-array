@@ -72,7 +72,7 @@ const LANGS = ["Java", "JavaScript", "Python", "Rust"];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 const slug = s => s.toLowerCase().replace(/ /g, "-").replace(/[^a-z0-9_-]/g, "");
 const ghRepo = name => `https://github.com/${ORG}/${name}`;
-const blob = f => `https://github.com/${ORG}/rdf-array/blob/main/${f}`;
+const blob = f => `https://github.com/${ORG}/rdf-array/blob/rdf-sequences/${f}`;
 
 // Inline Markdown: code spans, bold, links, autolinks. Relative .md links point at GitHub, from management/.
 function md(text) {
@@ -197,7 +197,7 @@ function render(doc, issues, issueError) {
   // Test suites
   nav.push(["test-suites", "Test suites"]);
   html += `<h2 id="test-suites">Test suites</h2><p class="muted">Each W3C suite fork has a <code>*-contrib</code>
-    sibling for the shared tests no W3C suite contains; contrib repositories are new, use <code>main</code> and keep their full names.</p>`;
+    sibling for the shared tests no W3C suite contains; contrib repositories are new and keep their full names.</p>`;
   for (const r of repos.filter(r => r.kind === "test-suite" || r.kind === "tool")) {
     const contribs = repos.filter(c => c.contribOf === r.name);
     html += `<section class="stack"${anchor(r)}>${repoCard(r)}${contribs.length ?

@@ -7,6 +7,7 @@ name: pages
 #   https://rdf-array.github.io/rdf-array/docs/json-ld-array.html
 #   https://rdf-array.github.io/rdf-array/docs/shacl-array.html
 #   https://rdf-array.github.io/rdf-array/docs/owl-array.html
+#   https://rdf-array.github.io/rdf-array/docs/array-syntax.html
 #   https://rdf-array.github.io/rdf-array/docs/protege-array.html  (a plain page, not ReSpec)
 #   https://rdf-array.github.io/rdf-array/examples/fhir/     (README.md rendered as index.html)
 #   https://rdf-array.github.io/rdf-array/management/repos.html  (rendered from repos.json in the browser)
@@ -22,7 +23,7 @@ name: pages
 
 on:
   push:
-    branches: [main]
+    branches: [rdf-sequences]
   workflow_dispatch:
 
 permissions:
@@ -41,7 +42,7 @@ jobs:
       - uses: actions/checkout@v7
       - name: check that the HTML renderings are current
         run: |
-          for pair in docs/rdf-array.md:docs/rdf-array.html docs/json-ld-array.md:docs/json-ld-array.html docs/shacl-array.md:docs/shacl-array.html docs/owl-array.md:docs/owl-array.html docs/protege-array.md:docs/protege-array.html examples/fhir/README.md:examples/fhir/index.html; do
+          for pair in docs/rdf-array.md:docs/rdf-array.html docs/json-ld-array.md:docs/json-ld-array.html docs/shacl-array.md:docs/shacl-array.html docs/owl-array.md:docs/owl-array.html docs/array-syntax.md:docs/array-syntax.html docs/protege-array.md:docs/protege-array.html examples/fhir/README.md:examples/fhir/index.html; do
             src="${pair%%:*}"; dst="${pair##*:}"
             if ! python3 tools/md-to-respec.py --check "$src" "$dst"; then
               echo "$dst is out of date: run python3 tools/md-to-respec.py $src $dst" >&2

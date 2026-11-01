@@ -17,17 +17,21 @@ ra:SequenceResults a mf:Requirement ;
     rdfs:label "SequenceResults" ;
     rdfs:comment "SPARQL results carrying sequence terms: JSON {\"type\": \"seq\", \"value\": [ … ]}, XML <seq>, CSV and TSV spellings." .
 
-ra:PositionPatterns a mf:Requirement ;
-    rdfs:label "PositionPatterns" ;
-    rdfs:comment "SPARQL-array position patterns ((element))[index], index an integer, a variable or *. Proposed syntax, expected to change." .
+ra:GapPatterns a mf:Requirement ;
+    rdfs:label "GapPatterns" ;
+    rdfs:comment "SPARQL-array: `...` in a sequence pattern matches any run of members, and `...?rest` binds that run. Proposed syntax (docs/array-syntax.md)." .
+
+ra:Unnest a mf:Requirement ;
+    rdfs:label "Unnest" ;
+    rdfs:comment "SPARQL-array: UNNEST(expr AS ?x AT ?i), one solution per member of a sequence, with its 1-based position. Proposed syntax (docs/array-syntax.md)." .
 
 ra:SequenceFunctions a mf:Requirement ;
     rdfs:label "SequenceFunctions" ;
-    rdfs:comment "SPARQL-array functions isSEQ, SEQLEN, SEQ and the index expression expr[i]. Proposed syntax, expected to change." .
+    rdfs:comment "SPARQL-array functions isSEQ, SEQLEN and SEQ, the index expr[i], the slice expr[m...n] and `?x IN ?seq`. Proposed syntax (docs/array-syntax.md)." .
 
-ra:CollectionShapeExpression a mf:Requirement ;
-    rdfs:label "CollectionShapeExpression" ;
-    rdfs:comment "ShEx-array Collection shape expression ((shapeExpr))[min, max], ShExJ {\"type\": \"Collection\"}, ShExR sx:Collection. Proposed syntax, expected to change." .
+ra:ListShapeExpression a mf:Requirement ;
+    rdfs:label "ListShapeExpression" ;
+    rdfs:comment "ShEx-array LIST shape expression: LIST ( regex ) over the members, LIST * x, LIST + x, LIST {m,n} x; ShExJ {\"type\": \"ListShape\"}, ShExR sx:ListShape. Proposed syntax (docs/array-syntax.md)." .
 
 ra:ShaclListConstraints a mf:Requirement ;
     rdfs:label "ShaclListConstraints" ;

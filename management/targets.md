@@ -52,7 +52,8 @@ Where the term goes:
   N-Triples and N-Quads accept `( … )` as a term; the writers print it.
 - `oxrdfxml`, `oxjsonld`: what rdfxml-streaming-parser-array and the jsonld-streaming forks did.
 - `spargebra`: `TermPattern::Sequence(Vec<TermPattern>)`, the algebra translation of a collection
-  (today a blank node ladder in the BGP), position patterns `((?e))[i]` as a new pattern kind.
+  (today a blank node ladder in the BGP), gaps `...` in a collection pattern and `UNNEST` as a new
+  operation (docs/array-syntax.md).
 - `sparesults`: the `seq` binding in JSON and XML, the CSV and TSV spellings.
 - `oxigraph`: `EncodedTerm::Sequence` encoded into keys as `Triple` is; matching a pattern that
   holds a sequence with variables by scanning with that position open and matching elements
@@ -73,8 +74,8 @@ rudof (`~/checkouts/rudof-project/rudof`, a workspace of `shex_ast`, `shex_valid
 `shapes_converter`, `dctap`, `sparql_service` and Python, WASM and Emacs `bindings`, among others)
 reads RDF through the Oxigraph crates and validates ShEx with its regular bag expression engine
 `rbe`. The
-ShEx-array part is what shex.js-array and PyShEx-array did: the Collection shape expression
-`((shapeExpr))[min, max]` in the ShExC parser and the ShExJ structures, and a validation rule that
+ShEx-array part is what shex.js-array and PyShEx-array did: the LIST shape expression (docs/array-syntax.md) in the ShExC parser and the ShExJ
+structures, and a validation rule that
 takes a sequence-valued node, checks the bounds and validates each element against the inner
 expression. The rest is wiring the forked `oxrdf` term through rudof's RDF abstraction. The `shacl`
 crate is the natural second home of SHACL-array (below). Impact 3; utility 4, since rudof ships a
@@ -117,7 +118,7 @@ ordering, triples live in six permutations of compressed blocks, the Turtle pars
 SPARQL parser is an ANTLR grammar with a visitor that expands collections into ladders, and query
 results are exported by its own writers. The term would go into the vocabulary as its canonical
 spelling, so whole-sequence equality, joins and `ORDER BY` fall out once the comparator orders `(`
-after literals; but reaching *inside* a sequence — `?s :p (?x 2)`, `((?e))[?i]` — needs either
+after literals; but reaching *inside* a sequence — `?s :p (?x 2)`, `UNNEST(?seq AS ?e AT ?i)` — needs either
 decoding vocabulary strings at query time, which is slow, or an auxiliary permutation of (sequence,
 position, element) built at index time, which is a new index structure in the planner. There is no
 RDF-star precedent to follow. Impact 5; utility 4: the only way to show rdf-array at the scale

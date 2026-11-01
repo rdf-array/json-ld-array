@@ -326,7 +326,7 @@ All 24 queries of the example list in the tab the instances that the OWL API run
 Run on 2026-10-27: Protégé 5.6.9 (platform-independent zip) on Java 21, macOS, with owlapi-array
 `1200076f9` and protege-owl-array 0.1.0, both built from source by `assemble.sh`. The stock-parser
 measurement of §1: OWL API 4.5.29 from Maven Central, `subject-amy.ttl` loaded through the catalog.
-Sources: [examples/fhir](https://github.com/rdf-array/rdf-array/tree/main/examples/fhir) · the
+Sources: [examples/fhir](https://github.com/rdf-array/rdf-array/tree/rdf-sequences/examples/fhir) · the
 example's [write-up](../examples/fhir/index.html) · [OWL-array](owl-array.html) ·
 [protege-owl-array](https://github.com/rdf-array/protege-owl-array) ·
 [owlapi-array](https://github.com/rdf-array/owlapi-array).

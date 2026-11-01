@@ -43,7 +43,7 @@ on the ladder, the test is flagged and a counterpart added. Specifically:
   implementation chose to refuse `rdf:li`; the `rdf:aboutEach` and container tests stay as they are.
 - **SPARQL 1.1 syntax.** Unchanged except where a test's point was the ladder expansion (none in
   the syntax suites; traqula-array passes 642 of 647, the five failures being trailing-`VALUES`
-  tests that predate the fork). New syntax tests: position patterns, `()` in patterns, collections
+  tests that predate the fork). New syntax tests: gap patterns, `UNNEST`, `()` in patterns, collections
   in `CONSTRUCT` templates and `INSERT DATA`.
 - **SPARQL 1.1 evaluation.** Tests whose data or query uses a collection change meaning: a
   `rdf:rest*/rdf:first` property path over such data finds nothing. Re-record the result when the
@@ -57,9 +57,9 @@ on the ladder, the test is flagged and a counterpart added. Specifically:
   JSON-LD keeps `@list`. **expand, compact, flatten, frame**: unchanged (they do not touch RDF).
 - **ShEx.** Schemas never use lists, so `schemas/` is unchanged; `validation/` data files written
   with `( … )` now carry sequences, so every test whose shape constrained the ladder (none in the
-  suite, the suite avoids lists) is reviewed and the Collection shape expression tests are added
+  suite, the suite avoids lists) is reviewed and the list shape expression tests are added
   from shex.js-array's webapp manifest: the RGB colour, the too-short failure, the nested polygon,
-  the playlist, `((.))` with `()` and with a non-sequence.
+  the playlist, `LIST * .` with `()` and with a non-sequence.
 - **SHACL.** Read as SHACL-array ([shacl-array.md](../../../docs/shacl-array.md)): a SHACL list is a sequence
   term, so every shapes graph written with `( … )` reads unchanged; explicit `rdf:first`/`rdf:rest`
   ladders are triples and `rdf:nil` an IRI. Tests whose point was a ladder or `rdf:nil` as the empty
@@ -122,8 +122,8 @@ jena-array and comunica-array for SPARQL, jsonld-streaming-parser-array and rdfl
 shex.js-array and jena-array for ShEx); `--check` fails if a rebuild would change anything. To add a test,
 add a row to the table there and rebuild; give it its `duplicates` (the implementation tests it reproduces)
 and run `tools/contrib-duplicates.py` here, which regenerates [contrib-duplicates.md](../../../management/contrib-duplicates.md).
-Every test that uses the proposed array syntax says so with `mf:requires` (`ra:PositionPatterns`,
-`ra:SequenceFunctions`, `ra:CollectionShapeExpression`, from [vocab/vocab.ttl](../../../vocab/vocab.ttl)), and
+Every test that uses the proposed array syntax says so with `mf:requires` (`ra:GapPatterns`, `ra:Unnest`,
+`ra:SequenceFunctions`, `ra:ListShapeExpression`, from [vocab/vocab.ttl](../../../vocab/vocab.ttl)), and
 `tools/array-syntax-uses.py` regenerates [array-syntax-uses.md](../../../management/array-syntax-uses.md), the list a
 change of syntax has to rewrite.
 
@@ -138,10 +138,10 @@ change of syntax has to rewrite.
 | comunica-array | in `engines/query-sparql`: `yarn spec:query-1-1`, `spec:update-1-1`, `spec:csv-tsv-1-1`, `spec:query-1-2` (`rdf-test-suite` with `spec/sparql-engine.js`, each with a `--skip` list of known failures), plus `rdf-test-suite-ldf`; `yarn spec:rdf-array` fetches rdf-tests-contrib into `.rdf-array-tests/` and runs its four SPARQL manifests | the `spec:base-*` scripts' manifest URLs; add rdf-array skips to the `--skip` lists with a comment; `spec:base-rdf-array` holds the contrib mapping and skips |
 | jena-array | ARQ: `arq.qtest --earl <manifest>` or the `TS_*` JUnit suites over `jena-arq/testing/`; RIOT: the `testing/RIOT/` manifests; the contrib suites: `Scripts_RdfArrayContrib` and `Scripts_RdfArrayContribSPARQL` (in `ARQTestSuite`), `TestShexContrib*` (in `TS_Shex`); SHACL: `TestShaclCoreWG`, `TestShacl12Lists`, `TestShaclContrib` (in `TC_SHACL`), skipping `mf:status sht:rejected` | the in-tree copies; `jena-arq/testing/rdf-array/update.sh`, `jena-shex/src/test/files/shexTest-contrib/update.sh`, `jena-shacl/src/test/files/std/update.sh` (data-shapes-array) and `jena-shacl/src/test/files/data-shapes-contrib/update.sh` refresh the contrib ones |
 | rdflib-array | `pytest test/test_w3c_spec/` over `test/data/suites/`; `test_w3c_spec/test_rdf_array_contrib.py` and `test/jsonld/test_rdf_array_contrib.py` over the contrib copies | the in-tree copies; `test/data/suites/rdf-array/update.sh` refreshes rdf-tests-contrib and json-ld-api-contrib |
-| PyShEx-array | the shexTest manifest tests under `tests/` (`tests/utils/manifest_tester.py`), and `tests/test_shextest_validation/test_manifest_contrib.py` for shexTest-contrib | the `tests/data/shexTest` and `tests/data/shexTest-contrib` submodules (shexTest-array `rdf-sequences`, shexTest-contrib `main`), or `SHEXTEST` / `SHEXTEST_CONTRIB` |
-| shex.js-array | the mocha manifest tests over the `shex-test` and `shex-test-contrib` dependencies (`packages/shex-cli/test/findPath.js`, `findContribPath.js`); `ValidationContrib-test.js` and `Parser-Writer-test.js` loop over both corpora | `"shex-test": "github:rdf-array/shexTest-array#rdf-sequences"`, `"shex-test-contrib": "github:rdf-array/shexTest-contrib#main"`, or `TESTSDIR` / `SHEXTEST_CONTRIB`; the workflows clone shexTest-array beside the checkout |
-| rudof-array | `cargo test -p shex_testsuite` (baselines in `tests/`, `tests/rdf_array_contrib.rs`) and `cargo run -p shex_testsuite -- -m <manifest> -s shexc\|shexj\|shexr`; SHACL: `cargo test -p shacl --test shacl_testsuite` (one `suite_tests!` entry per file, `shacl/tests/contrib.rs` for the contrib suite) | the `shex_testsuite/shexTest` and `shex_testsuite/shexTest-contrib` submodules, pointed at shexTest-array (`rdf-sequences`) and shexTest-contrib (`main`); `shacl/tests/data-shapes` and `shacl/tests/data-shapes-contrib`, pointed at data-shapes-array (`rdf-sequences`) and data-shapes-contrib (`main`) |
-| oxigraph-array | `cargo test -p oxigraph-testsuite` (`tests/parser.rs`, `tests/sparql.rs`, one function per manifest, each with a skip list) | the `testsuite/` submodules, pointed at the -array forks (branch `rdf-sequences`) and the contrib repositories (`main`); `src/files.rs` maps `https://w3c.github.io/` and `https://rdf-array.github.io/` onto them |
+| PyShEx-array | the shexTest manifest tests under `tests/` (`tests/utils/manifest_tester.py`), and `tests/test_shextest_validation/test_manifest_contrib.py` for shexTest-contrib | the `tests/data/shexTest` and `tests/data/shexTest-contrib` submodules (shexTest-array `rdf-sequences`, shexTest-contrib `rdf-sequences`), or `SHEXTEST` / `SHEXTEST_CONTRIB` |
+| shex.js-array | the mocha manifest tests over the `shex-test` and `shex-test-contrib` dependencies (`packages/shex-cli/test/findPath.js`, `findContribPath.js`); `ValidationContrib-test.js` and `Parser-Writer-test.js` loop over both corpora | `"shex-test": "github:rdf-array/shexTest-array#rdf-sequences"`, `"shex-test-contrib": "github:rdf-array/shexTest-contrib#rdf-sequences"`, or `TESTSDIR` / `SHEXTEST_CONTRIB`; the workflows clone shexTest-array beside the checkout |
+| rudof-array | `cargo test -p shex_testsuite` (baselines in `tests/`, `tests/rdf_array_contrib.rs`) and `cargo run -p shex_testsuite -- -m <manifest> -s shexc\|shexj\|shexr`; SHACL: `cargo test -p shacl --test shacl_testsuite` (one `suite_tests!` entry per file, `shacl/tests/contrib.rs` for the contrib suite) | the `shex_testsuite/shexTest` and `shex_testsuite/shexTest-contrib` submodules, pointed at shexTest-array (`rdf-sequences`) and shexTest-contrib (`rdf-sequences`); `shacl/tests/data-shapes` and `shacl/tests/data-shapes-contrib`, pointed at data-shapes-array (`rdf-sequences`) and data-shapes-contrib (`main`) |
+| oxigraph-array | `cargo test -p oxigraph-testsuite` (`tests/parser.rs`, `tests/sparql.rs`, one function per manifest, each with a skip list) | the `testsuite/` submodules, pointed at the -array forks (branch `rdf-sequences`) and the contrib repositories (`rdf-sequences`); `src/files.rs` maps `https://w3c.github.io/` and `https://rdf-array.github.io/` onto them |
 | QLever (future) | its own end-to-end tests | — |
 
 The JavaScript runners use [rdf-test-suite-array](https://github.com/rdf-array/rdf-test-suite-array)

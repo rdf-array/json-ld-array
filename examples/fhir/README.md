@@ -8,7 +8,7 @@ FHIR](https://www.w3.org/2016/Talks/1205-swat4ls-egp/reasoning.html) (Solbrig an
 expected), and in Protégé 5.6.9 with owlapi-array's bundle and the
 [protege-owl-array](https://github.com/rdf-array/protege-owl-array) reasoner plugin, whose DL Query tab
 lists the same answers (§4). The sources are
-[examples/fhir](https://github.com/rdf-array/rdf-array/tree/main/examples/fhir) in the rdf-array
+[examples/fhir](https://github.com/rdf-array/rdf-array/tree/rdf-sequences/examples/fhir) in the rdf-array
 meta-repository.*
 
 The 2016 talk classified FHIR observations by what they are observations of: define a class of codings

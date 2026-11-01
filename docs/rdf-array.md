@@ -74,41 +74,47 @@ under rdf-array: its collections are sequences, not ladders.
 **SPARQL-array.** A collection in a triple pattern, a CONSTRUCT template or INSERT/DELETE DATA is one
 sequence term. A variable inside a pattern's sequence is bound from the corresponding element of a
 matching sequence, nested sequences included, and a repeated variable must match equal elements. A
-**position pattern** reaches elements by index:
+**gap** `...` in a pattern matches any run of members, `UNNEST` walks a sequence, and expressions index
+and slice it ([array-syntax.md](array-syntax.html)):
 
 ```sparql
 SELECT ?x ?o WHERE { ?s :p (?x (2 3) ?o) }    # binds ?x and ?o from a matching sequence
 SELECT ?s WHERE { ?s :p () }                     # the empty sequence is a term
-?s :p ((?e))[2]                                  # the 2nd element (1-based)
-?s :p ((?e))[?i]                                 # every element, ?i bound to its position
-?s :p ((?e))[*]                                  # every element
-?s :p ((((?e))[1]))[2]                           # nested: the first element of the second
-FILTER(isSEQ(?x) && SEQLEN(?x) = 3)              # functions, with SEQ(e1, …) and expr[i]
+?s :p ( ?first ... )                             # the first member; ( ... ?last ), ( ... ?x ... ) likewise
+?s :p ( ?head ...?tail )                         # a named gap binds the rest, as a sequence
+?s :p ( ... ( "8480-6" ?name ( ?v ?unit ) ) ... ) # a tuple anywhere in a list of tuples
+UNNEST(?seq AS ?e AT ?i)                         # every member, ?i bound to its 1-based position
+BIND(?rows[2][3] AS ?cell) BIND(?pts[2...] AS ?rest)   # index and slice, 1-based, the slice closed
+FILTER(isSEQ(?x) && SEQLEN(?x) = 3 && SEQ(3, 4) IN ?pts) # functions and membership
 ```
 
 In expressions a sequence is a term of its own kind: `isIRI`, `isBlank`, `isLiteral` and `isTriple`
 are false for it, `=` and `!=` compare whole sequences, `<` orders them as above, `STR()` spells
-`(e1 e2 …)`. jena-array has all of this; comunica-array has the patterns, the ordering and the result
-formats, not yet the functions. Whether an application wants a sequence or repeated properties is a
-question about the RDF, answered by an update rather than by a syntax:
+`(e1 e2 …)`. jena-array, comunica-array, rdflib-array and oxigraph-array have this syntax (each repository's notes say how
+far). Whether an application wants a
+sequence or repeated properties is a question about the RDF, answered by an update rather than by a
+syntax:
 
 ```sparql
 DELETE { ?s :tags ?seq }  INSERT { ?s :tags ?tag }
-WHERE  { ?s :tags ?seq . ?s :tags ((?tag))[*] }
+WHERE  { ?s :tags ?seq . UNNEST(?seq AS ?tag) }
 ```
 
-**ShEx-array.** The **Collection shape expression** `((shapeExpr))[min, max]` matches a sequence
-whose every element conforms to `shapeExpr` and whose length is within the bounds:
+**ShEx-array.** The **LIST shape expression** matches a sequence: `LIST card x` takes that many
+members, each conforming to `x`, and `LIST ( regex )` takes a regular expression over the members, with
+`;`, `|`, groups and cardinalities as in a triple expression ([array-syntax.md](array-syntax.html)):
 
 ```shex
-:Colour   { :rgb ((xsd:integer MININCLUSIVE 0 MAXINCLUSIVE 255))[3] }
-:Polygon  { :points ((( xsd:decimal ))[2])[3,*] }
-:Playlist { :tracks ((@<Track>))[1,*] }
-:Anything { :seq ((.))[0,*] }
+:Colour    { :rgb LIST {3} xsd:integer MININCLUSIVE 0 MAXINCLUSIVE 255 }
+:Polygon   { :points LIST {3,} LIST {2} xsd:decimal }
+:Playlist  { :tracks LIST + @<Track> }
+:Anything  { :seq LIST * . }
+:BP        { :component LIST + @<Component> }
+:Component LIST ( xsd:string ; xsd:string ; LIST ( xsd:integer ; xsd:string ) )
+:Pairs     LIST ( ( xsd:string ; xsd:integer ) * )
 ```
 
-The shex.js, PyShEx, Jena ShEx and rudof implementations have it, with test-suite examples in
-shex.js-array's webapp manifest.
+shex.js-array, PyShEx-array, jena-array and rudof-array have it.
 
 **JSON-LD-array.** A mapping language for conventional JSON, specified in
 [json-ld-array.md](json-ld-array.html): a JSON array is one sequence term, nested arrays nested
@@ -146,7 +152,7 @@ repeated properties back needs an aggregate.
 ## What does not change
 
 Triples, graphs, datasets and their semantics; IRIs, blank nodes and literals; SPARQL's algebra apart
-from the term kind and its position patterns; ShEx apart from the Collection shape expression; JSON-LD
+from the term kind and its gap patterns; ShEx apart from the list shape expression; JSON-LD
 1.1 itself (JSON-LD-array is a different mapping language, not a change to JSON-LD). An rdf-array
 graph with no sequences is an RDF graph.
 
@@ -154,13 +160,13 @@ graph with no sequences is an RDF graph.
 
 | Language | Project | What the fork does |
 |---|---|---|
-| Java | [jena-array](https://github.com/rdf-array/jena-array) | Apache Jena with the `Node_Seq` term: Turtle-array, SPARQL-array (patterns, position patterns, functions, results), ShEx-array, SHACL-array (`jena-shacl`); the `jena-rdfarray` demo server and page; `RDF-ARRAY-HANDOFF.md` tabulates the flagged tests |
+| Java | [jena-array](https://github.com/rdf-array/jena-array) | Apache Jena with the `Node_Seq` term: Turtle-array, SPARQL-array (patterns, gaps, UNNEST, functions, results), ShEx-array, SHACL-array (`jena-shacl`); the `jena-rdfarray` demo server and page; `RDF-ARRAY-HANDOFF.md` tabulates the flagged tests |
 | JavaScript | [shex.js-array](https://github.com/rdf-array/shex.js-array) with [N3.js-array](https://github.com/rdf-array/N3.js-array), [types-array](https://github.com/rdf-array/types-array), [lezer-turtle-array](https://github.com/rdf-array/lezer-turtle-array), [lezer-shexc-array](https://github.com/rdf-array/lezer-shexc-array) | ShEx-array validation in the browser and Node, with the Turtle-array and ShExC-array editor grammars; <https://rdf-array.github.io/shex.js-array/> |
 | JavaScript | [comunica-array](https://github.com/rdf-array/comunica-array) with [traqula-array](https://github.com/rdf-array/traqula-array), [rdf-data-factory-array](https://github.com/rdf-array/rdf-data-factory-array), [rdf-string-array](https://github.com/rdf-array/rdf-string-array), [rdf-string-ttl-array](https://github.com/rdf-array/rdf-string-ttl-array), [rdf-terms-array](https://github.com/rdf-array/rdf-terms-array), [jsonld-streaming-parser-array](https://github.com/rdf-array/jsonld-streaming-parser-array), [jsonld-streaming-serializer-array](https://github.com/rdf-array/jsonld-streaming-serializer-array), [rdfxml-streaming-parser-array](https://github.com/rdf-array/rdfxml-streaming-parser-array), [sparqljson-parse-array](https://github.com/rdf-array/sparqljson-parse-array), [sparqlxml-parse-array](https://github.com/rdf-array/sparqlxml-parse-array) | the SPARQL-array engine over Turtle, JSON-LD and RDF/XML sources and remote endpoints, with the result formats; comunica-array's `doc/rdf-array.md` has the stack table |
 | JavaScript | [jsonld.js-array](https://github.com/rdf-array/jsonld.js-array) | JSON-LD-array: `jsonld.arrayToRDF`, writers for N-Quads-array and Turtle-array, the [playground](https://rdf-array.github.io/jsonld.js-array/) |
 | Python | [PyShEx-array](https://github.com/rdf-array/PyShEx-array) with [rdflib-array](https://github.com/rdf-array/rdflib-array), [grammar-python-antlr-linkml-array](https://github.com/rdf-array/grammar-python-antlr-linkml-array) (the `pyshexc` parser), [ShExJSG-array](https://github.com/rdf-array/ShExJSG-array), [CFGraph-array](https://github.com/rdf-array/CFGraph-array) | ShEx-array validation over RDFLib with `rdflib.term.Sequence`; RDFLib's Turtle, N-Triples, N3, JSON-LD and SPARQL read and write sequences |
 | Java | [owlapi-array](https://github.com/rdf-array/owlapi-array) | the OWL API 4.5.29, the line Protégé 5.6 loads, for [OWL-array](owl-array.html): OWL's own lists read and written as sequences, a data sequence as an `OWLSequence` individual with the built-in `ra:member`, `ra:length`, `ra:first` and `ra:last`, and a reasoner decorator that expands them for a stock reasoner (HermiT tested); with [protege-owl-array](https://github.com/rdf-array/protege-owl-array), HermiT and ELK in Protégé 5.6.9's reasoner menu ([examples/fhir](../examples/fhir/index.html) §4); the Rio formats and the proper Functional-style, OWL/XML and Manchester spellings not yet |
-| Rust, Python, WASM | [oxigraph-array](https://github.com/rdf-array/oxigraph-array) | Oxigraph with `oxrdf::Sequence`: every syntax it reads and writes, SPARQL-array (patterns, position patterns, functions, results) and the store, in Rust, Python (`pyoxigraph`) and JavaScript; runs the W3C -array and the contrib suites |
+| Rust, Python, WASM | [oxigraph-array](https://github.com/rdf-array/oxigraph-array) | Oxigraph with `oxrdf::Sequence`: every syntax it reads and writes, SPARQL-array (patterns, gaps, UNNEST, functions, results) and the store, in Rust, Python (`pyoxigraph`) and JavaScript; runs the W3C -array and the contrib suites |
 | Rust | [rudof-array](https://github.com/rdf-array/rudof-array) with [oxigraph-array](https://github.com/rdf-array/oxigraph-array) | ShEx-array (ShExC, ShExJ, ShExR and validation) in rudof's library and CLI; ShExR and SHACL lists read as sequences; runs shexTest-array and shexTest-contrib |
 | Specification | [rdf-array](https://github.com/rdf-array/rdf-array) | this overview, the JSON-LD-array specification, the assessment of further targets, and the skills for making forks |
 
@@ -211,14 +217,15 @@ graph with no sequences is an RDF graph.
   triples; a sequence generates none, so rdf-array could allow `<< :s :p ( 1 ) >>`, but jena-array and
   N3.js-array reject it today, and rdf-tests-array keeps the RDF 1.2 negative test (`trig12-syntax-bad-06`)
   ([#5](https://github.com/rdf-array/rdf-array/issues/5)).
-- **Collection bounds with the minimum above the maximum** (`((x))[3, 1]`): shex.js-array accepts them,
+- **List bounds with the minimum above the maximum** (`LIST {3,1} x`): shex.js-array accepts them,
   jena-array and rudof-array reject them; no contrib test decides it yet ([#6](https://github.com/rdf-array/rdf-array/issues/6)).
 - **Sequences in shape maps and value sets.** ShEx-array has no compact shape map spelling for a sequence
   focus node and does not say whether a value set may hold a sequence ([#10](https://github.com/rdf-array/rdf-array/issues/10)).
-- **The array syntax itself.** Position patterns `((x))[i]` and the Collection shape expression
-  `((shapeExpr))[m, n]` are the syntax proposed today and are expected to change; their alikeness in SPARQL
-  and ShEx is convenient rather than required. [array-syntax-uses.md](../management/array-syntax-uses.md) lists every file
-  a change would rewrite.
+- **The array syntax itself.** [array-syntax.md](array-syntax.html) replaced the first proposal, position
+  patterns `((x))[i]` and the Collection shape expression `((shapeExpr))[m, n]`, with gaps, `UNNEST`, slices
+  and `LIST`, checked for conflicts in the whole grammars and run on nested data; the JS, Java, Python and Rust
+  stacks and the shared suites follow it. Still open there: an aggregate that builds a sequence from solutions, and `?s[-1]`.
+  [array-syntax-uses.md](../management/array-syntax-uses.md) lists every file that uses the syntax.
 - **Test manifests.** A W3C manifest's `mf:entries ( … )` is one sequence term when an rdf-array parser
   reads it; test runners of rdf-array implementations must accept a sequence there as well as a ladder.
 - **Interchange with RDF 1.1 systems.** Until a converter exists, an rdf-array document is readable

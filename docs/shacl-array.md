@@ -16,7 +16,8 @@ two things and adds no vocabulary:
    `rdf:nil` is an IRI like any other.
 2. **SHACL 1.2's list constraints apply to sequence values.** `sh:memberShape`, `sh:minListLength`,
    `sh:maxListLength` and `sh:uniqueMembers` constrain a value node that is a sequence. They are the
-   counterpart of ShEx-array's Collection shape expression, `((shapeExpr))[min, max]`.
+   counterpart of ShEx-array's LIST shape expression, `LIST {min,max} shapeExpr`
+   ([array-syntax.md](array-syntax.html)).
 
 ## 1. Lists in the shapes graph
 
@@ -64,7 +65,7 @@ A value node that is not a sequence violates each of them. That includes an IRI,
 `sh:value` is the value node (the sequence) and `sh:resultPath` the path that reached it. SHACL 1.2
 also lists the failing members as `sh:detail`; jena-array does not emit `sh:detail` yet.
 
-An RGB colour, in ShEx-array `((xsd:integer MININCLUSIVE 0 MAXINCLUSIVE 255))[3]`:
+An RGB colour, in ShEx-array `LIST {3} xsd:integer MININCLUSIVE 0 MAXINCLUSIVE 255`:
 
 ```turtle
 PREFIX ex:  <http://example/>
@@ -107,7 +108,8 @@ sequences are members like any other, so a polygon of points is
 
 - **No path into a sequence.** SHACL property paths reach value nodes through triples, and a
   sequence's members are not reached through triples. `sh:memberShape` is the way to constrain
-  them. SPARQL-array's position patterns (`((?e))[2]`, `[*]`) have no SHACL path counterpart, and
+  them. SPARQL-array's gaps and `UNNEST` (`( ... ?e ... )`, `UNNEST(?seq AS ?e AT ?i)`) have no SHACL path
+  counterpart, and
   SHACL-SPARQL constraints can use them where the engine has them.
 - **No positional constraints.** Neither SHACL 1.2 nor SHACL-array can say "the first member is a
   string, the rest are integers". ShEx-array cannot say it either; it is an open question for both.
@@ -148,7 +150,7 @@ for tests that need the list constraints.
 |---|---|---|---|
 | [jena-array](https://github.com/rdf-array/jena-array) `jena-shacl` | yes, sequences only | `sh:memberShape`, `sh:minListLength`, `sh:maxListLength`, `sh:uniqueMembers`; no `sh:detail` | data-shapes-array's SHACL 1.0 core suite and SHACL 1.2's list tests, and data-shapes-contrib: TC_SHACL 272 pass, 5 skipped (the rejected tests); compact syntax builds sequences |
 | [rudof-array](https://github.com/rdf-array/rudof-array) `shacl` | yes, sequences only | not yet (rudof's own TODO) | data-shapes-array: path-strange-001 and node-expr `list` pass, `shacl-shacl` and `path-strange-002` ignored; data-shapes-contrib: 6 pass, 15 ignored. Divergences: [rdf-array#17](https://github.com/rdf-array/rdf-array/issues/17) |
-| pySHACL over rdflib-array, rdf-validate-shacl over the RDF/JS forks | not forked | — | [targets.md](https://github.com/rdf-array/rdf-array/blob/main/management/targets.md) |
+| pySHACL over rdflib-array, rdf-validate-shacl over the RDF/JS forks | not forked | — | [targets.md](https://github.com/rdf-array/rdf-array/blob/rdf-sequences/management/targets.md) |
 
 [SHACL]: https://www.w3.org/TR/shacl/
 [SHACL 1.2 Core]: https://www.w3.org/TR/shacl12-core/

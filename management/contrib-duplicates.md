@@ -8,7 +8,7 @@ The contrib suites ([rdf-tests-contrib](https://github.com/rdf-array/rdf-tests-c
 |---|---|
 | [rdf-tests-contrib](https://github.com/rdf-array/rdf-tests-contrib) | 39 |
 | [json-ld-api-contrib](https://github.com/rdf-array/json-ld-api-contrib) | 60 |
-| [shexTest-contrib](https://github.com/rdf-array/shexTest-contrib) | 34 |
+| [shexTest-contrib](https://github.com/rdf-array/shexTest-contrib) | 20 |
 | [data-shapes-contrib](https://github.com/rdf-array/data-shapes-contrib) | 5 |
 
 ## comunica-array
@@ -64,25 +64,14 @@ The contrib suites ([rdf-tests-contrib](https://github.com/rdf-array/rdf-tests-c
 | jena-shacl src/test/files/local/rdf-array/seq-member-shape-001.ttl | data-shapes-contrib `tests/core/list/memberShape-property-001` |
 | jena-shacl src/test/files/local/rdf-array/seq-path-001.ttl | data-shapes-contrib `tests/core/path/seq-path-001` |
 | jena-shacl src/test/files/local/rdf-array/seq-unique-members-001.ttl | data-shapes-contrib `tests/core/list/uniqueMembers-property-001` |
-| jena-shex TestShexCollection.an_element_fails_the_element_shape | shexTest-contrib `validation-contrib/manifest#collRef1to2_badElement_fail` |
-| jena-shex TestShexCollection.any_length_including_empty | shexTest-contrib `validation-contrib/manifest#collInt_empty_pass` |
-| jena-shex TestShexCollection.any_length_including_empty | shexTest-contrib `validation-contrib/manifest#collInt_mixed_fail` |
-| jena-shex TestShexCollection.any_length_including_empty | shexTest-contrib `validation-contrib/manifest#collInt_three_pass` |
-| jena-shex TestShexCollection.at_least_one | shexTest-contrib `validation-contrib/manifest#collInt1Plus_empty_fail` |
-| jena-shex TestShexCollection.at_least_one | shexTest-contrib `validation-contrib/manifest#collInt1Plus_four_pass` |
-| jena-shex TestShexCollection.at_least_one | shexTest-contrib `validation-contrib/manifest#collInt1Plus_one_pass` |
-| jena-shex TestShexCollection.elements_each_satisfy_the_element_shape | shexTest-contrib `validation-contrib/manifest#collRef1to2_two_pass` |
-| jena-shex TestShexCollection.exact_length | shexTest-contrib `validation-contrib/manifest#collInt2_one_fail` |
-| jena-shex TestShexCollection.exact_length | shexTest-contrib `validation-contrib/manifest#collInt2_three_fail` |
-| jena-shex TestShexCollection.exact_length | shexTest-contrib `validation-contrib/manifest#collInt2_two_pass` |
-| jena-shex TestShexCollection.nested_collections | shexTest-contrib `validation-contrib/manifest#collNested_flat_fail` |
-| jena-shex TestShexCollection.nested_collections | shexTest-contrib `validation-contrib/manifest#collNested_pairInside_fail` |
-| jena-shex TestShexCollection.nested_collections | shexTest-contrib `validation-contrib/manifest#collNested_pass` |
-| jena-shex TestShexCollection.not_a_sequence | shexTest-contrib `validation-contrib/manifest#collInt_literal_fail` |
-| jena-shex TestShexCollection.not_a_sequence | shexTest-contrib `validation-contrib/manifest#collRef1to2_notSeq_fail` |
-| jena-shex TestShexCollection.one_element_is_enough | shexTest-contrib `validation-contrib/manifest#collRef1to2_one_pass` |
-| jena-shex TestShexCollection.too_few_elements | shexTest-contrib `validation-contrib/manifest#collRef1to2_empty_fail` |
-| jena-shex TestShexCollection.too_many_elements | shexTest-contrib `validation-contrib/manifest#collRef1to2_three_fail` |
+| jena-shex TestShexList.empty_sequences | shexTest-contrib `validation-contrib/manifest#listInt_empty_pass` |
+| jena-shex TestShexList.empty_sequences | shexTest-contrib `validation-contrib/manifest#listInt_mixed_fail` |
+| jena-shex TestShexList.empty_sequences | shexTest-contrib `validation-contrib/manifest#listInt_three_pass` |
+| jena-shex TestShexList.matrix_2x3 | shexTest-contrib `validation-contrib/manifest#listNested_flat_fail` |
+| jena-shex TestShexList.matrix_2x3 | shexTest-contrib `validation-contrib/manifest#listNested_pairInside_fail` |
+| jena-shex TestShexList.matrix_2x3 | shexTest-contrib `validation-contrib/manifest#listNested_pass` |
+| jena-shex TestShexList.not_a_sequence | shexTest-contrib `validation-contrib/manifest#listInt_literal_fail` |
+| jena-shex TestShexList.not_a_sequence | shexTest-contrib `validation-contrib/manifest#listRef1to2_notSeq_fail` |
 
 ## jsonld-streaming-parser-array
 
@@ -163,29 +152,22 @@ The contrib suites ([rdf-tests-contrib](https://github.com/rdf-array/rdf-tests-c
 
 | Implementation test | Duplicated by |
 |---|---|
-| packages/shex-parser/test/Collection-test.js "rejects malformed bounds" | shexTest-contrib `negativeSyntax-contrib/manifest#collBoundsEmpty` |
-| packages/shex-parser/test/Collection-test.js "rejects malformed bounds" | shexTest-contrib `negativeSyntax-contrib/manifest#collBoundsNoComma` |
-| packages/shex-parser/test/Collection-test.js "rejects malformed bounds" | shexTest-contrib `negativeSyntax-contrib/manifest#collBoundsNoMin` |
-| packages/shex-parser/test/Collection-test.js "rejects malformed bounds" | shexTest-contrib `negativeSyntax-contrib/manifest#collBoundsStar` |
-| packages/shex-parser/test/Collection-test.js "rejects malformed bounds" | shexTest-contrib `negativeSyntax-contrib/manifest#collBoundsThree` |
-| packages/shex-parser/test/Collection-test.js "rejects malformed bounds" | shexTest-contrib `negativeSyntax-contrib/manifest#collBoundsUnclosed` |
-| packages/shex-validator/test/Collection-test.js "accepts a sequence of the right length whose elements conform" | shexTest-contrib `validation-contrib/manifest#collRef1to2_two_pass` |
-| packages/shex-validator/test/Collection-test.js "accepts the empty sequence where the bounds allow it" | shexTest-contrib `validation-contrib/manifest#collInt_empty_pass` |
-| packages/shex-validator/test/Collection-test.js "checks the bounds" | shexTest-contrib `validation-contrib/manifest#collRef1to2_empty_fail` |
-| packages/shex-validator/test/Collection-test.js "checks the bounds" | shexTest-contrib `validation-contrib/manifest#collRef1to2_three_fail` |
-| packages/shex-validator/test/Collection-test.js "follows shape references from the elements" | shexTest-contrib `validation-contrib/manifest#collRef1to2_badElement_fail` |
-| packages/shex-validator/test/Collection-test.js "is none of the node kinds, but matches `.`" | shexTest-contrib `validation-contrib/manifest#collDot_mixed_pass` |
-| packages/shex-validator/test/Collection-test.js "is none of the node kinds, but matches `.`" | shexTest-contrib `validation-contrib/manifest#collValueIri_seq_fail` |
-| packages/shex-validator/test/Collection-test.js "nests" | shexTest-contrib `validation-contrib/manifest#collNested_pass` |
-| packages/shex-validator/test/Collection-test.js "reports the elements that fail, by index" | shexTest-contrib `validation-contrib/manifest#collRef1to2_badElement_fail` |
-| packages/shex-validator/test/Collection-test.js "wants a sequence" | shexTest-contrib `validation-contrib/manifest#collRef1to2_notSeq_fail` |
-| packages/shex-validator/test/Collection-test.js (parser) "takes a shape expression of any kind" | shexTest-contrib `validation-contrib/manifest#collIriOrInt_pass` |
-| packages/shex-webapp/examples/manifest.json "a triangle" | shexTest-contrib `validation-contrib/manifest#collPolygon_triangle_pass` |
-| packages/shex-webapp/examples/manifest.json "pink has only two components" | shexTest-contrib `validation-contrib/manifest#collColour_pink_fail` |
-| packages/shex-webapp/examples/manifest.json "rdf-array: anything" with () | shexTest-contrib `validation-contrib/manifest#collDot_empty_pass` |
-| packages/shex-webapp/examples/manifest.json "rdf-array: anything" with a non-sequence | shexTest-contrib `validation-contrib/manifest#collDot_notSeq_fail` |
-| packages/shex-webapp/examples/manifest.json "red" | shexTest-contrib `validation-contrib/manifest#collColour_red_pass` |
-| packages/shex-webapp/examples/manifest.json "two tracks" | shexTest-contrib `validation-contrib/manifest#collPlaylist_pass` |
+| packages/shex-validator/test/ListShape-test.js "accepts a sequence of the right length whose members conform" | shexTest-contrib `validation-contrib/manifest#listRef1to2_two_pass` |
+| packages/shex-validator/test/ListShape-test.js "accepts the empty sequence where the cardinality allows it (§5)" | shexTest-contrib `validation-contrib/manifest#listInt_empty_pass` |
+| packages/shex-validator/test/ListShape-test.js "counts the members" | shexTest-contrib `validation-contrib/manifest#listRef1to2_empty_fail` |
+| packages/shex-validator/test/ListShape-test.js "counts the members" | shexTest-contrib `validation-contrib/manifest#listRef1to2_three_fail` |
+| packages/shex-validator/test/ListShape-test.js "follows shape references from the members" | shexTest-contrib `validation-contrib/manifest#listRef1to2_badMember_fail` |
+| packages/shex-validator/test/ListShape-test.js "is none of the node kinds, but matches `.`" | shexTest-contrib `validation-contrib/manifest#listDot_mixed_pass` |
+| packages/shex-validator/test/ListShape-test.js "is none of the node kinds, but matches `.`" | shexTest-contrib `validation-contrib/manifest#seqValueIri_fail` |
+| packages/shex-validator/test/ListShape-test.js "nests" | shexTest-contrib `validation-contrib/manifest#listNested_pass` |
+| packages/shex-validator/test/ListShape-test.js "reports every member that fails, by index" | shexTest-contrib `validation-contrib/manifest#listRef1to2_badMember_fail` |
+| packages/shex-validator/test/ListShape-test.js "wants a sequence" | shexTest-contrib `validation-contrib/manifest#listRef1to2_notSeq_fail` |
+| packages/shex-webapp/examples/manifest.json "a triangle" | shexTest-contrib `validation-contrib/manifest#listPolygon_triangle_pass` |
+| packages/shex-webapp/examples/manifest.json "pink has only two components" | shexTest-contrib `validation-contrib/manifest#listColour_pink_fail` |
+| packages/shex-webapp/examples/manifest.json "rdf-array: a bag of anything" with () | shexTest-contrib `validation-contrib/manifest#listDot_empty_pass` |
+| packages/shex-webapp/examples/manifest.json "rdf-array: a bag of anything" with a non-sequence | shexTest-contrib `validation-contrib/manifest#listDot_notSeq_fail` |
+| packages/shex-webapp/examples/manifest.json "red" | shexTest-contrib `validation-contrib/manifest#listColour_red_pass` |
+| packages/shex-webapp/examples/manifest.json "two tracks" | shexTest-contrib `validation-contrib/manifest#listPlaylist_pass` |
 
 ## sparqljson-parse-array
 

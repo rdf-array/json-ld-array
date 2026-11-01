@@ -83,7 +83,10 @@ def slug(text):
 
 def split_row(line):
     cells, cur, in_code = [], [], False
-    for ch in line.strip().strip('|'):
+    for ch in re.sub(r'\\\|', '\0', line.strip().strip('|')):   # \| is a pipe in a cell, as on GitHub
+        if ch == '\0':
+            cur.append('|')
+            continue
         if ch == '`':
             in_code = not in_code
         if ch == '|' and not in_code:
@@ -346,7 +349,7 @@ TEMPLATE = '''<!DOCTYPE html>
 %(abstract)s
   </section>
   <section id="sotd">
-    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/%(source)s">%(source)s</a> by <code>tools/md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
+    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/rdf-sequences/%(source)s">%(source)s</a> by <code>tools/md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
   </section>
   <section class="introductory" id="introduction">
     <h2>Introduction</h2>

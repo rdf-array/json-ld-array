@@ -26,7 +26,7 @@ Classify each hit:
 | Kind | What to do |
 |---|---|
 | a parser or serializer test whose *expected output* spells a ladder | re-record the expectation as the sequence term (§3) |
-| a query or path test that *walks* a ladder (`rdf:rest*/rdf:first`, `rdf:_1`) | flag it (§2) and write a counterpart that reads the sequence directly (`?s :p ((?e))[*]`, `?s :p ( ?a ?b )`) |
+| a query or path test that *walks* a ladder (`rdf:rest*/rdf:first`, `rdf:_1`) | flag it (§2) and write a counterpart that reads the sequence directly (`UNNEST(?seq AS ?e)`, `?s :p ( ... ?e ... )`, `?s :p ( ?a ?b )`) |
 | a test of the removed code (list builders, `rdf:li` numbering, `CommonIRIs.NIL`) | delete it, with a line in the notes |
 | a test of a container (`rdf:Seq` with `rdf:_1`) | flag it; the data now carries `rdf:li` properties or plain `rdf:_n` IRIs |
 | a fixture whose Turtle uses `( … )` for a list the test then dereferences | re-record the fixture's reading: the collection is one term |
@@ -94,14 +94,18 @@ fork tests the contrib suites already reproduce. The cases:
 - for a store or engine: match `?s :p ( ?x 2 )`, `?s :p ( ?x ( ?y ?z ) )`, a repeated variable, a
   constant sequence, `()`, and a quoted triple holding a sequence; over every source kind the engine
   has (in-memory, serialized, remote);
-- for a query engine: `((?e))[2]`, `[?i]`, `[*]`, nested; `isSEQ`, `SEQLEN`, `expr[i]` if provided;
+- for a query engine: `( ?first ... )`, `( ... ?e ... )`, `( ?h ...?t )`, nested gaps, `UNNEST(?seq AS ?e AT ?i)`;
+  `isSEQ`, `SEQLEN`, `expr[i]`, `expr[m...n]`, `IN ?seq` if provided (docs/array-syntax.md §4 has data,
+  queries and results);
   CONSTRUCT and INSERT building sequences; `ORDER BY` over sequences;
 - results: `{"type": "seq"}`, `<seq>`, the CSV and TSV cells, and reading them back;
 - JSON-LD: `@list` → sequence (nested, empty, single non-array value), sequence → `@list`;
 - RDF/XML: `rdf:parseType="Collection"` with two nodes, empty, self-closing, reified; `rdf:li`
   staying `rdf:li`;
-- ShEx: the Collection shape expression on an RGB colour `((xsd:integer MININCLUSIVE 0 MAXINCLUSIVE 255))[3]`,
-  a too-short sequence failing, a nested polygon, a playlist of `@<Track>`, `((.))` with `()`.
+- ShEx: the LIST shape expression on an RGB colour `LIST {3} xsd:integer MININCLUSIVE 0 MAXINCLUSIVE 255`,
+  a too-short sequence failing, a nested polygon `LIST {3,} LIST {2} xsd:decimal`, a playlist `LIST + @<Track>`,
+  `LIST * .` with `()`, a tuple `LIST ( xsd:string ; xsd:integer )` and a repeated group
+  `LIST ( ( xsd:string ; xsd:integer ) * )` (docs/array-syntax.md §4.2).
 
 ## 5. Assertion pitfalls
 

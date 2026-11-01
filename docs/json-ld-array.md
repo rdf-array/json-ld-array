@@ -163,7 +163,7 @@ sequence is spread with a position pattern, over any data however it was produce
 ```sparql
 DELETE { ?s schema:knows ?seq }
 INSERT { ?s schema:knows ?friend }
-WHERE  { ?s schema:knows ?seq . ?s schema:knows ((?friend))[*] }
+WHERE  { ?s schema:knows ?seq . UNNEST(?seq AS ?friend) }
 ```
 
 and gathered back with an aggregate into a sequence. JSON-LD needed `@container: @list` and

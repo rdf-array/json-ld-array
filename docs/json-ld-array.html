@@ -44,7 +44,7 @@
     <p>JSON-LD-array is a mapping language that turns <strong>conventional JSON</strong> — the JSON an API already produces — into <strong>rdf-array</strong>. It keeps the one idea of JSON-LD that conventional JSON needs, <em>a map from JSON keys to RDF properties</em>, and drops the rest:</p>
   </section>
   <section id="sotd">
-    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/main/docs/json-ld-array.md">docs/json-ld-array.md</a> by <code>tools/md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
+    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/rdf-sequences/docs/json-ld-array.md">docs/json-ld-array.md</a> by <code>tools/md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
   </section>
   <section class="introductory" id="introduction">
     <h2>Introduction</h2>
@@ -144,7 +144,7 @@
     <p>Whether <code>schema:knows ( &lt;…#Bob&gt; &lt;…#Eve&gt; )</code> or <code>schema:knows &lt;…#Bob&gt;, &lt;…#Eve&gt;</code> is wanted is a question about the RDF, not about the JSON, so JSON-LD-array does not answer it. In SPARQL-array a sequence is spread with a position pattern, over any data however it was produced:</p>
     <pre class="example sparql nohighlight">DELETE { ?s schema:knows ?seq }
     INSERT { ?s schema:knows ?friend }
-    WHERE  { ?s schema:knows ?seq . ?s schema:knows ((?friend))[*] }</pre>
+    WHERE  { ?s schema:knows ?seq . UNNEST(?seq AS ?friend) }</pre>
     <p>and gathered back with an aggregate into a sequence. JSON-LD needed <code>@container: @list</code> and <code>@container: @set</code> because RDF 1.1 had no sequence term to leave the choice to.</p>
     </section>
   </section>

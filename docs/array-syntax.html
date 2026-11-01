@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Array syntax: candidates for SPARQL-array and ShEx-array, checked</title>
+  <script src="https://www.w3.org/Tools/respec/respec-w3c" class="remove" defer></script>
+  <script class="remove">
+    var respecConfig = {
+      specStatus: "unofficial",
+      shortName: "array-syntax",
+      editors: [{ name: "Eric Prud'hommeaux" }],
+      edDraftURI: "https://rdf-array.github.io/rdf-array/docs/array-syntax.html",
+      latestVersion: null,
+      overrideCopyright: "<p class='copyright'>Copyright &copy; 2026 the rdf-array project. This document is licensed under a <a href='https://creativecommons.org/licenses/by/4.0/'>Creative Commons Attribution 4.0 License</a>.</p>",
+      lint: { "no-unused-dfns": false },
+      localBiblio: {
+        "RML-CORE": { title: "RML-Core: Generic Mapping Language for RDF", href: "https://w3id.org/rml/core/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-CC": { title: "RML-CC: RML Collections and Containers", href: "https://w3id.org/rml/cc/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-LV": { title: "RML-LV: RML Logical Views", href: "https://w3id.org/rml/lv/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "RML-FNML": { title: "RML-FNML: RML Functions", href: "https://w3id.org/rml/fnml/spec", publisher: "W3C Knowledge Graph Construction Community Group" },
+        "YARRRML": { title: "YARRRML", href: "https://rml.io/yarrrml/spec/", publisher: "IDLab, Ghent University" }
+      }
+    };
+  </script>
+  <style>
+    table.simple { font-size: 0.9em; }
+    table.simple td, table.simple th { vertical-align: top; }
+    pre.example { font-size: 0.9em; line-height: 1.35; }
+    .hljs-iri { color: #0b5394; }
+    .hljs-pname { color: #38761d; }
+    .hljs-lit { color: #a61c00; }
+    .hljs-kw { color: #741b47; font-weight: bold; }
+    .hljs-var { color: #b45f06; }
+    .hljs-cmt { color: #777; font-style: italic; }
+    .hljs-bnode { color: #666; }
+    .hljs-num, .hljs-number { color: #a61c00; }
+    .hljs-attr { color: #0b5394; }
+    .hljs-string { color: #38761d; }
+    .hljs-literal { color: #741b47; }
+  </style>
+</head>
+<body>
+  <section id="abstract">
+    <p>The strawman spelled positions in SPARQL and member constraints in ShEx alike, as <code>(( … ))[ … ]</code>. The two languages need different things, though. A SPARQL query matches members and binds variables to them and to their positions; a ShEx schema constrains every member, often by position, as in a tuple. Other languages keep the two apart: SQL, Cypher and JSONPath for the first; RELAX NG, CDDL, ASN.1 and JSON Schema for the second. This note takes one design from each side, checks that it parses without conflicts as part of the whole grammar, runs it on nested data (lists of lists, tuples of tuples and recursion), and measures it against those languages (§6).</p>
+  </section>
+  <section id="sotd">
+    <p>This is a working document of the <a href="https://github.com/rdf-array">rdf-array</a> project, generated from <a href="https://github.com/rdf-array/rdf-array/blob/rdf-sequences/docs/array-syntax.md">docs/array-syntax.md</a> by <code>tools/md-to-respec.py</code> in the same repository. It is not a W3C document and has no standing anywhere.</p>
+  </section>
+  <section class="introductory" id="introduction">
+    <h2>Introduction</h2>
+    <p><em>Design note, 2026-10-31. Proposes the syntax to replace the <code>((x))[i]</code> position patterns of SPARQL-array and the <code>((shapeExpr))[m, n]</code> Collection shape expression of ShEx-array, which <a href="rdf-array.html#open-questions">rdf-array.md</a> listed as expected to change. Implemented on 2026-11-01 in jena-array, shex.js-array, lezer-shexc-array, traqula-array and comunica-array, pyshexc, ShExJSG-array and PyShEx-array, rdflib-array, oxigraph-array and rudof-array, with the shared suites rewritten to it. The grammars, the harness and the examples are in <a href="https://github.com/rdf-array/rdf-array/tree/rdf-sequences/tools/array-syntax">tools/array-syntax/</a>, and <a href="../management/array-syntax-uses.md">array-syntax-uses.md</a> lists the files that adopting a new syntax would rewrite.</em></p>
+    <p>The proposals, in short:</p>
+    <ul><li><strong>SPARQL-array.</strong> <code>UNNEST(expr AS ?x AT ?i)</code> binds each member and its 1-based position. <code>...</code> inside a pattern's <code>( … )</code> matches any run of members, and <code>...?rest</code> binds that run. <code>expr[i]</code> indexes and <code>expr[m...n]</code> slices. <code>?x IN ?seq</code> tests membership. <code>SEQ(…)</code>, <code>SEQLEN(…)</code> and <code>isSEQ(…)</code> build and inspect sequences. <code>()</code> is the empty sequence.</li><li><strong>ShEx-array.</strong> <code>LIST</code> takes two forms: - <code>LIST ( regex )</code> takes a regular expression over the members, with <code>;</code>, <code>|</code>, groups and cardinalities, as in a triple expression. - <code>LIST * x</code>, <code>LIST + x</code>, <code>LIST {m,n} x</code> take that many members, each matching x.</li></ul>
+    <p>Both add no conflicts to their grammars (§3). On the examples (§4) they give the results expected.</p>
+  </section>
+  <section id="sparql-array">
+  <h2>SPARQL-array</h2>
+    <section id="grammar">
+    <h3>Grammar</h3>
+    <p>These productions change SPARQL 1.1's grammar (the names are SPARQL.js's, from which they were tested):</p>
+    <pre class="example nohighlight">GraphPatternNotTriples ::= … | 'UNNEST' '(' Expression 'AS' Var ( 'AT' Var )? ')'
+    TriplesNodePath        ::= '(' SeqMemberPath+ ')'          # in WHERE: patterns
+    SeqMemberPath          ::= GraphNodePath | '...' | GAPVAR   # GAPVAR is '...' and a Var, with no space
+    TriplesNode            ::= '(' GraphNode+ ')'              # templates and data: no '...'
+    GraphTerm              ::= … | NIL                         # () is the empty sequence, not rdf:nil
+    UnaryExpression        ::= '!' PostfixExpression | '+' PostfixExpression | '-' PostfixExpression | PostfixExpression
+    PostfixExpression      ::= PrimaryExpression
+                             | PostfixExpression '[' Expression ']'
+                             | PostfixExpression '[' Expression? '...' Expression? ']'   # but not '[' '...' ']'
+    RelationalExpression   ::= … | NumericExpression 'NOT'? 'IN' ( ExpressionList | SeqRef )
+    SeqRef                 ::= Var | 'SEQ' ExpressionList | SeqRef '[' Expression ']'
+    BuiltInCall            ::= … | 'SEQ' ExpressionList | 'SEQLEN' '(' Expression ')' | 'isSEQ' '(' Expression ')'</pre>
+    <p>The lexer adds <code>...</code>, <code>GAPVAR</code> (<code>...?rest</code>, one token), <code>UNNEST</code>, <code>AT</code>, <code>SEQ</code>, <code>SEQLEN</code> and <code>isSEQ</code>.</p>
+    </section>
+    <section id="meaning">
+    <h3>Meaning</h3>
+    <ul><li><strong>A sequence in a pattern</strong> matches a sequence of the same length, member by member, as today. <strong><code>...</code></strong> matches zero or more members, so <code>( ?first ... )</code>, <code>( ... ?last )</code> and <code>( ... ?x ... )</code> find the first member, the last member and every member. A pattern may hold several gaps, and gaps may nest: <code>( ... ( "8480-6" ?name ( ?v ?unit ) ) ... )</code> finds a 3-tuple anywhere in a list of tuples. A template or INSERT DATA has no gap, since it builds a sequence rather than matching one.</li><li><strong>A named gap <code>...?rest</code></strong> matches like <code>...</code> and binds <code>?rest</code> to the run it matched, as a sequence. <code>( ?head ...?tail )</code> takes a list apart as <code>[h, ...t]</code> does in JavaScript, <code>[h, t @ ..]</code> in Rust and <code>[H|T]</code> in Prolog, and <code>( ...?before ?x ... )</code> gives <code>?x</code>'s position as <code>SEQLEN(?before) + 1</code>. The same variable twice must match equal runs. The token is <code>...</code> followed by the variable with no space: <code>( ?a ... ?b )</code> is a gap and then a member, <code>( ?a ...?b )</code> a named gap, as <code>:a .b</code> and <code>:a.b</code> already differ.</li><li><strong><code>UNNEST(expr AS ?x AT ?i)</code></strong> yields one solution per member of the sequence that <code>expr</code> evaluates to, binding <code>?x</code> to the member and <code>?i</code> to its position, counting from 1, like <code>for $x at $i in</code> in XQuery and <code>UNNEST … WITH ORDINALITY</code> in SQL. Two UNNESTs reach the cells of a matrix, and an UNNEST of a list of tuples, followed by <code>?x[j]</code>, reads one field of each tuple. When <code>expr</code> is unbound or not a sequence, there is no solution.</li><li><strong><code>expr[i]</code></strong> is the i-th member, counting from 1, and chains: <code>?rows[2][3]</code>. An index out of range, or applied to something other than a sequence, is an error, so a BIND leaves its variable unbound.</li><li><strong><code>expr[m...n]</code></strong> is the sequence of the members m to n, both included: <code>?pts[1...2]</code> is the first two, <code>?pts[2...]</code> the rest after the first, <code>?pts[...n]</code> the first n, <code>?rows[1][2...3]</code> the middle of the first row. The ends are expressions, so <code>?s[SEQLEN(?s) - 1 ... SEQLEN(?s)]</code> is the last two. The range is closed because the indexes are 1-based, as Swift's <code>...</code> and SQL's <code>a[2:4]</code> are. A slice is clamped to the sequence, as in SQL, Cypher and Python, so <code>SEQ(4, 5)[2...3]</code> is <code>(5)</code> and <code>SEQ()[2...]</code> is <code>()</code>, where an index out of range is an error. <code>:</code> cannot be the range mark, since <code>[2:4]</code> lexes <code>:4</code> as a prefixed name.</li><li><strong><code>?x IN ?seq</code></strong> is true when some member of the sequence equals <code>?x</code>. The needle may itself be a sequence: <code>SEQ(3, 4) IN ?points</code>. <code>?x IN ( … )</code> keeps its SPARQL 1.1 meaning, a list of expressions, so <code>?x IN (?seq)</code> asks whether <code>?x</code> equals <code>?seq</code>, not whether it is a member. The right-hand side of the new form is restricted to a variable, a <code>SEQ(…)</code> call or an indexed one of these, so that <code>IN (</code> still opens an expression list.</li><li><strong><code>=</code> and <code>!=</code></strong> compare whole sequences, members included, and so does a nested pattern: <code>?m :matrix ( ( 1 2 3 ) ( 4 5 6 ) )</code>.</li><li><strong>In <code>ORDER BY</code> and <code>GROUP BY</code></strong> an index needs brackets, <code>ORDER BY (?x[1])</code>, because a bare <code>?x</code> there is a variable and not an expression.</li></ul>
+    </section>
+  </section>
+  <section id="shex-array">
+  <h2>ShEx-array</h2>
+    <section id="grammar">
+    <h3>Grammar</h3>
+    <p><code>LIST</code> is a shape atom wherever one may stand (<code>shapeAtom</code>, <code>shapeAtomNoRef</code>, <code>inlineShapeAtom</code>), except after <code>EXTENDS</code>:</p>
+    <pre class="example nohighlight">listShape       ::= 'LIST' '(' listOneOf ')'
+                      | 'LIST' cardinality inlineShapeAtom            # * + ? {m} {m,} {m,n} {m,*}
+    listOneOf       ::= listEachOf ( '|' listEachOf )*
+    listEachOf      ::= listUnary ( ';' listUnary )*
+    listUnary       ::= listMember cardinality?                     # how many members
+    listMember      ::= listMemberOr | '(' listOneOf ')'             # inside LIST ( ), '(' opens a group
+    listMemberOr    ::= listMemberAnd ( 'OR' inlineShapeAnd )*
+    listMemberAnd   ::= listMemberNot ( 'AND' inlineShapeNot )*
+    listMemberNot   ::= listMemberAtom | 'NOT' inlineShapeAtom
+    listMemberAtom  ::= nonLitInlineNodeConstraint inlineShapeOrRef? | litInlineNodeConstraint
+                      | inlineShapeOrRef nonLitInlineNodeConstraint? | listShape | '.'</pre>
+    <p><code>listMemberAtom</code> is <code>inlineShapeAtom</code> without its parenthesised alternative. Only the member's first atom loses the parentheses; later ones keep them, so <code>LIST ( @&lt;B&gt; AND ( @&lt;A&gt; OR @&lt;C&gt; ) )</code> is a member. This is variant G of §3.</p>
+    </section>
+    <section id="meaning">
+    <h3>Meaning</h3>
+    <ul><li><strong><code>LIST ( regex )</code></strong> matches a sequence whose members, in order, match the regular expression. A member is a shape expression, and <code>;</code> (concatenation), <code>|</code> (choice), <code>( … )</code> (group) and cardinalities combine members as <code>;</code>, <code>|</code>, groups and cardinalities combine triple constraints in a triple expression. <code>LIST ( xsd:string ; xsd:integer )</code> is a pair, and <code>LIST ( xsd:integer * )</code> any list of integers. One difference from a triple expression: here <code>;</code> is ordered. <code>{ :a . ; :b . }</code> matches triples in any order, since a graph has none, while <code>LIST ( xsd:string ; xsd:integer )</code> takes the string first.</li><li><strong><code>LIST card x</code></strong> is short for <code>LIST ( x card )</code>: <code>LIST * xsd:integer</code> is any list of integers, <code>LIST + @&lt;Track&gt;</code> a non-empty list of tracks, <code>LIST {3} xsd:integer</code> three integers, and <code>LIST {2} LIST {3} xsd:integer</code> a 2×3 matrix, as CDDL's <code>[* int]</code>, <code>[+ track]</code>, <code>[3 int]</code> and <code>[2 [3 int]]</code>. The cardinality comes first because after a value expression it would count triples (next item). A bare <code>LIST xsd:integer</code> is a syntax error (§2.3).</li><li><strong>A cardinality after the list belongs to the triple constraint</strong>, as after any value expression. <code>:p LIST ( @&lt;C&gt; + ) {1,2}</code> and <code>:p LIST + @&lt;C&gt; {1,2}</code> both say one or two <code>:p</code> triples, each with a non-empty list of <code>&lt;C&gt;</code>.</li><li><strong>ShExJ.</strong> The harness writes <code>{ "type": "ListShape", "expression": … }</code>. Here <code>expression</code> is a <code>Member</code> (<code>{ "type": "Member", "shapeExpr": …, "min": …, "max": … }</code>) or an <code>EachOf</code> or <code>OneOf</code> of them, with <code>min</code> and <code>max</code> as on triple expressions, and both forms of §2.1 give the same ShExJ. Since this <code>EachOf</code> is ordered where a triple expression's is not, ShExJ may want it under another name, <code>ListEachOf</code>, so that a generic walker does not confuse the two. ShExR would follow ShExJ.</li></ul>
+    </section>
+    <section id="alternatives-that-were-rejected">
+    <h3>Alternatives that were rejected</h3>
+    <ul><li><strong>Facets after the member</strong> (<code>LIST xsd:string MINLENGTH 2</code>) conflict: ShEx's string facet <code>MINLENGTH</code> may follow <code>xsd:string</code> too, and with nesting, <code>LIST LIST x MINLENGTH 2</code> does not say which list the facet bounds. bison reports 14 shift/reduce conflicts (§3).</li><li><strong>A member that may be any shape expression</strong> makes <code>LIST ( ( @&lt;A&gt; ) … )</code> ambiguous: the <code>(</code> may open a group or a parenthesised shape expression. bison reports 7 shift/reduce and 31 reduce/reduce conflicts. Since a group holding one member means the same as that member, reading every such <code>(</code> as a group loses nothing.</li><li><strong><code>LIST</code> after <code>EXTENDS</code>.</strong> In <code>EXTENDS LIST &lt;S&gt; { … }</code> the <code>{ … }</code> could be either the extending shape's body or a shape ANDed with <code>&lt;S&gt;</code>.</li><li><strong>Bounds first only</strong> (<code>LIST {m,n} x</code>, in the style of ASN.1's <code>SIZE</code>) has no conflicts, but it cannot say a tuple: <code>LIST ( xsd:string ; xsd:integer )</code> is a pair. It has no form for a flat list of pairs (§4.2) either. It survives as the shorthand of §2.1.</li><li><strong>A bare <code>LIST x</code> for any number of x</strong> (variant F) has no conflicts and is the shortest spelling of the commonest case, but it makes <code>LIST xsd:integer</code> and <code>LIST ( xsd:integer )</code> mean different things: any number of integers, and exactly one. <code>LIST * xsd:integer</code> costs two characters and has no such neighbour.</li></ul>
+    </section>
+  </section>
+  <section id="how-they-were-checked">
+  <h2>How they were checked</h2>
+  <p><strong>The grammars are the real ones.</strong> The SPARQL productions were added to SPARQL.js 3.7.4's Jison grammar, which is the whole of SPARQL 1.1 Query and Update with SPARQL-star. The ShEx productions were added to shex.js-array's ShExC grammar (commit <code>3980d3d6</code>), with the <code>((x))[m, n]</code> strawman and the precedence that resolved its conflicts removed. That baseline is called B0 below. Each variant is B0 plus one <code>listShape</code>.</p>
+  <p><strong>The checks are LALR(1) or stronger.</strong></p>
+  <ul><li>SPARQL's grammar was built with ts-jison as SLR(1) and as canonical LR(1). An SLR(1) grammar has no LALR(1) conflicts, because LALR(1) lookaheads are subsets of the SLR(1) follow sets.</li><li>ShExC's grammar was converted to a bare bison grammar (the same rules and precedence declarations, with no actions) and checked by bison as LALR(1). It was also built by ts-jison as canonical LR(1).</li><li>The converter is faithful: on the stock grammar it gives 0 conflicts, and with the strawman's <code>%prec</code> removed, bison reports the strawman's 4 known conflicts.</li><li>ts-jison's own LALR(1) mode was not used. It reports 260 conflicts on stock SPARQL.js, and the parser it builds cannot parse <code>{ ?s ?p ?o }</code>.</li></ul>
+  <table class="simple">
+  <thead><tr><th>Grammar</th><th>LALR(1) (bison, or implied by SLR)</th><th>LR(1) (ts-jison)</th></tr></thead>
+  <tbody>
+  <tr><td>SPARQL.js 3.7.4 + §1.1, slices and named gaps included</td><td>0 (SLR(1): 0)</td><td>0</td></tr>
+  <tr><td>ShExC B0 (no list syntax)</td><td>0</td><td>0</td></tr>
+  <tr><td>A: <code>LIST {m,n}? x</code></td><td>0</td><td>0</td></tr>
+  <tr><td>B: <code>LIST ( regex )</code>, a member any shape expression</td><td>7 S/R, 31 R/R</td><td>74</td></tr>
+  <tr><td>C: <code>LIST ( regex )</code>, <code>(</code> opens a group</td><td>0</td><td>0</td></tr>
+  <tr><td>D: <code>LIST x MINLENGTH m MAXLENGTH n</code></td><td>14 S/R</td><td>not built: out of memory</td></tr>
+  <tr><td>E: C + <code>LIST {m,n} x</code></td><td>0</td><td>0</td></tr>
+  <tr><td>F: E + <code>LIST x</code></td><td>0</td><td>0</td></tr>
+  <tr><td><strong>G: C + <code>LIST card x</code></strong> (§2.1)</td><td><strong>0</strong></td><td><strong>0</strong></td></tr>
+  </tbody></table>
+  <p><strong>Regression.</strong></p>
+  <ul><li>B0 parses 488 of shexTest-array's 491 schemas; the other 3 now use <code>LIST</code>, which B0 does not have and G parses. It rejects all 105 negative-syntax tests.</li><li>Variants A, B, C, E, F and G parse those 488 schemas to the same ShExJ as B0 and give the same verdict on every negative-syntax test.</li><li>SPARQL.js's own test suite gives the same results with the patched grammar, except for the three runs of its <code>lists</code> test. Those expect a collection to give <code>rdf:first</code>/<code>rdf:rest</code> triples, where it is now one sequence term.</li></ul>
+  <p><strong>The examples are run, not just parsed.</strong> A small evaluator in the harness reads the data through the patched grammar's INSERT DATA. It evaluates each query's parsed algebra and validates each schema's parsed ShExJ, so the results below come from the parse trees.</p>
+  </section>
+  <section id="examples">
+  <h2>Examples</h2>
+  <p>The data, in Turtle-array:</p>
+  <pre class="example turtle nohighlight">:obs1 :component ( ( "8480-6" "systolic"  ( 120 "mm[Hg]" ) )
+                     ( "8462-4" "diastolic" (  80 "mm[Hg]" ) ) ) .
+  :obs2 :component ( ( "8480-6" "systolic"  ( 150 "mm[Hg]" ) )
+                     ( "8462-4" "diastolic" (  95 "mm[Hg]" ) ) ) .
+  :obs3 :component ( ( "8480-6" "systolic"  ( "high" "mm[Hg]" ) ) ) .
+  :m1   :matrix ( ( 1 2 3 ) ( 4 5 6 ) ) .
+  :m2   :matrix ( ( 1 2 3 ) ( 4 5 ) ) .
+  :poly :points ( ( 0 0 ) ( 3 0 ) ( 3 4 ) ) .
+  :kv   :pairs  ( "a" 1 "b" 2 "c" 3 ) .
+  :tree :node   ( "root" ( ( "left" ( ) ) ( "right" ( ( "leaf" ( ) ) ) ) ) ) .</pre>
+  <p>An observation's components are 3-tuples of a code, a name and a (value unit) pair. A matrix is a list of rows, and <code>:m2</code>'s second row is short. A polyline is a list of points. <code>:kv</code> holds pairs flattened into one list. A tree is a (label children) pair, whose children are trees.</p>
+    <section id="sparql-array">
+    <h3>SPARQL-array</h3>
+    <p><strong>A tuple anywhere in a list of tuples.</strong> The systolic reading, at whatever position it sits:</p>
+    <pre class="example sparql nohighlight">SELECT ?obs ?v ?unit WHERE {
+      ?obs :component ( ... ( "8480-6" ?name ( ?v ?unit ) ) ... )
+    }</pre>
+    <table class="simple">
+    <thead><tr><th>obs</th><th>v</th><th>unit</th></tr></thead>
+    <tbody>
+    <tr><td>:obs1</td><td>120</td><td>"mm[Hg]"</td></tr>
+    <tr><td>:obs2</td><td>150</td><td>"mm[Hg]"</td></tr>
+    <tr><td>:obs3</td><td>"high"</td><td>"mm[Hg]"</td></tr>
+    </tbody></table>
+    <p><strong>The first and the last member, nested.</strong> The first point's x and the whole last point:</p>
+    <pre class="example sparql nohighlight">SELECT ?x0 ?last WHERE { :poly :points ( ( ?x0 ?y0 ) ... ?last ) }</pre>
+    <table class="simple">
+    <thead><tr><th>x0</th><th>last</th></tr></thead>
+    <tbody>
+    <tr><td>0</td><td>(3 4)</td></tr>
+    </tbody></table>
+    <p><strong>Head and tail.</strong> A named gap binds the rest of the list, and so does the slice <code>[2...]</code>:</p>
+    <pre class="example sparql nohighlight">SELECT ?h ?t ?t2 WHERE {
+      :poly :points ( ?h ...?t ) .
+      :poly :points ?pts BIND(?pts[2...] AS ?t2)
+    }</pre>
+    <table class="simple">
+    <thead><tr><th>h</th><th>t</th><th>t2</th></tr></thead>
+    <tbody>
+    <tr><td>(0 0)</td><td>((3 0) (3 4))</td><td>((3 0) (3 4))</td></tr>
+    </tbody></table>
+    <p><strong>A position from a pattern.</strong> The named gap before the match holds the members before it:</p>
+    <pre class="example sparql nohighlight">SELECT ?x ?i WHERE { :poly :points ( ...?pre ?x ... ) BIND(SEQLEN(?pre) + 1 AS ?i) }</pre>
+    <table class="simple">
+    <thead><tr><th>x</th><th>i</th></tr></thead>
+    <tbody>
+    <tr><td>(0 0)</td><td>1</td></tr>
+    <tr><td>(3 0)</td><td>2</td></tr>
+    <tr><td>(3 4)</td><td>3</td></tr>
+    </tbody></table>
+    <p><strong>Gaps at two levels of recursive data.</strong> The root's children and their children:</p>
+    <pre class="example sparql nohighlight">SELECT ?child ?grandchild WHERE {
+      :tree :node ( "root" ( ... ( ?child ( ... ( ?grandchild ?kids ) ... ) ) ... ) )
+    }</pre>
+    <table class="simple">
+    <thead><tr><th>child</th><th>grandchild</th></tr></thead>
+    <tbody>
+    <tr><td>"right"</td><td>"leaf"</td></tr>
+    </tbody></table>
+    <p><strong>UNNEST twice.</strong> Every cell of every matrix, with its row and column:</p>
+    <pre class="example sparql nohighlight">SELECT ?m ?i ?j ?x WHERE {
+      ?m :matrix ?rows .
+      UNNEST(?rows AS ?row AT ?i)
+      UNNEST(?row AS ?x AT ?j)
+    }</pre>
+    <table class="simple">
+    <thead><tr><th>m</th><th>i</th><th>j</th><th>x</th></tr></thead>
+    <tbody>
+    <tr><td>:m1</td><td>1</td><td>1</td><td>1</td></tr>
+    <tr><td>:m1</td><td>1</td><td>2</td><td>2</td></tr>
+    <tr><td>:m1</td><td>1</td><td>3</td><td>3</td></tr>
+    <tr><td>:m1</td><td>2</td><td>1</td><td>4</td></tr>
+    <tr><td>:m1</td><td>2</td><td>2</td><td>5</td></tr>
+    <tr><td>:m1</td><td>2</td><td>3</td><td>6</td></tr>
+    <tr><td>:m2</td><td>1</td><td>1</td><td>1</td></tr>
+    <tr><td>:m2</td><td>1</td><td>2</td><td>2</td></tr>
+    <tr><td>:m2</td><td>1</td><td>3</td><td>3</td></tr>
+    <tr><td>:m2</td><td>2</td><td>1</td><td>4</td></tr>
+    <tr><td>:m2</td><td>2</td><td>2</td><td>5</td></tr>
+    </tbody></table>
+    <p><strong>UNNEST, then index into each tuple.</strong> The components whose value is at least 90, with their positions. <code>:obs3</code>'s <code>"high"</code> drops out, because comparing it with 90 is a type error:</p>
+    <pre class="example sparql nohighlight">SELECT ?obs ?i ?code ?v WHERE {
+      ?obs :component ?c .
+      UNNEST(?c AS ?comp AT ?i)
+      BIND(?comp[1] AS ?code)
+      BIND(?comp[3][1] AS ?v)
+      FILTER(?v &gt;= 90)
+    }</pre>
+    <table class="simple">
+    <thead><tr><th>obs</th><th>i</th><th>code</th><th>v</th></tr></thead>
+    <tbody>
+    <tr><td>:obs1</td><td>1</td><td>"8480-6"</td><td>120</td></tr>
+    <tr><td>:obs2</td><td>1</td><td>"8480-6"</td><td>150</td></tr>
+    <tr><td>:obs2</td><td>2</td><td>"8462-4"</td><td>95</td></tr>
+    </tbody></table>
+    <p><strong>A slice of every row.</strong> Columns 2 to 3 of each row, numpy's <code>a[:, 1:3]</code> taken row by row; the short row of <code>:m2</code> gives what it has:</p>
+    <pre class="example sparql nohighlight">SELECT ?m ?i ?cols WHERE {
+      ?m :matrix ?rows .
+      UNNEST(?rows AS ?row AT ?i)
+      BIND(?row[2...3] AS ?cols)
+    }</pre>
+    <table class="simple">
+    <thead><tr><th>m</th><th>i</th><th>cols</th></tr></thead>
+    <tbody>
+    <tr><td>:m1</td><td>1</td><td>(2 3)</td></tr>
+    <tr><td>:m1</td><td>2</td><td>(5 6)</td></tr>
+    <tr><td>:m2</td><td>1</td><td>(2 3)</td></tr>
+    <tr><td>:m2</td><td>2</td><td>(5)</td></tr>
+    </tbody></table>
+    <p><strong>Stride.</strong> The keys of a flat key/value list sit at the odd positions, and each value is the member after its key. SPARQL has no modulo operator, so the odd positions are <code>?i - 2 * FLOOR(?i / 2) = 1</code>:</p>
+    <pre class="example sparql nohighlight">SELECT ?k ?v WHERE {
+      :kv :pairs ?p .
+      UNNEST(?p AS ?k AT ?i)
+      BIND(?p[?i + 1] AS ?v)
+      FILTER(?i - 2 * FLOOR(?i / 2) = 1)
+    }</pre>
+    <table class="simple">
+    <thead><tr><th>k</th><th>v</th></tr></thead>
+    <tbody>
+    <tr><td>"a"</td><td>1</td></tr>
+    <tr><td>"b"</td><td>2</td></tr>
+    <tr><td>"c"</td><td>3</td></tr>
+    </tbody></table>
+    <p><strong>Chained indexes.</strong> An index out of range leaves <code>?cell</code> unbound:</p>
+    <pre class="example sparql nohighlight">SELECT ?m ?cell ?len WHERE {
+      ?m :matrix ?rows .
+      BIND(?rows[2][3] AS ?cell)
+      BIND(SEQLEN(?rows[2]) AS ?len)
+    }</pre>
+    <table class="simple">
+    <thead><tr><th>m</th><th>cell</th><th>len</th></tr></thead>
+    <tbody>
+    <tr><td>:m1</td><td>6</td><td>3</td></tr>
+    <tr><td>:m2</td><td></td><td>2</td></tr>
+    </tbody></table>
+    <p><strong>A sequence as the needle.</strong> The polylines through the point (3 4):</p>
+    <pre class="example sparql nohighlight">SELECT ?s WHERE { ?s :points ?pts FILTER(SEQ(3, 4) IN ?pts) }</pre>
+    <table class="simple">
+    <thead><tr><th>s</th></tr></thead>
+    <tbody>
+    <tr><td>:poly</td></tr>
+    </tbody></table>
+    <p><strong>Whole nested values.</strong> These are compared by an expression and by a pattern:</p>
+    <pre class="example sparql nohighlight">SELECT ?m ?n WHERE {
+      ?m :matrix ?rows FILTER(?rows = SEQ(SEQ(1, 2, 3), SEQ(4, 5, 6)))
+      ?n :matrix ( ( 1 2 3 ) ( 4 5 6 ) )
+    }</pre>
+    <table class="simple">
+    <thead><tr><th>m</th><th>n</th></tr></thead>
+    <tbody>
+    <tr><td>:m1</td><td>:m1</td></tr>
+    </tbody></table>
+    </section>
+    <section id="shex-array">
+    <h3>ShEx-array</h3>
+    <table class="simple">
+    <thead><tr><th>Shapes</th><th>Focus → result</th></tr></thead>
+    <tbody>
+    <tr><td><code>&lt;BP&gt; LIST + @&lt;Component&gt;</code><br><code>&lt;Component&gt; LIST ( xsd:string ; xsd:string ; LIST ( xsd:integer ; xsd:string ) )</code></td><td><code>:obs1</code>'s and <code>:obs2</code>'s components conform; <code>:obs3</code>'s fail (<code>"high"</code> is not an integer)</td></tr>
+    <tr><td><code>&lt;Matrix2x3&gt; LIST ( LIST ( xsd:integer {3} ) {2} )</code></td><td><code>:m1</code> conforms; <code>:m2</code> fails</td></tr>
+    <tr><td><code>&lt;Matrix2x3&gt; LIST {2} LIST {3} xsd:integer</code> (the same ShExJ)</td><td><code>:m1</code> conforms; <code>:m2</code> fails</td></tr>
+    <tr><td><code>&lt;Ragged&gt; LIST ( LIST ( xsd:integer * ) * )</code>, or <code>LIST * LIST * xsd:integer</code></td><td><code>:m1</code> and <code>:m2</code> conform</td></tr>
+    <tr><td><code>&lt;Polyline&gt; LIST ( LIST ( xsd:integer ; xsd:integer ) {2,} )</code></td><td><code>:poly</code> conforms; <code>:m1</code> fails</td></tr>
+    <tr><td><code>&lt;Pairs&gt; LIST ( ( xsd:string ; xsd:integer ) * )</code></td><td><code>:kv</code> conforms; <code>:poly</code> fails</td></tr>
+    <tr><td><code>&lt;IntsOrPairs&gt; LIST ( ( xsd:integer | LIST ( xsd:integer ; xsd:integer ) ) + )</code></td><td><code>:poly</code> conforms; <code>:m1</code> fails</td></tr>
+    <tr><td><code>&lt;Tree&gt; LIST ( xsd:string ; LIST ( @&lt;Tree&gt; * ) )</code></td><td><code>:tree</code> conforms; <code>:m1</code> fails</td></tr>
+    </tbody></table>
+    <p><code>&lt;Pairs&gt;</code> is a repeated group. It is the one shape here that nesting <code>LIST</code>s cannot say, because its pairs are not sequences of their own. <code>&lt;Tree&gt;</code> recurses through two levels of list at each step.</p>
+    </section>
+  </section>
+  <section id="edge-cases-and-limits">
+  <h2>Edge cases and limits</h2>
+  <p>Each case was parsed by the variant shown; the harness lists them with the results.</p>
+  <ul><li><strong>Lexing <code>...</code>.</strong> SPARQL.js's lexer takes the longest match, so <code>...</code> wins over <code>.</code>. <code>( 1... )</code> is 1 followed by a gap, and so is <code>( :a... )</code>, since a local name cannot end in <code>.</code>. But <code>( :a...b )</code> is one prefixed name, as <code>:a.b</code> already is. <code>[2...4]</code> is 2, <code>...</code>, 4, since <code>...</code> also wins over the decimal <code>.4</code>.</li><li><strong>No gap outside patterns.</strong> <code>CONSTRUCT { ?s :p ( ?a ... ) }</code> is a syntax error.</li><li><strong>A named gap is one token.</strong> <code>( ?a ...?b )</code> names the gap; <code>( ?a ... ?b )</code> is a gap and then the member <code>?b</code>. The parse checks both.</li><li><strong>No stride in patterns.</strong> <code>:kv :pairs ( ... ?k ?v ... )</code> matches every adjacent pair, ("b" 2) as well as (1 "b"); the UNNEST idiom of §4.1 is the way, or <code>( ...?pre ?k ?v ... )</code> with the same test on <code>SEQLEN(?pre)</code>.</li><li><strong><code>LIST x</code> is an error in G.</strong> <code>LIST xsd:integer</code> is rejected with the message that <code>(</code>, <code>*</code>, <code>+</code>, <code>?</code> or a <code>{m,n}</code> was expected, and <code>LIST ( xsd:integer )</code> is exactly one integer. In F, <code>LIST xsd:integer</code> parsed and meant any number (§2.3).</li><li><strong>A parenthesised first member.</strong> Inside <code>LIST ( )</code>, <code>( ( @&lt;A&gt; ) AND @&lt;B&gt; )</code> is a syntax error, because the second <code>(</code> opens a group, and a group cannot be followed by <code>AND</code>. Write <code>( @&lt;A&gt; AND @&lt;B&gt; )</code>, or <code>@&lt;B&gt; AND ( @&lt;A&gt; )</code>.</li><li><strong>Cardinalities.</strong> In <code>:component LIST ( @&lt;Component&gt; + ) {1,2}</code> and <code>:p LIST * xsd:integer {1,2}</code>, the cardinality inside, or before the member, counts the list's members and the one after counts triples. This is checked by the parse.</li><li><strong>Empty sequences.</strong> <code>()</code> in a pattern or data is the empty sequence. <code>LIST ( @&lt;Tree&gt; * )</code> accepts it, and <code>LIST ( x + )</code> does not.</li></ul>
+  </section>
+  <section id="against-other-languages">
+  <h2>Against other languages</h2>
+  <p>The comparison set is not numpy, whose slicing (<code>a[:, 0]</code>, <code>a[1:3, ::2]</code>, broadcasting) relies on dense, rectangular, homogeneous arrays of a known rank. An rdf-array sequence is ragged, nested and mixed, like a JSON array or a Lisp list, so the languages to measure against are SQL's arrays, Cypher's lists, XQuery's sequences, JSONPath and jq, with numpy as the ceiling for index expressions; and on the schema side the regular-expression types of XDuce and CDuce, RELAX NG's <code>&lt;list&gt;</code>, CDDL and JSON Schema.</p>
+  <table class="simple">
+  <thead><tr><th>Need</th><th>This note</th><th>Cypher</th><th>PostgreSQL</th><th>XQuery</th><th>JSONPath, numpy</th></tr></thead>
+  <tbody>
+  <tr><td>each member</td><td><code>UNNEST(?s AS ?x)</code>, <code>( ... ?x ... )</code></td><td><code>UNWIND l AS x</code></td><td><code>unnest(a)</code></td><td><code>for $x in $s</code></td><td><code>$[*]</code></td></tr>
+  <tr><td>with its position</td><td><code>UNNEST(?s AS ?x AT ?i)</code></td><td><code>UNWIND range(0, size(l)-1)</code></td><td><code>WITH ORDINALITY</code></td><td><code>for $x at $i in $s</code></td><td>—</td></tr>
+  <tr><td>i-th member</td><td><code>?s[2]</code>, <code>( ?a ?x ... )</code></td><td><code>l[1]</code></td><td><code>a[2]</code></td><td><code>$s[2]</code></td><td><code>a[1]</code></td></tr>
+  <tr><td>a nested cell</td><td><code>?m[2][3]</code></td><td><code>l[1][2]</code></td><td><code>a[2][3]</code></td><td>—</td><td><code>a[1, 2]</code></td></tr>
+  <tr><td>last</td><td><code>( ... ?x )</code>, <code>?s[SEQLEN(?s)]</code></td><td><code>l[-1]</code>, <code>last(l)</code></td><td><code>a[cardinality(a)]</code></td><td><code>$s[last()]</code></td><td><code>a[-1]</code></td></tr>
+  <tr><td>length</td><td><code>SEQLEN(?s)</code></td><td><code>size(l)</code></td><td><code>cardinality(a)</code></td><td><code>count($s)</code></td><td><code>len(a)</code></td></tr>
+  <tr><td>membership</td><td><code>?x IN ?s</code></td><td><code>x IN l</code></td><td><code>x = ANY(a)</code></td><td><code>$x = $s</code></td><td>—</td></tr>
+  <tr><td>head and tail</td><td><code>( ?h ...?t )</code>, <code>?s[2...]</code></td><td><code>head(l)</code>, <code>tail(l)</code>, <code>l[1..]</code></td><td><code>a[2:]</code></td><td><code>subsequence($s, 2)</code></td><td><code>a[1:]</code></td></tr>
+  <tr><td>slice</td><td><code>?s[2...4]</code></td><td><code>l[1..4]</code></td><td><code>a[2:4]</code></td><td><code>subsequence($s, 2, 3)</code></td><td><code>a[1:4]</code></td></tr>
+  <tr><td>a tuple anywhere, nested</td><td><code>( ... ( "c" ?n ( ?v ?u ) ) ... )</code></td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+  <tr><td>stride</td><td>UNNEST and <code>FLOOR</code> (§4.1)</td><td>—</td><td>—</td><td>—</td><td><code>a[::2]</code>, <code>$[::2]</code></td></tr>
+  <tr><td>map over members, to a list</td><td>—</td><td><code>[x IN l | x.p]</code></td><td><code>array_agg</code> in a subquery</td><td><code>$s ! f(.)</code></td><td><code>a[:, 0]</code></td></tr>
+  <tr><td>filter members, to a list</td><td>—</td><td><code>[x IN l WHERE p]</code></td><td><code>array_agg</code> in a subquery</td><td><code>$s[. &gt; 3]</code></td><td>a boolean mask</td></tr>
+  <tr><td>a list from solutions</td><td>—</td><td><code>collect(x)</code></td><td><code>array_agg(x ORDER BY i)</code></td><td><code>for … return</code></td><td>—</td></tr>
+  <tr><td>at any depth</td><td>—</td><td>—</td><td>—</td><td><code>//</code></td><td><code>$..x</code></td></tr>
+  <tr><td>a list of T, n of T, a tuple, a repeated group, a choice, recursion</td><td><code>LIST</code> (§2)</td><td>—</td><td>—</td><td>RELAX NG, CDDL: <code>[* int]</code>, <code>[3 int]</code>, <code>[str, int]</code>, <code>[* (str, int)]</code></td><td>JSON Schema <code>items</code>, <code>prefixItems</code>, <code>minItems</code></td></tr>
+  </tbody></table>
+  <p>Where the note is ahead: the nested gap pattern finds a tuple anywhere in a list of tuples in one line, which Cypher, SQL and JSONPath do with an unwind, an index and a filter. Where it is behind, the three rows without an entry are one gap. SPARQL has no aggregate that builds a sequence from solutions, and <code>SEQ(…)</code> takes a fixed number of arguments, so the inverse of UNNEST (repeated properties into one sequence, the second half of rdf-array.md's update example) and the map and filter rows, which in a query language are UNNEST and then that aggregate, cannot be written. A <code>COLLECT(?x)</code> in the family of Cypher's <code>collect</code> and SQL's <code>array_agg</code> would fill all three; its order needs design, since SPARQL's aggregates take no <code>ORDER BY</code>, and it is not in the grammar yet. Two smaller matters are open too: <code>?s[-1]</code> parses already, and could count from the end as in Cypher and Lua, which is 1-based as well; and nothing reaches a member at any depth, which would take a recursive construct.</p>
+  </section>
+  <section id="implementing-it-the-strawman">
+  <h2>Implementing it: the strawman</h2>
+  <p>What an implementation reads, writes and requires, fixed here so that the forks agree. Everything in this section is a first choice, to be revised with the implementations.</p>
+  <p><strong>ShExJ.</strong> <code>ListShape</code> replaces <code>Collection</code>:</p>
+  <pre class="example json nohighlight">{ "type": "ListShape", "expression": listExpr }
+  listExpr   = Member | ListEachOf | ListOneOf
+  Member     = { "type": "Member",     "shapeExpr": shapeExpr,        "min": m, "max": n }
+  ListEachOf = { "type": "ListEachOf", "expressions": [ listExpr… ], "min": m, "max": n }
+  ListOneOf  = { "type": "ListOneOf",  "expressions": [ listExpr… ], "min": m, "max": n }</pre>
+  <p><code>min</code> and <code>max</code> are as on triple expressions: absent means 1, and <code>-1</code> is unbounded. <code>LIST card x</code> is <code>{ "type": "ListShape", "expression": { "type": "Member", "shapeExpr": x, "min": …, "max": … } }</code>, the same as <code>LIST ( x card )</code>. A cardinality on a group sets the group's <code>min</code> and <code>max</code>; when the group's expression carries a cardinality already, as <code>( x {2} ) {3}</code> does, it is wrapped in a <code>ListEachOf</code> of one. The old <code>{ "type": "Collection", "shapeExpr": x, "min": m, "max": n }</code> is exactly <code>{ "type": "ListShape", "expression": { "type": "Member", "shapeExpr": x, "min": m, "max": n } }</code>. The names <code>ListEachOf</code> and <code>ListOneOf</code> are distinct from <code>EachOf</code> and <code>OneOf</code> because the first is ordered and the second is not (§2.2).</p>
+  <p><strong>ShExR.</strong> <code>sx:ListShape</code> with <code>sx:expression</code>; <code>sx:Member</code> with <code>sx:shapeExpr</code>, <code>sx:min</code> and <code>sx:max</code>; <code>sx:ListEachOf</code> and <code>sx:ListOneOf</code> with <code>sx:expressions ( … )</code>, a sequence as <code>sx:shapeExprs</code> is, and <code>sx:min</code> and <code>sx:max</code>. They replace <code>sx:Collection</code>.</p>
+  <p><strong>Validation results.</strong> Where an implementation reports per-member results (shex.js's shexv), they are named after the shape: <code>ListShapeResults</code> with one solution per member in order, and <code>ListShapeFailure</code> holding either a <code>ListLengthViolation</code> or a <code>ListMemberFailure</code> with the member's index, in place of the <code>Collection…</code> names.</p>
+  <p><strong>The <code>ra:</code> requirements of the test manifests.</strong> <code>ra:GapPatterns</code> (<code>...</code> and <code>...?rest</code> in a sequence pattern) and <code>ra:Unnest</code> replace <code>ra:PositionPatterns</code>; <code>ra:SequenceFunctions</code> keeps its name and now covers <code>isSEQ</code>, <code>SEQLEN</code>, <code>SEQ</code>, <code>expr[i]</code>, <code>expr[m...n]</code> and <code>IN ?seq</code>; <code>ra:ListShapeExpression</code> replaces <code>ra:CollectionShapeExpression</code>.</p>
+  <p><strong>Rewriting what uses the old syntax.</strong> <a href="../management/array-syntax-uses.md">array-syntax-uses.md</a> lists the files. In ShExC, <code>((x))[m, n]</code> becomes <code>LIST {m,n} x</code> when x is an atom and <code>LIST {m,n} ( x )</code> when it is not; <code>((x))</code> becomes <code>LIST * x</code>, <code>[1, *]</code> becomes <code>+</code>, <code>[n]</code> becomes <code>{n}</code>, and <code>((((x))[2]))[3, *]</code> becomes <code>LIST {3,} LIST {2} x</code>. In SPARQL, <code>((?e))[?i]</code> and <code>((?e))[*]</code> become <code>UNNEST(?seq AS ?e AT ?i)</code> on the sequence bound by the triple pattern, and <code>((?e))[n]</code> with a constant becomes the pattern with n−1 fresh variables before <code>?e</code> and <code>...</code> after it, or an UNNEST with <code>FILTER(?i = n)</code>, whichever keeps the test's expected results; a test whose point was the old spelling (the bad-position syntax tests) is replaced by one for the new (<code>[2:4]</code>, a gap in a template, a bare <code>LIST x</code>). The shared suites also gain the data, queries, shapes and results of §4.</p>
+  </section>
+  <section id="reproducing">
+  <h2>Reproducing</h2>
+  <pre class="example nohighlight">tools/array-syntax/run.sh</pre>
+  <p>The script needs git, node, python3, bison, a checkout of shex.js-array with its <code>node_modules</code> (for ts-jison and the parser's dependencies), and a checkout of shexTest-array. It clones SPARQL.js 3.7.4 and applies <code>sparql.jison.patch</code>. It writes the ShExC variants with <code>variants.py</code>, checks each with bison and ts-jison, and runs the shexTest corpus through each. Last, it runs the examples and edge cases of <code>examples.js</code> into <code>demo.md</code> in its work directory. The whole run takes about two minutes.</p>
+  </section>
+  <script>
+  // Turtle-array and SPARQL-array highlighting: a few token classes are enough for these examples.
+  (function () {
+    var token = /(<[^>\s]*>)|("""[\s\S]*?"""|"(?:[^"\\]|\\.)*")(@[A-Za-z0-9-]+|\^\^[^\s;,.()\]]+)?|(#[^\n]*)|(\?[A-Za-z_][\w]*)|(_:[A-Za-z0-9_-]+)|(\b(?:PREFIX|BASE|SELECT|CONSTRUCT|ASK|DESCRIBE|WHERE|DELETE|INSERT|DATA|FILTER|OPTIONAL|UNION|ORDER|BY|GROUP|LIMIT|OFFSET|BIND|VALUES|GRAPH|a)\b)|(\b-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b)|([A-Za-z][\w-]*:[\w#./-]*|[A-Za-z][\w-]*:)/g;
+    function paint(pre) {
+      var src = pre.textContent, out = '', last = 0, m;
+      token.lastIndex = 0;
+      while ((m = token.exec(src))) {
+        out += esc(src.slice(last, m.index));
+        var cls = m[1] ? 'hljs-iri' : m[2] ? 'hljs-lit' : m[4] ? 'hljs-cmt' : m[5] ? 'hljs-var' : m[6] ? 'hljs-bnode' : m[7] ? 'hljs-kw' : m[8] ? 'hljs-num' : 'hljs-pname';
+        out += '<span class="' + cls + '">' + esc(m[0]) + '</span>';
+        last = token.lastIndex;
+      }
+      out += esc(src.slice(last));
+      pre.innerHTML = out;
+    }
+    function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    var jsonToken = /("(?:[^"\\]|\\.)*")(\s*:)?|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)|\b(true|false|null)\b/g;
+    function paintJson(pre) {
+      var src = pre.textContent, out = '', last = 0, m;
+      jsonToken.lastIndex = 0;
+      while ((m = jsonToken.exec(src))) {
+        out += esc(src.slice(last, m.index));
+        if (m[1]) { out += '<span class="' + (m[2] ? 'hljs-attr' : 'hljs-string') + '">' + esc(m[1]) + '</span>' + esc(m[2] || ''); }
+        else if (m[3]) { out += '<span class="hljs-number">' + esc(m[3]) + '</span>'; }
+        else { out += '<span class="hljs-literal">' + esc(m[4]) + '</span>'; }
+        last = jsonToken.lastIndex;
+      }
+      out += esc(src.slice(last));
+      pre.innerHTML = out;
+    }
+    function tidyHeader() {
+      // An unofficial draft has no published version; ReSpec prints the line anyway.
+      document.querySelectorAll('.head dt').forEach(function (dt) {
+        if (/^Latest published version/.test(dt.textContent)) { var dd = dt.nextElementSibling; dt.remove(); if (dd && dd.tagName === 'DD') dd.remove(); }
+      });
+    }
+    function run() { tidyHeader(); document.querySelectorAll('pre.turtle, pre.sparql').forEach(paint); document.querySelectorAll('pre.json').forEach(paintJson); }
+    if (document.respec && document.respec.ready) { document.respec.ready.then(run); } else { document.addEventListener('DOMContentLoaded', run); }
+  })();
+  </script>
+</body>
+</html>
